@@ -69,7 +69,7 @@ public class DashWffFailTests {
          {"tooManyDefaultStates1", tooManyDefaultStatesMsg},
          {"tooManyDefaultStates2", tooManyDefaultStatesMsg},
          {"allConcDefaultStates1",allConcDefaultStatesMsg},
-         {"allConcDefaultStates2",allConcDefaultStatesMsg},
+         {"allConcDefaultStates2",allConcDefaultStatesMsg}, //11
          {"stateNameCantBeFQN1", stateNameCantBeFQNMsg},
          {"stateNameCantBeFQN2", stateNameCantBeFQNMsg},
          {"dupSiblingNames1", dupSiblingNamesMsg},
@@ -79,12 +79,12 @@ public class DashWffFailTests {
          {"moreThanOneSrcDest1", tooManyMsg},
          {"moreThanOneSrcDest2", tooManyMsg}, // 19
          {"moreThanOneSrcDest3", tooManyMsg},
-         //{"unknownSrcDest1", unknownSrcDestMsg}, //21
+         //{"unknownSrcDest1", unknownSrcDestMsg}, 
          //{"unknownSrcDest2", unknownSrcDestMsg},
          //{"unknownSrcDest3", unknownSrcDestMsg},
-         {"unknownSrcDest4", unknownSrcDestMsg},
+         {"unknownSrcDest4", unknownSrcDestMsg}, //21
          {"fqnSrcDestMustHaveRightNumberParams1", fqnSrcDestMustHaveRightNumberParamsMsg}, 
-         {"srcDestCantHaveParam1", srcDestCantHaveParamMsg},
+         {"srcDestCantHaveParam1", fqnSrcDestMustHaveRightNumberParamsMsg}, //23
          {"ambiguousSrcDest1", ambiguousSrcDestMsg},
          {"test11",ambiguousSrcDestMsg}
       });

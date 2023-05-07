@@ -60,7 +60,7 @@ public class DashErrors {
 	public static void unknownSrcDest(String x, String t, String tfqn) throws Err {
 		throw new ErrorSyntax(unknownSrcDestMsg + "trans "+tfqn+" "+t+" "+x);
 	}
-	public static String fqnSrcDestMustHaveRightNumberParamsMsg = "A fully qualified state name must have the right number of parameters: ";
+	public static String fqnSrcDestMustHaveRightNumberParamsMsg = "Incorrect number of parameters: ";
 	public static void fqnSrcDestMustHaveRightNumberParams(String xType, String tfqn) throws Err {
 		throw new ErrorSyntax(fqnSrcDestMustHaveRightNumberParamsMsg + xType + " of transition "+ tfqn );
 	}

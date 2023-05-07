@@ -46,8 +46,8 @@ public class TransTable {
 		// calculated when resolved
 		public DashRef src; 
 		public DashRef dest;
-		public Expr when; // just one?
-		public DashRef on;
+		public Expr when; // expr
+		public DashRef on; // event
 		public Expr act;
 		public DashRef send;
 
@@ -218,137 +218,119 @@ public class TransTable {
 		if (getAllTransNames().isEmpty()) DashErrors.noTrans();
 		for (String tfqn: table.keySet()) {
 			//String tfqn = DashFQN.fqn(sfqn,t.name);
-
+			String parentFQN = DashFQN.chopPrefixFromFQN(tfqn);
 			// determining the src state
 			List<DashRef> fList =
 				table.get(tfqn).fromList.stream()
 				.map(p -> (p.src))
 				.collect(Collectors.toList());
-			table.get(tfqn).setSrc(determineSrcDest("from", fList, st, tfqn));
+
+			if (fList.size() > 1) DashErrors.tooMany("from", tfqn);
+			else if (fList.isEmpty()) 
+				// can be a loop on root
+				table.get(tfqn)
+					.setSrc(new DashRef(parentFQN, ExprHelper.createVarList(DashStrings.pName,getParams(tfqn))));
+			else 
+				table.get(tfqn)
+					.setSrc(
+						st.resolveSrcDest("from", 
+							fList.get(0), 
+							tfqn,
+							getParams(tfqn), 
+							vt));
 	
 			// determining the dest state
 			List<DashRef> gList =
 				table.get(tfqn).gotoList.stream()
 				.map(p -> (p.dest))
 				.collect(Collectors.toList());
-			table.get(tfqn).setDest(determineSrcDest("goto", gList, st, tfqn));
 
-			// determining the when
-			List<Expr> whenExpList =
-				table.get(tfqn).whenList.stream()
-				.map(p -> (p.getWhen()))
-				.collect(Collectors.toList());
-			table.get(tfqn)
-				.setDo(
-					vt.resolveExprList("when", whenExpList, 
-						st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
-						st.getAllStateNames(),
-						tfqn, 
-						getParams(tfqn)));
+			if (gList.size() > 1) DashErrors.tooMany("goto", tfqn);
+			else if (gList.isEmpty()) 
+				// can be a loop on root
+				table.get(tfqn)
+					.setDest(new DashRef(parentFQN, ExprHelper.createVarList(DashStrings.pName,getParams(tfqn))));
+			else 
+				table.get(tfqn)
+					.setDest(
+						st.resolveSrcDest("goto", 
+							gList.get(0), 
+							tfqn,
+							getParams(tfqn), 
+							vt));
 
-
-			// determining the on
+			// determining the on (event)
 			List<Expr> onExpList =
 				table.get(tfqn).onList.stream()
 				.map(p -> (p.getExp()))
 				.collect(Collectors.toList());
-			table.get(tfqn).setOn(determineEvent("on", onExpList,st, et, tfqn));
+			if (onExpList.size() > 1) DashErrors.tooMany("on", tfqn);
+			else if (!onExpList.isEmpty()) {
+				table.get(tfqn)
+					.setOn(
+						et.resolveEvent("on", 
+							onExpList.get(0), 
+							st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
+							tfqn, 
+							getParams(tfqn),
+							vt));
+			}
 
 			// determining the send
 			List<Expr> sendExpList =
 				table.get(tfqn).sendList.stream()
 				.map(p -> (p.getExp()))
 				.collect(Collectors.toList());
-			table.get(tfqn).setSend(determineEvent("send", sendExpList,st, et, tfqn));
+			if (sendExpList.size() > 1) DashErrors.tooMany("send", tfqn);
+			else if (!sendExpList.isEmpty()) {
+				table.get(tfqn)
+					.setSend(
+						et.resolveEvent("send", 
+							sendExpList.get(0),
+							st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
+							tfqn, 
+							getParams(tfqn), 
+							vt));
+			}
+
+			// determining the when (expr)
+			List<Expr> whenExpList =
+				table.get(tfqn).whenList.stream()
+				.map(p -> (p.getWhen()))
+				.collect(Collectors.toList());
+			if (whenExpList.size() > 1) DashErrors.tooMany("when", tfqn);
+			else if (!whenExpList.isEmpty()) {
+				table.get(tfqn)
+					.setWhen(
+						vt.resolveExpr("when", 
+							whenExpList.get(0), 
+							st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
+							tfqn, 
+							getParams(tfqn)));
+			}
 
 			// determining the do
 			List<Expr> doExpList =
 				table.get(tfqn).doList.stream()
 				.map(p -> (p.getDo()))
 				.collect(Collectors.toList());
-			table.get(tfqn)
-				.setDo(
-					vt.resolveExprList("do", doExpList, 
-						st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
-						st.getAllStateNames(),
-						tfqn, 
-						getParams(tfqn)));
-			
+			if (doExpList.size() > 1) DashErrors.tooMany("on", tfqn);
+			else if (!doExpList.isEmpty()) {
+				table.get(tfqn)
+					.setDo(
+						vt.resolveExpr("do", doExpList.get(0), 
+							st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
+							tfqn, 
+							getParams(tfqn)));
+			}
+
 		}
 		isResolved = true;
 	}
 
-	/*
-	 * this fcn figures out the src/dest of a transition
-	 * from its context
-	 * if it has no src/dest, the parent state is used
-	 * if it is already FQN, it is returned directly
-	 * Otherwise, it looks at all uniquely named states up to an ancestor conc state
-	 * Requires state table to have been built already
-	 */
- 
- 	// tfqn is needed for error messages
 
-	public DashRef determineSrcDest(String xType, List<DashRef> ll,  StateTable st, String tfqn) {
 
-		// parent state of this transition
-		String parentFQN = DashFQN.chopPrefixFromFQN(tfqn);
-		if (ll.size() > 1) {
-			DashErrors.tooMany(xType, tfqn);
-			return null;
-		} else if (ll.isEmpty()) 
-			// can be a loop on root
-			return new DashRef(parentFQN, ExprHelper.createVarList(DashStrings.pName,st.getParams(parentFQN)));
-		else {
-			// if has slashes, turn to "-"
-			DashRef x = ll.get(0);
-			//System.out.println("Looking for: " + x);
-			String n = DashFQN.fqn(x.getName());
-			if (DashFQN.isFQN(n)) {
-				// number of params provided must match number of params needed
-				//System.out.println(x.getParamValues().size());
-				//System.out.println(st.getParams(x.getName()).size());
-				if (x.getParamValues().size() != st.getParams(n).size()) {
-					DashErrors.fqnSrcDestMustHaveRightNumberParams(xType,tfqn);
-					return null;
-				}
-				if (!st.containsKey(n)) DashErrors.unknownSrcDest(x.getName(),xType,tfqn);
-				return x;
-			} else {
-				// not fully qualified
-				// shouldn't have params in DashRef
-				// Root could be here but won't have params 
-				if (!x.getParamValues().isEmpty()) {
-					DashErrors.srcDestCantHaveParam(xType,tfqn);
-					return null;
-				}
-				// Root ends up here
-				List<String> matches = new ArrayList<String>();
-				//String a = st.getClosestConcAnces(parentFQN);
-				//System.out.println("getClosestConcAnces: "+a);
-				//List<String> b = st.getAllNonConcStatesWithinThisState(a);
-				//System.out.println("getAllNonConcStatesWithinThisState "+b);
-				for (String s:st.getRegion(parentFQN)) {
-					//System.out.println(s + " " + n);
-					if (DashFQN.suffix(s,n)) matches.add(s);
-				}
-				//System.out.println("matches: " + matches);
-				if (matches.size() > 1) {
-					DashErrors.ambiguousSrcDest(xType, tfqn);
-					return null; 
-				} else if (matches.isEmpty()) {
-					//DashUtilFcns.myprint(st.toString());
-					DashErrors.unknownSrcDest(x.getName(),xType,tfqn);
-					return null;
-				} else {
-					String m = matches.get(0);
-					//System.out.println(m);
-					// must have same param values as trans b/c in same conc region
-					return new DashRef(m, ExprHelper.createVarList(DashStrings.pName, st.getParams(m)));
-				}
-			}
-		}
-	}
+
 
     // [n1,n2,...]
     /*private List<Expr> paramVars(List<String> names) {
@@ -357,79 +339,6 @@ public class TransTable {
         return o;
     }*/
 
-	private DashRef determineEvent(String xType, List<Expr> expList, StateTable st, EventTable et, String tfqn) {
-		if (expList.isEmpty()) return null;
-		else if (expList.size() > 1) {
-			DashErrors.tooMany(xType, tfqn);
-			return null;
-		} else {
-			Expr exp = expList.get(0);
-			// don't include isDashRefJoin here because that is only possible for actions not events
-			// which are tuples
-			// but a DashRefProcessRef could be either a value for an action
-			// or a tuple for an event
-			// Arrow: b1 -> a1 -> ev
-			// ProcessRef: A/B/C[a1,b1]/ev which became $$PROCESSREF$$. b1.a1.A/B/C/ev in parsing
-			// BadJoin: ev[a1,b1] which became b1.a1.ev in parsing 
-			if (ExprHelper.isExprVar(exp) ||
-				//DashRef.isDashRefArrow(exp) || 
-				DashRef.isDashRefProcessRef(exp))// || 
-				//DashRef.isDashRefBadJoin(exp)) 
-			{
-				String e;
-				List<Expr> paramValues;
-				if (ExprHelper.isExprVar(exp)) {
-					e = ExprHelper.getVarName((ExprVar) exp);	
-					paramValues = new ArrayList<Expr>();
-				} else {
-					e = DashRef.nameOfDashRefExpr(exp);
-					paramValues = DashRef.paramValuesOfDashRefExpr(exp);
-				}
-				String efqn = DashFQN.fqn(e);
-				String parentFQN = DashFQN.chopPrefixFromFQN(tfqn);
-				//System.out.println(efqn);
-				List<String> matches = new ArrayList<String>();
-				for (String s:st.getRegion(parentFQN)) 
-					for (String x:et.allEventsOfState(s)) {
-						//System.out.println(x);
-						if (DashFQN.suffix(x,efqn)) matches.add(x);
-					}
-				if (matches.size() > 1) {
-					DashErrors.ambiguousEvent(xType, e, tfqn);
-					return null; 
-				} else if (matches.isEmpty()) {
-					DashErrors.unknownEvent(xType, e,tfqn);
-					return null;
-				} else {
-					String m = matches.get(0);	
-					if (paramValues.isEmpty()) {
-						// must have same param values as trans b/c in same conc region
-						if (et.getParams(m).size() > getParams(tfqn).size()) {
-							// getRegion did not return things that all
-							// have the same parameter values
-							DashErrors.regionMatchesWrongParamNumber();
-							return null;
-						} else {
-							// but could be a subset of transition param values
-							List<Expr> prmValues = 
-								ExprHelper.createVarList(DashStrings.pName,
-									getParams(tfqn).subList(0, et.getParams(m).size() ));
-							return new DashRef(m, prmValues);							
-						}
-					} else if (et.getParams(m).size() != paramValues.size()) { 
-						// came with parameters so must be right number
-						DashErrors.fqnEventMissingParameters(xType, e, tfqn); 
-						return null;
-					} else {
-						return new DashRef(efqn, paramValues);
-					}
-				}
-			} else {
-				DashErrors.expNotEvent(xType, tfqn);
-				return null;
-			}
-		}
-	}
 
 
 

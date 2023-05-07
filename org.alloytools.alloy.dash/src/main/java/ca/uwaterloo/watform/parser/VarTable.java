@@ -72,6 +72,14 @@ public class VarTable {
 	public List<String> getAllVarNames() {
 		return new ArrayList<String>(table.keySet());
 	}
+	public List<String> allVarsOfState(String sfqn) {
+		// return all events declared in this state
+		// will have the sfqn as a prefix
+		return table.keySet().stream()
+			// prefix of vfqn are state names
+			.filter(i -> DashFQN.chopPrefixFromFQN(i).equals(sfqn))
+			.collect(Collectors.toList());	
+	}
 	public List<String> getParams(String vfqn) {
 		//System.out.println(table);
 		if (table.containsKey(vfqn)) return table.get(vfqn).params;
@@ -82,14 +90,7 @@ public class VarTable {
 		else { DashErrors.varDoesNotExist("getType", vfqn); return null; }
 	}
 
-	public List<String> allVarsOfState(String sfqn) {
-		// return all events declared in this state
-		// will have the sfqn as a prefix
-		return table.keySet().stream()
-			// prefix of vfqn are state names
-			.filter(i -> DashFQN.chopPrefixFromFQN(i).equals(sfqn))
-			.collect(Collectors.toList());	
-	}
+
 
 	/*
 		results in an Expr for the action that has all references to variables as DashRefExpr's
@@ -98,16 +99,6 @@ public class VarTable {
 
 		TODO: buffers, this
 	*/
-	public Expr resolveExprList(String xType, List<Expr> expList, List<String> region, List<String> allStateNames, String fqn, List<String> params) {
-		if (expList.isEmpty()) return null;
-		else if (expList.size() > 1) {
-			DashErrors.tooMany(xType, fqn);
-			return null;
-		} else {
-			Expr exp = expList.get(0);
-			return resolveExpr(xType, exp, region, allStateNames, fqn, params);
-		}
-	}
 
 
 
@@ -115,7 +106,7 @@ public class VarTable {
 	// have to recurse through exp types, replace dynamic vars with DashRef and rebuild exp
 	// don't use ExprHelper much here because we want to 
 	// as much about the expression as possible
-	public Expr resolveExpr(String xType, Expr exp, List<String> region, List<String> allStateNames, String fqn, List<String> params) {
+	public Expr resolveExpr(String xType, Expr exp, List<String> region,  String fqn, List<String> params) {
 		//System.out.println(exp);
 		if (isExprVar(exp)  ||
 			isPrimedVar(exp) ||
@@ -123,21 +114,21 @@ public class VarTable {
 			DashRef.isDashRefProcessRef(exp)) // || 
 			//DashRef.isDashRefBadJoin(exp)) 
 			{
-				return dashRefVar(xType, exp, region, allStateNames, fqn, params);
+				return dashRefVar(xType, exp, region,  fqn, params);
 
 		} else if (isExprBinary(exp)) {
 			return ((ExprBinary) exp).op.make(
 				exp.pos,
 				exp.closingBracket,
-				resolveExpr(xType, getLeft(exp), region, allStateNames,fqn, params),
-				resolveExpr(xType, getRight(exp), region, allStateNames,fqn, params));
+				resolveExpr(xType, getLeft(exp), region, fqn, params),
+				resolveExpr(xType, getRight(exp), region, fqn, params));
 
 		} else if (isExprBadJoin(exp)) {
 			return ExprBadJoin.make(
 				exp.pos,
 				exp.closingBracket,
-				resolveExpr(xType, getLeft(exp), region, allStateNames,fqn, params),
-				resolveExpr(xType, getRight(exp), region, allStateNames,fqn, params));
+				resolveExpr(xType, getLeft(exp), region, fqn, params),
+				resolveExpr(xType, getRight(exp), region, fqn, params));
 
 		} else if (exp instanceof ExprCall) {
 			return ExprCall.make(
@@ -145,7 +136,7 @@ public class VarTable {
 				exp.closingBracket,
 				((ExprCall) exp).fun, 
 				((ExprCall) exp).args.stream()
-				.map(i -> resolveExpr(xType, i, region, allStateNames,fqn, params))
+				.map(i -> resolveExpr(xType, i, region, fqn, params))
 				.collect(Collectors.toList()), 
 				((ExprCall) exp).extraWeight);
 
@@ -153,7 +144,7 @@ public class VarTable {
 			//TODO: check into this cast
 			// not sure why is it necessary
 			ConstList<Expr> x = (ConstList<Expr>) ((ExprChoice) exp).choices.stream()
-					.map(i -> resolveExpr(xType, i, region, allStateNames,fqn, params))
+					.map(i -> resolveExpr(xType, i, region, fqn, params))
 					.collect(Collectors.toList());
 			return ExprChoice.make(
 				false,
@@ -164,9 +155,9 @@ public class VarTable {
 		} else if (exp instanceof ExprITE){
 			return ExprITE.make(
 				exp.pos,
-				resolveExpr(xType, getCond(exp), region, allStateNames,fqn, params),
-				resolveExpr(xType, getLeft(exp), region, allStateNames,fqn, params),
-				resolveExpr(xType, getRight(exp), region, allStateNames,fqn, params));
+				resolveExpr(xType, getCond(exp), region, fqn, params),
+				resolveExpr(xType, getLeft(exp), region, fqn, params),
+				resolveExpr(xType, getRight(exp), region, fqn, params));
 
 		} else if (exp instanceof ExprList){
             return ExprList.make(
@@ -174,22 +165,22 @@ public class VarTable {
             	exp.closingBracket,
             	((ExprList) exp).op,
             	((ExprList) exp).args.stream()
-					.map(i -> resolveExpr(xType, i, region, allStateNames,fqn, params))
+					.map(i -> resolveExpr(xType, i, region, fqn, params))
 					.collect(Collectors.toList())
             );			
 
 		} else if (exp instanceof ExprUnary){
 			return ((ExprUnary) exp).op.make(
 				exp.pos,
-				resolveExpr(xType, ((ExprUnary) exp).sub, region, allStateNames,fqn, params));
+				resolveExpr(xType, ((ExprUnary) exp).sub, region, fqn, params));
 
 		} else if (exp instanceof ExprLet){
 			//TODO rule out var name
 			return ExprLet.make(
 				exp.pos, 
 				((ExprLet) exp).var, 
-				resolveExpr(xType, ((ExprLet) exp).expr, region, allStateNames,fqn, params),
-				resolveExpr(xType, ((ExprLet) exp).sub, region, allStateNames,fqn, params));
+				resolveExpr(xType, ((ExprLet) exp).expr, region, fqn, params),
+				resolveExpr(xType, ((ExprLet) exp).sub, region, fqn, params));
 
 		} else if (exp instanceof ExprQt){
 			//TODO rule out var names in delcs as dynamic vars later
@@ -202,14 +193,14 @@ public class VarTable {
 					i.disjoint2,
 					i.isVar,
 					i.names,
-					resolveExpr(xType, i.expr, region, allStateNames,fqn, params)))
+					resolveExpr(xType, i.expr, region, fqn, params)))
 				.collect(Collectors.toList());
 
 			return ((ExprQt) exp).op.make(
 				exp.pos, 
 				exp.closingBracket,  
 				decls, 
-				resolveExpr(xType, ((ExprQt) exp).sub, region, allStateNames,fqn, params));
+				resolveExpr(xType, ((ExprQt) exp).sub, region, fqn, params));
 
 		} else if (exp instanceof ExprConstant){
 			return exp;
@@ -221,7 +212,7 @@ public class VarTable {
 	}
 
 	// fqn could be trans or state
-	private Expr dashRefVar(String xType, Expr exp, List<String> region, List<String> allStateNames, String fqn, List<String> params) {
+	private Expr dashRefVar(String xType, Expr exp, List<String> region, String fqn, List<String> params) {
 
 		// Join: b1.a1.var
 
@@ -269,16 +260,16 @@ public class VarTable {
 					if (DashFQN.suffix(x,vfqn)) matches.add(x);
 				}
 		} else {
-			// if it has params values, could be suffix of any state
+			// if it has params values, could be suffix of any var
 			// and later we check it has the right number of params
-			for (String s:allStateNames) 
-				for (String x:allVarsOfState(s)) {
-					if (DashFQN.suffix(x,vfqn)) matches.add(x);
-				}		
+			for (String x:getAllVarNames()) {
+				if (DashFQN.suffix(x,vfqn)) matches.add(x);
+			}		
 		}
 		//System.out.println("vfqn: " + vfqn);
 		//System.out.println("matches: "+ matches);
 		//System.out.println("region: " + region);
+
 		if (matches.size() > 1) {
 			DashErrors.ambiguousVar(xType, v, fqn);
 			return null; 
@@ -315,7 +306,7 @@ public class VarTable {
 					m, 
 					// have to recursive through expressions in parameters
 					paramValues.stream()
-						.map(i -> resolveExpr(xType, i, region, allStateNames, fqn, params))
+						.map(i -> resolveExpr(xType, i, region, fqn, params))
 						.collect(Collectors.toList()));
 			}
 		}

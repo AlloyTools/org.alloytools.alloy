@@ -394,7 +394,6 @@ public class StateTable {
 				table.get(sfqn).origInits.stream()
 					.map(i -> vt.resolveExpr("init", i.getInit(), 
 						getRegion(sfqn), 
-						getAllStateNames(),
 						sfqn, 
 						getParams(sfqn)))
 					.collect(Collectors.toList()));
@@ -402,12 +401,76 @@ public class StateTable {
 				table.get(sfqn).origInvariants.stream()
 					.map(i -> vt.resolveExpr("inv", i.getInv(), 
 						getRegion(sfqn), 
-						getAllStateNames(),
 						sfqn, 
 						getParams(sfqn)))
 					.collect(Collectors.toList()));
 		}
 		isResolved = true;
+	}
+
+	/*
+	 * this fcn figures out the src/dest of a transition
+	 * from its context
+	 * if it has no src/dest, the parent state is used
+	 * if it is already FQN, it is returned directly
+	 * Otherwise, it looks at all uniquely named states up to an ancestor conc state
+	 * Requires state table to have been built already
+	 */
+ 
+ 	// tfqn is needed for error messages
+
+	public DashRef resolveSrcDest(String xType, DashRef x, String tfqn, List<String> tparams, VarTable vt) {
+
+		//System.out.println("Looking for: " + x);
+		String sfqn = DashFQN.fqn(x.getName());
+		String parentFQN = DashFQN.chopPrefixFromFQN(tfqn);
+		// param values might be empty
+		List<Expr> paramValues = x.getParamValues().stream()
+			.map(i -> vt.resolveExpr("from", i, getRegion(parentFQN), tfqn, tparams))
+			.collect(Collectors.toList());
+
+		List<String> matches = new ArrayList<String>();
+		if (paramValues.isEmpty()) {
+			// if no param values must be within the region of the same params (could be prefix of params)
+			for (String s:getRegion(parentFQN)) 
+					if (DashFQN.suffix(s,sfqn)) matches.add(s);
+		} else {
+			// if it has params values, could be suffix of any event
+			// and later we check it has the right number of params
+			for (String s:getAllStateNames()) 
+				if (DashFQN.suffix(s,sfqn)) matches.add(s);
+		}
+
+		if (matches.size() > 1) {
+			DashErrors.ambiguousSrcDest(xType, tfqn);
+			return null; 
+		} else if (matches.isEmpty()) {
+			DashErrors.unknownSrcDest(x.getName(),xType,tfqn);
+			return null;
+		} else {
+			String m = matches.get(0);
+			if (paramValues.isEmpty()) {
+				// must have same param values as trans b/c in same conc region
+				if (getParams(m).size() > tparams.size()) {
+					// getRegion did not return things that all
+					// have the same parameter values
+					DashErrors.regionMatchesWrongParamNumber();
+					return null;
+				} else {
+					// but could be a subset of transition param values
+					List<Expr> prmValues = 
+						ExprHelper.createVarList(pName,
+							tparams.subList(0, getParams(m).size() ));
+					return new DashRef(m, prmValues);							
+				}
+			} else if (getParams(m).size() != paramValues.size()) { 
+				// came with parameters so must be right number
+				DashErrors.fqnSrcDestMustHaveRightNumberParams(xType, tfqn); 
+				return null;
+			} else {
+				return new DashRef(m,paramValues); 
+			}
+		}
 	}
 
 	public List<Expr> getInits() {
