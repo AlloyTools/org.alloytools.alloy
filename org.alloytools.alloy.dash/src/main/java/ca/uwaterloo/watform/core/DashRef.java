@@ -44,7 +44,9 @@ public class DashRef{
 		List<Expr> ll = new ArrayList<Expr>(eList);
 		Collections.reverse(ll);
 		ll.add(createVar(n));
-		return createArrow(processRef(), createArrowExprList(ll));		
+		//System.out.println(ll);
+		//System.out.println(createJoin(processRef(), createJoinList(ll)));
+		return createJoin(processRef(), createJoinList(ll));		
 	}
 	
 	public String getName() {
@@ -61,12 +63,7 @@ public class DashRef{
 	public static List<Expr> emptyParamValuesList() {
 		return new ArrayList<Expr>();
 	}
-	public Expr toAlloy() {
-		List<Expr> ll = new ArrayList<Expr>(paramValues);
-		Collections.reverse(ll);
-		ll.add(createVar(name));
-		return createArrowExprList(ll);
-	}
+
 
 
 	// the following operations are about Alloy expressions that
@@ -92,10 +89,29 @@ public class DashRef{
 		$$PROCESSREF$$ . exp2 . exp1 . Root/A/B/v1
 	*/
 	public static boolean isDashRefProcessRef(Expr e) {
+		//System.out.println("in isDashRefProcessRef"+ e.toString());
 		if (isExprJoin(e)) 
 			if (isExprVar(getLeft(e)))
 				return sEquals(getLeft(e), processRef());
 		return false;
+	}
+	public static Expr getDashRefProcessRefVar(Expr e) {
+		assert(isDashRefProcessRef(e));
+		while (isExprJoin(e)) e = getRight(e);
+		// might be a $$PROCESSREF$$.a.b.PRIME(e)
+		return e;
+	}
+	public static List<Expr> getDashRefProcessRefParamValues(Expr e) {
+		assert(isDashRefProcessRef(e));
+		List<Expr> plist = new ArrayList<Expr>();
+		// strip off $$PROCESSREF$$
+		Expr f = getRight(e);
+		while (isExprJoin(f)) {
+			//System.out.println(f.toString());
+			plist.add(getLeft(f));
+			f = getRight(f);
+		}
+		return plist;
 	}
 	/*
 		can only be used in an action

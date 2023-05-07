@@ -24,7 +24,7 @@ public class DashInv extends Dash {
     }
     public String toString() {
         String s = new String();
-        s += DashStrings.invariantName +" "; 
+        s += DashStrings.invName +" "; 
         if (name != null) s += name;
         s += " {\n";
         s += inv.toString() + "\n";

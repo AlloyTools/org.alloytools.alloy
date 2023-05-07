@@ -34,6 +34,9 @@ public class ExprHelper  {
     public static boolean isExprBinary(Expr e) {
         return (e instanceof ExprBinary);
     }
+    public static boolean isExprUnary(Expr e) {
+        return (e instanceof ExprUnary);
+    }
     public static boolean isExprJoin(Expr e) {
         return ((e instanceof ExprBinary) && ((ExprBinary) e).op.equals(ExprBinary.Op.JOIN));
     }
@@ -45,6 +48,12 @@ public class ExprHelper  {
     }
     public static boolean isExprVar(Expr e) {
         return (e instanceof ExprVar);
+    }
+
+    public static boolean isPrimedVar(Expr e) {
+        return (e instanceof ExprUnary &&
+                ((ExprUnary) e).sub instanceof ExprVar &&
+                ((ExprUnary) e).op == ExprUnary.Op.PRIME);
     }
 
     // simple equality: two var names are equal -----------------------
@@ -78,6 +87,13 @@ public class ExprHelper  {
         else { DashErrors.getLeftNotBinaryOrJoin(e.getClass().getName()); return null; }
     }
 
+    public static Expr getSub(Expr e) {
+        if (isExprUnary(e)) {
+            return ((ExprUnary) e).sub;
+        } else {
+            DashErrors.getSubNotUnary(e.getClass().getName()); return null; 
+        }
+    }
     public static ExprBinary.Op getOp(Expr e) {
         assert(e instanceof ExprBinary);
         return ((ExprBinary) e).op;
@@ -171,7 +187,7 @@ public class ExprHelper  {
         Collections.reverse(elist);
         ret = elist.get(0);
         for (Expr el: elist.subList(1,elist.size())) {
-            ret = createJoin(ret,el);
+            ret = createJoin(el,ret);
         }
         return ret;
     }

@@ -84,7 +84,7 @@ public class AddSnapshotSignature {
             // }
             // and have to deal with this case in translation to Alloy
             List<String> allvfqnsNoParamsArrowTyp = allvfqns.stream()
-                .filter(i -> d.getVarParams(i).size() == 0 && isExprArrow(d.getVarType(i)))
+                .filter(i -> Common.isWeirdOne(i,d))
                 .collect(Collectors.toList());
             if (!allvfqnsNoParamsArrowTyp.isEmpty()) {
                 decls = new ArrayList<Decl>();

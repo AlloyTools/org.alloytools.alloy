@@ -13,6 +13,8 @@ public class DashToAlloy {
         assert(d.hasRoot()); // there is a Dash component in this module
         AddSpaceSignatures.addSpaceSignatures(d);  // state, transition, parameter, buffer space
         AddSnapshotSignature.addSnapshotSignature(d);
+        AddInit.addInit(d);
+        AddInv.addInv(d);
         for (String tfqn: d.getAllTransNames()) {
             AddTransPre.addTransPre(d,tfqn);
             AddTransPost.addTransPost(d,tfqn);

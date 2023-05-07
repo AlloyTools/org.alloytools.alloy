@@ -291,63 +291,75 @@ public class ExprToString {
     }
 
     private void ExprUnaryToOut(ExprUnary expr) {
+        
         switch (expr.op) {
+            /*
             case SOMEOF :
-                out.print("some ");
-                break;
+                out.print("some (");
+                ExprToOut(expr.sub);
+                out.print(")");
             case LONEOF :
-                out.print("lone ");
-                break;
+                out.print("lone (");
+                out.print(")");
             case ONEOF :
-                out.print("one ");
-                break;
+                out.print("one (");
+                out.print(")");
             case SETOF :
-                out.print("set ");
-                break;
+                out.print("set (");
+                out.print(")");
             case EXACTLYOF :
-                out.print("exactly ");
-                break;
+                out.print("exactly (");
+                out.print(")");
             case CAST2INT :
                 out.print("int[");
                 ExprToOut(expr.sub);
                 out.print(']');
-                return;
+
             case CAST2SIGINT :
                 out.print("Int[");
                 ExprToOut(expr.sub);
                 out.print(']');
-                return;
+
             case PRIME :
+                //TODO: perhaps this one should not exist?
+                //TODO: other temporal formulas that should not exist?
                 out.print('(');
                 ExprToOut(expr.sub);
                 out.print(")'");
-                return;
+
             case RCLOSURE :
                 out.print("* (");
                 ExprToOut(expr.sub);
                 out.print(")");
-                return;
+
             case TRANSPOSE :
                 out.print("~ (");
                 ExprToOut(expr.sub);
                 out.print(")");
-                return;
+
             case CLOSURE :
                 out.print("^ (");
                 ExprToOut(expr.sub);
                 out.print(")");
-                return;
+
             case NOT :
                 out.print("! {");
                 ExprToOut(expr.sub);
                 out.print("}");
-                return;
+            */
             case NOOP :
+                ExprToOut(expr.sub);
                 break;
             default :
-                out.print(expr.op).print(' ');
+                // this puts in more brackets that usual
+                // but since we can have
+                // #var become #(s.var)
+                // the brackets might be necessary
+                out.print(expr.op).print('(');
+                ExprToOut(expr.sub);
+                out.print(")");
         }
-        ExprToOut(expr.sub);
+
     }
 
     private void ExprVarToOut(ExprVar expr) {

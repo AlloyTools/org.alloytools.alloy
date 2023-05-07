@@ -242,6 +242,7 @@ public class TransTable {
 				.setDo(
 					vt.resolveExprList("when", whenExpList, 
 						st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
+						st.getAllStateNames(),
 						tfqn, 
 						getParams(tfqn)));
 
@@ -269,6 +270,7 @@ public class TransTable {
 				.setDo(
 					vt.resolveExprList("do", doExpList, 
 						st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
+						st.getAllStateNames(),
 						tfqn, 
 						getParams(tfqn)));
 			

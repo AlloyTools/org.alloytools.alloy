@@ -33,6 +33,8 @@ public class StateTable {
 	private HashMap<String,StateElement> table;
 	private boolean isResolved;
 	private String root;
+	private List<Expr> inits = new ArrayList<Expr>();
+	private List<Expr> invs  = new ArrayList<Expr>();
 
 	private String space = " ";
 
@@ -155,12 +157,7 @@ public class StateTable {
 				immChildren.equals(iChildren));
 		}
 		*/
-		public void setInits(List<Expr> elist) {
-			inits = elist;
-		}
-		public void setInvs(List<Expr> elist) {
-			invs = elist;
-		}
+
 	}
 
 
@@ -223,7 +220,12 @@ public class StateTable {
 		else { table.put(fqn, new StateElement(k,prm, prms,d,p,iChildren, invL, initL, actL, condL)); return true; }
 		//System.out.println("adding to State table: "+fqn+space+prm + space + prms+space+d+space+p+iChildren);
 	}
-	
+	public void addInit(Expr exp) {
+		inits.add(exp);
+	}
+	public void addInv(Expr exp) {
+		invs.add(exp);
+	}
 	public boolean containsKey(String s) {
 		return table.containsKey(s);
 	}
@@ -254,7 +256,9 @@ public class StateTable {
 			return (table.get(s).def == DefKind.DEFAULT);
 		else { DashErrors.stateDoesNotExist("isDefault",s); return false; }
 	}
-
+	public List<String> getAllStateNames() {
+		return new ArrayList<String>(table.keySet());
+	}
 	public String getParam(String s) {
 		if (table.containsKey(s))
 			return table.get(s).param;  
@@ -386,17 +390,19 @@ public class StateTable {
 	public void resolve(String root, VarTable vt) {
 		// resolve inits and invariants
 		for (String sfqn: table.keySet()) {
-			table.get(sfqn)
-				.setInits(table.get(sfqn).origInits.stream()
+			inits.addAll( 
+				table.get(sfqn).origInits.stream()
 					.map(i -> vt.resolveExpr("init", i.getInit(), 
 						getRegion(sfqn), 
+						getAllStateNames(),
 						sfqn, 
 						getParams(sfqn)))
 					.collect(Collectors.toList()));
-			table.get(sfqn)
-				.setInvs(table.get(sfqn).origInvariants.stream()
+			invs.addAll(
+				table.get(sfqn).origInvariants.stream()
 					.map(i -> vt.resolveExpr("inv", i.getInv(), 
 						getRegion(sfqn), 
+						getAllStateNames(),
 						sfqn, 
 						getParams(sfqn)))
 					.collect(Collectors.toList()));
@@ -404,7 +410,12 @@ public class StateTable {
 		isResolved = true;
 	}
 
-
+	public List<Expr> getInits() {
+		return inits;
+	}
+	public List<Expr> getInvs() {
+		return invs;
+	}
 	public List<DashRef> getLeafStatesExited(DashRef s) {
 		List<DashRef> r = new ArrayList<DashRef>();
 		//System.out.println("exiting" + s.toString());

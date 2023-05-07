@@ -6,14 +6,16 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import edu.mit.csail.sdg.ast.Decl;
-import edu.mit.csail.sdg.ast.ExprVar;
-import edu.mit.csail.sdg.ast.Expr;
+//import edu.mit.csail.sdg.ast.Decl;
+//import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.*;
+import edu.mit.csail.sdg.alloy4.ConstList;
 
 import ca.uwaterloo.watform.core.DashOptions;
 import ca.uwaterloo.watform.core.DashStrings;
 import ca.uwaterloo.watform.core.DashUtilFcns;
 import ca.uwaterloo.watform.core.DashRef;
+import ca.uwaterloo.watform.core.DashErrors;
 
 // shortens the code to import these statically
 import static ca.uwaterloo.watform.core.DashFQN.*;
@@ -211,7 +213,149 @@ public class Common {
         return e;
     }
 
+    public static Expr translateDashRef(DashRef e) {
+        List<Expr> ll = new ArrayList<Expr>(e.getParamValues());
+        Collections.reverse(ll);
+        ll.add(createVar(translateFQN(e.getName())));
+        return createArrowExprList(ll);
+    }
 
+    //TODO better name!
+    public static boolean isWeirdOne(String vfqn, DashModule d) {
+        return d.getVarParams(vfqn).size() == 0 && isExprArrow(d.getVarType(vfqn));
+    }
+    public static Expr translateExpr(Expr exp, DashModule d) {
+        // special case for Variables.v1 if v1 has no params and has an 
+        // arrow type  and isElectrum
+        //System.out.println(exp);
+        if (DashRef.isDashRefProcessRef(exp)) {
+            // these remove $$PROCESSID$$
+            Expr var = DashRef.getDashRefProcessRefVar(exp);
+            // have to translate paramvalues
+            // may be empty
+            List<Expr> paramValuesList = 
+                DashRef.getDashRefProcessRefParamValues(exp).stream()
+                    .map(i -> translateExpr(i,d))
+                    .collect(Collectors.toList());
+
+            //common subexpressions
+            Boolean hasPrime = DashStrings.hasPrime(getVarName((ExprVar) var));
+            Boolean isWeirdOne = isWeirdOne(DashStrings.removePrime(getVarName((ExprVar) var)),d);
+            Expr voutNotPrime = createVar(translateFQN(DashStrings.removePrime(getVarName((ExprVar) var))));
+            Expr voutMayHavePrime;
+            if (!hasPrime) voutMayHavePrime = voutNotPrime;
+            else voutMayHavePrime = 
+                createVar(translateFQN(DashStrings.removePrime(getVarName((ExprVar) var)))+DashStrings.PRIME);
+
+            //System.out.println(paramValuesList);
+            if (DashOptions.isElectrum) {
+                // already has prime or not
+                if (isWeirdOne)
+                    return createJoin(createVar(DashStrings.variablesName), voutMayHavePrime);
+                else {
+                    paramValuesList.add(voutMayHavePrime);
+                    return createJoinList(paramValuesList);
+                }
+            } else {
+                if (hasPrime) paramValuesList.add(nextJoinExpr(voutNotPrime));
+                else paramValuesList.add(curJoinExpr(voutNotPrime));
+                return createJoinList(paramValuesList);
+            }
+
+        } else if (isExprVar(exp)) {
+            return exp;
+
+        } else if (isExprBinary(exp)) {
+            return ((ExprBinary) exp).op.make(
+                exp.pos,
+                exp.closingBracket,
+                translateExpr(getLeft(exp),d),
+                translateExpr(getRight(exp),d));
+
+        } else if (isExprBadJoin(exp)) {
+            return ExprBadJoin.make(
+                exp.pos,
+                exp.closingBracket,
+                translateExpr(getLeft(exp),d),
+                translateExpr(getRight(exp),d));
+
+        } else if (exp instanceof ExprCall) {
+            return ExprCall.make(
+                exp.pos, 
+                exp.closingBracket,
+                ((ExprCall) exp).fun, 
+                ((ExprCall) exp).args.stream()
+                    .map(i -> translateExpr(i,d))
+                    .collect(Collectors.toList()), 
+                ((ExprCall) exp).extraWeight);
+
+        } else if (exp instanceof ExprChoice){
+            //TODO: check into this cast
+            // not sure why is it necessary
+            ConstList<Expr> x = (ConstList<Expr>) ((ExprChoice) exp).choices.stream()
+                    .map(i -> translateExpr(i,d))
+                    .collect(Collectors.toList());
+            return ExprChoice.make(
+                false,
+                exp.pos, 
+                x,
+                ((ExprChoice) exp).reasons);
+
+        } else if (exp instanceof ExprITE){
+            return ExprITE.make(
+                exp.pos,
+                translateExpr(getCond(exp),d),
+                translateExpr(getLeft(exp),d),
+                translateExpr(getRight(exp),d));
+
+        } else if (exp instanceof ExprList){
+            return ExprList.make(
+                exp.pos, 
+                exp.closingBracket,
+                ((ExprList) exp).op,
+                ((ExprList) exp).args.stream()
+                    .map(i -> translateExpr(i,d))
+                    .collect(Collectors.toList())); 
+
+        } else if (exp instanceof ExprUnary){
+            return ((ExprUnary) exp).op.make(
+                exp.pos,
+                translateExpr(((ExprUnary) exp).sub,d));
+
+        } else if (exp instanceof ExprLet){
+            //TODO rule out var name
+            return ExprLet.make(
+                exp.pos, 
+                ((ExprLet) exp).var, 
+                translateExpr(((ExprLet) exp).expr,d),
+                translateExpr(((ExprLet) exp).sub,d));
+
+        } else if (exp instanceof ExprQt){
+
+            // have to translate the expressions in the decls too
+            List<Decl> decls = ((ExprQt) exp).decls.stream()
+                .map(i -> new Decl(
+                    i.isPrivate,
+                    i.disjoint,
+                    i.disjoint2,
+                    i.isVar,
+                    i.names,
+                    translateExpr(i.expr, d)))
+                .collect(Collectors.toList());
+            return ((ExprQt) exp).op.make(
+                exp.pos, 
+                exp.closingBracket,  
+                decls, 
+                translateExpr(((ExprQt) exp).sub,d));
+
+        } else if (exp instanceof ExprConstant){
+            return exp;
+
+        } else {
+            DashErrors.UnsupportedExpr("translateExpr", exp);
+            return null;
+        }
+    }
 
 
     /*

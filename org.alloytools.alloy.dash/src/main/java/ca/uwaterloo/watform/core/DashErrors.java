@@ -8,6 +8,7 @@ import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorFatal;
+import edu.mit.csail.sdg.ast.Expr;
 
 public class DashErrors {
 
@@ -211,6 +212,9 @@ public class DashErrors {
 	public static void getLeftNotBinaryOrJoin(String s) throws Err {
 		throw new ErrorFatal("getLeftNotBinaryOrJoin: "+s);
 	}
+	public static void getSubNotUnary(String s) throws Err {
+		throw new ErrorFatal("getSubNotUnary: "+s);
+	}
 	public static void replaceDashRefExprVarError() throws Err {
 		throw new ErrorFatal("replaceDashRefExprVarError");
 	}
@@ -228,5 +232,8 @@ public class DashErrors {
 	}
 	public static String UnsupportedExpr(String s1, String s2) {
 		throw new ErrorFatal("unsupported expression type in: "+ s1 + " "+s2);
+	}
+	public static String UnsupportedExpr(String s1, Expr e) {
+		throw new ErrorFatal("unsupported expression type in: "+ s1+ " " + e.toString());
 	}
 }

@@ -24,7 +24,9 @@ public class DashStrings {
 	public static String utilBufferName = "util/buffer";
 	public static String sigName = "sig";
 	public static String predName = "pred";
+	public static String factName = "fact";
 	
+
 	// used for printing: parts of Dash syntax
 	// must be in sync with Dash-cup-symbols.txt
 	public static String stateName = "state";
@@ -35,8 +37,10 @@ public class DashStrings {
 	public static String envName = "env";
 	public static String bufName = "buf";
 
-	public static String initName = "init";
-	public static String invariantName = "inv";
+	// init is a reserved word in Electrum
+	public static String initName = "initial";
+	public static String electrumInitName = "init";
+	public static String invName = "inv";
 	public static String actionName = "action";
 	public static String conditionName = "condition";
 
@@ -119,5 +123,9 @@ public class DashStrings {
 
 	public static boolean hasPrime(String s) {
 		return (s.substring(s.length()-1, s.length()).equals(PRIME));
+	}
+	public static String removePrime(String s) {
+		if (hasPrime(s)) return s.substring(0, s.length()-1);
+		else return s;
 	}
 }

@@ -300,12 +300,24 @@ public class CompModuleHelper extends CompModule {
      * 
      * Alloy: void addFact(Pos pos, String name, Expr value)
      */
-    /*
-    public void addFactSimple(String name, List<Expr> eList) {
-        Expr body = createAnd(eList);
-        alloy.addFact(Pos.UNKNOWN,name,body);
+    
+    public String addFactSimple(String name, List<Expr> eList) {
+        Expr body = ExprHelper.createAndFromList(eList);
+        addFact(Pos.UNKNOWN,name,body);
+        String s = new String();
+        s += DashStrings.factName + " " + name + "{";
+        StringJoiner j = new StringJoiner(", ");
+        s += tab;
+        StringJoiner sj = new StringJoiner("\n" + tab);   
+        for (Expr e: eList) {
+            ExprToString eToString = new ExprToString(false);
+            sj.add(eToString.toString(e));
+        }        
+        s += sj.toString() + "\n";
+        s+= "}\n\n";
+        return s;
     }
-    */
+    
 
     // Helper method to change "{path/label}" to "label"
     private String cleanLabel(String label) {

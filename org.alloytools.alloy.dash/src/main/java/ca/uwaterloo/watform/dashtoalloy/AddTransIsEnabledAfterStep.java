@@ -75,7 +75,7 @@ public class AddTransIsEnabledAfterStep {
 
         // p3 -> p2 -> p1 -> src in s'.confVar(i)
         // src does not have to be a basic state  
-        body.add(createIn(d.getTransSrc(tfqn).toAlloy(),nextConf(prs.size())));
+        body.add(createIn(translateDashRef(d.getTransSrc(tfqn)),nextConf(prs.size())));
 
         // primed guard condition is true 
         // TODO
@@ -88,7 +88,7 @@ public class AddTransIsEnabledAfterStep {
         List<DashRef> nonO = d.nonOrthogonalScopesOf(tfqn);
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             List<Expr> u = DashRef.hasNumParams(nonO,i).stream()
-                .map(x -> x.toAlloy())
+                .map(x -> translateDashRef(x))
                 .collect(Collectors.toList());
             // o1: forall i. not(t1_nonOrthScopei in scopesi)
             for (Expr x: u) orth1.add(createNot(createIn(x,scopeVar(i))));
@@ -101,7 +101,7 @@ public class AddTransIsEnabledAfterStep {
         List<Expr> orth2 = new ArrayList<Expr>();
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             List<Expr> u = DashRef.hasNumParams(nonO,i).stream()
-                .map(x -> x.toAlloy())
+                .map(x -> translateDashRef(x))
                 .collect(Collectors.toList());
             // o2: forall i. not(t1_nonOrthScopei in scopesi + s'.scopesUsedi) 
             for (Expr x: u) orth1.add(createNot(createIn(x,createUnion(curScopesUsed(i), scopeVar(i)))));
@@ -118,7 +118,7 @@ public class AddTransIsEnabledAfterStep {
                 ev1 = createFalse();
             } else {
                 ev1 = createIn(
-                            ev.toAlloy(),
+                            translateDashRef(ev),
                             createUnion(
                                 createIntersect(
                                     curEvents(ev.getParamValues().size()),
@@ -127,7 +127,7 @@ public class AddTransIsEnabledAfterStep {
             }
             // ev2: t1_on  in s.eventsi  + genEventsi
             ev2 = createIn(
-                        ev.toAlloy(),
+                        translateDashRef(ev),
                         createUnion(
                             curEvents(ev.getParamValues().size()),
                             genEventVar(ev.getParamValues().size())));

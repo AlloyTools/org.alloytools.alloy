@@ -178,10 +178,12 @@ public class DashModule extends CompModuleHelper {
 				
 				// skip Dash stuff
 				for (int i = 0; i <= rootEndLine - rootStartLine+1; i++) br.readLine();
+				// print the translated Dash
+				s += alloyString;
 				// add the rest of the lines
 				String rr;
 				while ((rr = br.readLine()) != null) s += rr + "\n";
-				s += alloyString;
+				
 			} else {
 				// just put all the lines in the string because there is no Dash part
 				BufferedReader br = new BufferedReader(new FileReader(getFilePath()));
@@ -307,6 +309,12 @@ public class DashModule extends CompModuleHelper {
     public DashRef getTransOn(String tfqn) {
     	return transTable.getOn(tfqn);
     }
+    public Expr getTransDo(String tfqn) {
+    	return transTable.getDo(tfqn);
+    }
+    public Expr getTransWhen(String tfqn) {
+    	return transTable.getWhen(tfqn);
+    }
     public DashRef getTransSend(String tfqn) {
     	return transTable.getSend(tfqn);
     }
@@ -335,6 +343,12 @@ public class DashModule extends CompModuleHelper {
 		return transTable.getParams(t);
 	}
 
+	public List<Expr> getInits() {
+		return stateTable.getInits();
+	}
+	public List<Expr> getInvs() {
+		return stateTable.getInvs();
+	}
 	// stuff about both states and trans
 	public DashRef getScope(String tfqn) {
 		DashRef src = getTransSrc(tfqn);

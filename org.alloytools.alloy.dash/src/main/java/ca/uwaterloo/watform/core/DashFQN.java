@@ -38,6 +38,8 @@ public class DashFQN {
 		q += s2;
         return q;
 	}
+	// not really needed unless we change it so that
+	// inputQualChar != internal QualChar
 	public static String fqn(String n) {
 		return n.replace(inputQualChar, internalQualChar);
 	}
