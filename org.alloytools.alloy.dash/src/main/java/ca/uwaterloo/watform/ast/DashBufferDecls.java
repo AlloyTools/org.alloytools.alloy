@@ -17,17 +17,22 @@ public class DashBufferDecls extends Dash {
 	private List<String> names;
 	private String element;
 	private DashStrings.IntEnvKind kind;
+	private Integer startIndex;
+	private Integer endIndex;
 
-	public DashBufferDecls(Pos pos, List<String> n, String element, DashStrings.IntEnvKind k) {
+	public DashBufferDecls(Pos pos, List<String> n, String element, DashStrings.IntEnvKind k, int startIndex, int endIndex) {
 		assert (n != null && element != null);
 		this.pos = pos;
 		this.names = n;
 		this.element = element;
 		this.kind = k;
+		this.startIndex = startIndex;
+		this.endIndex = endIndex;
 	}
 
 
 	public String toString() {
+		// indices are hidden
 		String s = new String("");
 		if (kind == DashStrings.IntEnvKind.ENV) {
 			s += DashStrings.envName + " ";
@@ -45,5 +50,11 @@ public class DashBufferDecls extends Dash {
 	}
 	public DashStrings.IntEnvKind getKind() {
 		return kind;
+	}
+	public int getStartIndex() {
+		return startIndex;
+	}
+	public int getEndIndex() {
+		return endIndex;
 	}
 }

@@ -127,9 +127,11 @@ public class ExprToString {
             out.print("seq ");
             ExprToOut(expr.right);
         }
-        else if (expr.op == ExprBinary.Op.JOIN)
+        else if (expr.op == ExprBinary.Op.JOIN) {
+            out.print("(");
             ExprBinaryJoinToOut(expr);
-        else if (expr.op == ExprBinary.Op.IMPLIES) {
+            out.print(")");
+        } else if (expr.op == ExprBinary.Op.IMPLIES) {
             ExprToOut(expr.left);
             out.print(" => ").print("{ ");
             ExprToOut(expr.right);

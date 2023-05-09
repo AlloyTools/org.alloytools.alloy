@@ -6,6 +6,7 @@
 package ca.uwaterloo.watform.dashtoalloy;
 
 import ca.uwaterloo.watform.parser.DashModule;
+import ca.uwaterloo.watform.core.DashOptions;
 
 public class DashToAlloy {
 
@@ -25,6 +26,13 @@ public class DashToAlloy {
         if (d.hasConcurrency())
             AddTestIfNextStable.addTestIfNextStable(d);
         AddSmallStep.addSmallStep(d);
+
+        if (DashOptions.isTraces)
+            AddTracesFact.addTracesFact(d);
+        else if (DashOptions.isTcmc)
+            AddTcmcFact.addTcmcFact(d);
+        else if (DashOptions.isElectrum)
+            AddElectrumFact.addElectrumFact(d);
     }
 }
 

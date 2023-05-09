@@ -114,6 +114,13 @@ public class Common {
         o.addAll(paramVars(params));
         return o;
     }
+    // [s', p1,p2,...]
+    public static List<Expr> nextParamVars(List<String> params) {
+        List<Expr> o = new ArrayList<Expr>();
+        o.add(nextVar());
+        o.addAll(paramVars(params));
+        return o;
+    }
     // [s,s',  p1,p2,...]
     public static List<Expr> curNextParamVars(List<String> params) {
         List<Expr> o = new ArrayList<Expr>(curNextVars());
@@ -222,7 +229,7 @@ public class Common {
 
     //TODO better name!
     public static boolean isWeirdOne(String vfqn, DashModule d) {
-        return d.getVarParams(vfqn).size() == 0 && isExprArrow(d.getVarType(vfqn));
+        return d.getVarBufferParams(vfqn).size() == 0 && isExprArrow(d.getVarType(vfqn));
     }
     public static Expr translateExpr(Expr exp, DashModule d) {
         // special case for Variables.v1 if v1 has no params and has an 
@@ -357,7 +364,9 @@ public class Common {
         }
     }
 
-
+    public static Expr bufferIndexVar(int i) {
+        return createVar(DashStrings.bufferIndexName + i);
+    }
     /*
     public static Expr predJoinCurParams(String name, List<String> prs) {
         //p2.p1.p0.s.name

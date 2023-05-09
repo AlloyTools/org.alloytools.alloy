@@ -34,27 +34,44 @@ public class AddSnapshotSignature {
         if (DashOptions.isElectrum) {
             // if Electrum add var sigs 
             // scopesUsed0, conf0, event0
-            
+            List<Decl> decls;
+
             d.alloyString += d.addVarSigSimple(scopesUsedName+"0", createVar(stateLabelName));
             d.alloyString += d.addVarSigSimple(confName+"0", createVar(stateLabelName));
             if (d.hasEvents())
                 d.alloyString += d.addVarSigSimple(eventsName+"0", createVar(allEventsName));
-            List<ExprVar> cop;
-            for (int i = 1; i <= d.getMaxDepthParams(); i++) {
-                cop = new ArrayList<ExprVar> (Collections.nCopies(i+1,createVar(identifierName)));
-                // scopesUsed 1, etc.
-                d.alloyString += d.addVarSigSimple(
-                    scopesUsedName+Integer.toString(i), 
-                    DashUtilFcns.newListWith(cop, createVar(stateLabelName)));
-                // conf 1, etc.
-                d.alloyString += d.addVarSigSimple(
-                    confName+Integer.toString(i), 
-                    DashUtilFcns.newListWith(cop, createVar(stateLabelName)));
-                // event 1, etc.
-                if (d.hasEvents() & d.hasEventsAti(i))
-                    d.alloyString += d.addVarSigSimple(
-                        eventsName+Integer.toString(i), 
-                        DashUtilFcns.newListWith(cop, createVar(allEventsName)));
+
+            // sig Identifiers {
+            //        conf1: StateLabel,
+            //        scopesUsed1: StateLabel,
+            //        events1: AllEvent,
+            //        conf2: Identifiers -> StateLabel,
+            //        scopesUsed2: Identifers -> StateLabel,
+            //        etc
+            // }
+            if (d.getMaxDepthParams() != 0) {
+                List<Expr> cop;
+                decls = new ArrayList<Decl>();
+                for (int i = 1; i <= d.getMaxDepthParams(); i++) {
+                    cop = new ArrayList<Expr> (Collections.nCopies(i-1,createVar(identifierName)));
+                    // conf 1, etc.
+                    decls.add(
+                        DeclExt.newVarDeclExt(
+                            confName+Integer.toString(i), 
+                            createArrowExprList(DashUtilFcns.newListWith(cop, createVar(stateLabelName)))));
+                    // scopesUsed 1, etc.
+                    decls.add(
+                        DeclExt.newVarDeclExt(
+                            scopesUsedName+Integer.toString(i), 
+                            createArrowExprList(DashUtilFcns.newListWith(cop, createVar(stateLabelName)))));
+                    if (d.hasEvents() & d.hasEventsAti(i))
+                        // events 1, etc.
+                        decls.add(
+                            DeclExt.newVarDeclExt(
+                                eventsName+Integer.toString(i), 
+                                createArrowExprList(DashUtilFcns.newListWith(cop, createVar(allEventsName)))));
+                }
+                d.alloyString += d.addSigWithDeclsSimple(identifierName, decls);
             }
         
             // stable: one boolean;
@@ -63,13 +80,15 @@ public class AddSnapshotSignature {
             }
             // add vars and parameter sets --------------------------------------
 
-            List<Decl> decls;
+            
             List<String> allvfqns = d.getAllVarNames();
+            List<String> allbfqns = d.getAllBufferNames();
 
             // vfqns with no params and simple type
             // becomes var sig vfqn in var {}
+            // no buffers in this case
             List<String> allvfqnsNoParamsSimpleTyp = allvfqns.stream()
-                .filter(i -> d.getVarParams(i).size() == 0 && isExprVar(d.getVarType(i)))
+                .filter(i -> d.getVarBufferParams(i).size() == 0 && isExprVar(d.getVarType(i)))
                 .collect(Collectors.toList());
             for (String v: allvfqnsNoParamsSimpleTyp) 
                 d.alloyString += d.addVarSigSimple(translateFQN(v), ((ExprVar) d.getVarType(v)) );
@@ -83,6 +102,7 @@ public class AddSnapshotSignature {
             //     v1: typ1
             // }
             // and have to deal with this case in translation to Alloy
+            // no buffers in this case because they can be grouped with index
             List<String> allvfqnsNoParamsArrowTyp = allvfqns.stream()
                 .filter(i -> Common.isWeirdOne(i,d))
                 .collect(Collectors.toList());
@@ -96,31 +116,69 @@ public class AddSnapshotSignature {
             // vfqns with parameters P1, P2, P3
             // sig P1 {
             //      var v1: P2 -> P3 ->  typ1
+            //      var buf: P2 -> P3 -> bufindex -> eltype
             // } 
             // it is enough to look at state parameters to get all parameters
             List<String> allvfqnsWithThisFirstParam;
-            
+            List<String> allbfqnsWithThisFirstParam;
+            List<Expr> plist;
+
             for (String prm: d.getAllParams()) {
+
+                // variables with parameters grouped with parameter
                 allvfqnsWithThisFirstParam = allvfqns.stream()
                     // must be at least one parameter
-                    .filter(i -> d.getVarParams(i).size() != 0 && d.getVarParams(i).get(0).equals(prm))
+                    .filter(i -> d.getVarBufferParams(i).size() != 0 && d.getVarBufferParams(i).get(0).equals(prm))
                     .collect(Collectors.toList());
                 // construct decls -- might be none but still have to 
                 // create sig for this parameter
                 decls = new ArrayList<Decl>();
                 for (String v: allvfqnsWithThisFirstParam) {
-                    if (d.getVarParams(v).size() == 1) {
-                        decls.add(new DeclExt(v, d.getVarType(v)));
+                    if (d.getVarBufferParams(v).size() == 1) {
+                        decls.add(DeclExt.newVarDeclExt(v, d.getVarType(v)));
                     } else {
-                        List<Expr> plist = createVarList(d.getVarParams(v).subList(1, d.getVarParams(v).size()-1));
+                        plist = createVarList(d.getVarBufferParams(v).subList(1, d.getVarBufferParams(v).size()-1));
                         plist.add(d.getVarType(v));
                         decls.add(DeclExt.newVarDeclExt(translateFQN(v),createArrowExprList(plist)));
                     }
                 }
-                d.alloyString += d.addSigWithDeclsSimple(prm, decls);
+                // buffers with parameters grouped with parameter
+                allbfqnsWithThisFirstParam = allbfqns.stream()
+                    // must be at least one parameter
+                    .filter(i -> d.getVarBufferParams(i).size() != 0 && d.getVarBufferParams(i).get(0).equals(prm))
+                    .collect(Collectors.toList());
+                // construct decls -- might be none but still have to 
+                // create sig for this parameter
+                for (String b: allbfqnsWithThisFirstParam) {
+                    if (d.getVarBufferParams(b).size() != 1)
+                        plist = createVarList(d.getVarBufferParams(b).subList(1, d.getVarBufferParams(b).size()-1));
+                    else
+                        plist = new ArrayList<Expr>();
+                    plist.add(bufferIndexVar(d.getBufferIndex(b)));
+                    plist.add(createVar(d.getBufferElement(b)));
+                    decls.add(DeclExt.newVarDeclExt(translateFQN(b),createArrowExprList(plist)));
+                }
+                d.alloyString += d.addSigExtendsWithDeclsSimple(prm, identifierName, decls);
             }
+
+            // buffers with no parameters
+            // grouped in buffer index introduction
+            // every buffer has a different index
+            // so just one decl per sig
+            List<String> allbfqnsWithNoParams = allbfqns.stream()
+                // must be at least one parameter
+                .filter(i -> d.getVarBufferParams(i).size() == 0 )
+                .collect(Collectors.toList());     
+            for (String b: allbfqnsWithNoParams) {
+                decls = new ArrayList<Decl>();
+                decls.add(DeclExt.newVarDeclExt(
+                            translateFQN(b),
+                            createVar(d.getBufferElement(b))));
+                d.alloyString += d.addSigWithDeclsSimple(
+                    bufferIndexName + d.getBufferIndex(b),
+                    decls);
+            }           
             
-            // add buffers
         } else {
             // if traces/tcmc sig Snapshot {} with fields
             List<Decl> decls = new ArrayList<Decl>();
@@ -156,7 +214,7 @@ public class AddSnapshotSignature {
             // add vars
             List<Expr> typlist;
             for (String vfqn: d.getAllVarNames()) {
-                typlist = createVarList(d.getVarParams(vfqn)); // could be empty
+                typlist = createVarList(d.getVarBufferParams(vfqn)); // could be empty
                 typlist.add(d.getVarType(vfqn));
                 if (typlist.size() > 1 )
                     decls.add((Decl) new DeclExt(
@@ -168,6 +226,19 @@ public class AddSnapshotSignature {
                         typlist.get(0)));            
             } 
             // add buffers
+            for (String bfqn: d.getAllBufferNames()) {       
+                typlist = createVarList(d.getVarBufferParams(bfqn)); // could be empty
+                typlist.add(bufferIndexVar(d.getBufferIndex(bfqn)));
+                typlist.add(createVar(d.getBufferElement(bfqn)));
+                if (typlist.size() > 1 )
+                    decls.add((Decl) new DeclExt(
+                        translateFQN(bfqn), 
+                        createArrowExprList(typlist)));
+                else 
+                    decls.add((Decl) new DeclExt(
+                        translateFQN(bfqn), 
+                        typlist.get(0)));            
+            }             
             d.alloyString += d.addSigWithDeclsSimple( snapshotName, decls);
         }
         d.alloyString += "\n";

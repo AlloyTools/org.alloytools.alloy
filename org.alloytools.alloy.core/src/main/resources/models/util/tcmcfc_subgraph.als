@@ -8,7 +8,7 @@
  * https://opensource.org/licenses/BSD-2-Clause.
  */
 
-module ctlfc_subgraph[S]
+module tcmcfc_subgraph[S]
 
 // ********** Kripke structure *************************************************
 

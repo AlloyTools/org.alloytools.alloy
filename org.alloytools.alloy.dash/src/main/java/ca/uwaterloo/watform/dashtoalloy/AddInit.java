@@ -1,4 +1,4 @@
- package ca.uwaterloo.watform.dashtoalloy;
+package ca.uwaterloo.watform.dashtoalloy;
 
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -57,9 +57,9 @@ public class AddInit {
         body.add(e);
         // init is a reserved word in Electrum
         if (DashOptions.isElectrum) {
-            d.alloyString += d.addPredSimple(DashStrings.electrumInitName, new ArrayList<Decl>(), body);
+            d.alloyString += d.addPredSimple(DashStrings.initFactName, new ArrayList<Decl>(), body);
         } else {
-            d.alloyString += d.addPredSimple(DashStrings.initName, curNextParamsDecls(prs),body);
+            d.alloyString += d.addPredSimple(DashStrings.initFactName, curNextParamsDecls(prs),body);
         }
     }
 }

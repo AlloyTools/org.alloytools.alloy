@@ -8,14 +8,35 @@
  * https://opensource.org/licenses/BSD-2-Clause.
  */
 
-module ctlfc[S]
+module tcmc_subgraph[S]
 
 // ********** Kripke structure *************************************************
 
 one sig TS {
     S0: some S,
     sigma: S -> S,
-    FC: set S
+}
+
+// ********* Subgraph definition ***********************************************
+
+// Reify the transition relation as a signature.
+sig Transition {
+    transFrom: S,
+    transTo: S
+}
+
+// We can project Transition onto the transition system.
+fun subState: S { Transition.(transFrom + transTo) }
+fun subSigma: S -> S { ~transFrom.transTo }
+
+fact {
+    // The subgraph respects transitions.
+    subSigma in TS.sigma
+    // There are no duplicate Transition elements.
+    all t, t': Transition |
+        t.transFrom = t'.transFrom && t.transTo = t'.transTo => t = t'
+    // The subgraph is connected.
+    some s: S | s.~transFrom.(*(transTo.~transFrom)) = Transition
 }
 
 // ********** Model setup functions ********************************************
@@ -26,20 +47,10 @@ fun initialState: S { TS.S0 }
 
 fun nextState: S -> S { TS.sigma }
 
-fun fc: S { TS.FC }
-
 // ********** Helper functions *************************************************
 
 private fun domainRes[R: S -> S, X: S]: S -> S { X <: R }
 private fun id[X:S]: S -> S { domainRes[iden,X] }
-
-// ********** Fair states definition *******************************************
-
-// Fair is EcG true.
-private fun Fair: S {
-    let R = TS.sigma |
-        *R.((^R & id[S]).S & TS.FC)
-}
 
 // ********** Logical operators ************************************************
 
@@ -50,15 +61,15 @@ fun imp_[phi, si: S]: S { not_[phi] + si }
 
 // ********** Temporal operators ***********************************************
 
-fun ex[phi: S]: S { TS.sigma.(phi & Fair) }
+fun ex[phi: S]: S { subSigma.phi }
 
 fun ax[phi:S]: S { not_[ex[not_[phi]]] }
 
-fun ef[phi: S]: S { (*(TS.sigma)).(phi & Fair) }
+fun ef[phi: S]: S { (*(subSigma)).phi }
 
 fun eg[phi:S]: S {
-    let R = domainRes[TS.sigma, phi] |
-        *R.(((^R & id[S]).S & TS.FC))
+    let R = domainRes[subSigma, phi] |
+        *R.((^R & id[S]).S)
 }
 
 fun af[phi: S]: S { not_[eg[not_[phi]]] }
@@ -66,7 +77,7 @@ fun af[phi: S]: S { not_[eg[not_[phi]]] }
 fun ag[phi: S]: S { not_[ef[not_[phi]]] }
 
 fun eu[phi, si: S]: S {
-    (*(domainRes[TS.sigma, phi])).(si & Fair)
+    (*(domainRes[subSigma, phi])).si
 }
 
 // TODO: Why was this only defined in ctlfc.als and not ctl.als?
@@ -78,4 +89,4 @@ fun au[phi, si: S]: S {
 // ********** Model checking constraint ****************************************
 
 // Called by users for model checking in their model file.
-pred ctlfc_mc[phi: S] { TS.S0 in phi }
+pred ctl_mc[phi: S] { TS.S0 in phi }

@@ -54,12 +54,16 @@ public class AddSpaceSignatures {
         //d.alloyString += "\n";
 
         // abstract sig Identifiers {} if this model has parametrized components
-        if (d.getMaxDepthParams() != 0) {
-            d.alloyString += d.addAbstractSigSimple(DashStrings.identifierName);
-            for (String s: d.getAllParams())
-                d.alloyString += d.addExtendsSigSimple(s, DashStrings.identifierName);
-            d.alloyString += "\n";
-        }
+        // if not Electrum
+        // o/w conf1, etc have to be fields in sig Identifiers
+        // and this functionality is within AddSnapshotSignatures
+        if (!DashOptions.isElectrum)
+            if (d.getMaxDepthParams() != 0) {
+                d.alloyString += d.addAbstractSigSimple(DashStrings.identifierName);
+                for (String s: d.getAllParams())
+                    d.alloyString += d.addExtendsSigSimple(s, DashStrings.identifierName);
+                d.alloyString += "\n";
+            }
         
         // events ----------------------
         if (d.hasEvents()) {
@@ -79,14 +83,16 @@ public class AddSpaceSignatures {
             d.alloyString += "\n";
         }
 
-
-        /*
-        if (d.hasBuffers()) {
-            for (String i: d.getBufferIndices()) {
-                addSigSimple( i);
+        // abstract sig BufIdx {} if this model has buffers
+        // if not Electrum
+        // o/w buffers have to be fields in sig BufIdx
+        // and this functionality is within AddSnapshotSignatures        
+        if (!DashOptions.isElectrum && d.hasBuffers()) {
+            for (int i: d.getBufferIndices()) {
+                d.alloyString += d.addSigSimple(DashStrings.bufferIndexName + i);
             }
         } 
-        */
+
     }
     private static void recurseCreateStateSpaceSigs(DashModule d, String parent) {
         for (String child: d.getImmChildren(parent)) {

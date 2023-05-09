@@ -72,6 +72,7 @@ public class AddTransPost {
     }
     */
 
+    // TODO for Electrum!
     public static void addTransPost(DashModule d, String tfqn) {
         String tout = translateFQN(tfqn);
         List<String> prs = d.getTransParams(tfqn); 
@@ -103,6 +104,7 @@ public class AddTransPost {
             e = createEquals(nextScopesUsed(i),e);
         }
 
+        // action_t1[s,s']
         if (d.getTransDo(tfqn) != null)
             body.add(translateExpr(d.getTransDo(tfqn),d));
 
@@ -179,6 +181,18 @@ public class AddTransPost {
         if (case4.isEmpty()) c4 = createTrue();
         else c4 = createAndFromList(case4);
 
+        // env_vars_unchanged[s,s']
+        
+        List<String> allVarBuffers = d.getAllVarNames();
+        allVarBuffers.addAll(d.getAllBufferNames());
+        // might just return true if allVarBuffers is empty
+        Expr envNoChange = createAndFromList(allVarBuffers.stream()
+                .filter(i -> !d.isInternal(i))
+                .map(i -> createVarDoesNotChange(d, i))
+                .collect(Collectors.toList()));
+        Expr stableFalseAndEnvNoChange = createAnd(nextStableFalse(), envNoChange);
+
+
         if (d.hasConcurrency())
             body.add(
             createITE(createTestIfNextStableCall(d, tfqn),
@@ -188,7 +202,7 @@ public class AddTransPost {
                         c1,
                         c2)),
                 createAnd(
-                    nextStableFalse(),
+                    stableFalseAndEnvNoChange,
                     createITE(curStableTrue(),
                         c3,
                         c4))));
@@ -197,6 +211,14 @@ public class AddTransPost {
                 createAnd(nextStableTrue(), c1));
 
         d.alloyString += d.addPredSimple(tout+postName,curNextParamsDecls(prs),body);
+    }
+
+    public static Expr createVarDoesNotChange(DashModule d, String x) {
+        return createAll(
+                paramDecls(d.getVarBufferParams(x)),
+                createEquals(
+                    createJoinList(DashUtilFcns.newListWith(curParamVars(d.getVarBufferParams(x)),createVar(x))),
+                    createJoinList(DashUtilFcns.newListWith(nextParamVars(d.getVarBufferParams(x)),createVar(x)))));
     }
 
     // pred call: testIfNextStable[s,s',scope1, scope2, ... , send1, send2, ...] 

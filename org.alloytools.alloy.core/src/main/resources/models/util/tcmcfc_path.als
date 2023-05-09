@@ -8,7 +8,7 @@
  * https://opensource.org/licenses/BSD-2-Clause.
  */
 
-module ctlfc_path[S]
+module tcmcfc_path[S]
 
 // ********** Kripke structure *************************************************
 

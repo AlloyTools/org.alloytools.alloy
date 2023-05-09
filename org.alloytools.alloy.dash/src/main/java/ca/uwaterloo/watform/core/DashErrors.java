@@ -148,8 +148,10 @@ public class DashErrors {
 		throw new ErrorSyntax(fqnVarWrongNumberParametersMsg + s1 + " "+s2 +" "+s3);
 	}
 
-
-
+	public static String cantPrimeAnExternalMsg = "Internal var/buffer cannot be primed: ";
+	public static String cantPrimeAnExternal(String s1, String s2) {
+		throw new ErrorSyntax(cantPrimeAnExternalMsg + s1 + " in " + s2);
+	}
 
 
 
@@ -185,6 +187,12 @@ public class DashErrors {
 	}
 	public static void varDoesNotExist(String s1, String n) throws Err {
 		throw new ErrorFatal("for function "+s1+", var "+n+ " does not exist in var table");
+	}
+	public static void bufferDoesNotExist(String s1, String n) throws Err {
+		throw new ErrorFatal("for function "+s1+", buffer "+n+ " does not exist in buffer table");
+	}
+	public static void varBufferDoesNotExist(String s1, String n) throws Err {
+		throw new ErrorFatal("for function "+s1+", buffer/var "+n+ " does not exist in buffer table");
 	}
 	public static void missingExpr(String s) throws Err {
 		throw new ErrorFatal("Missing expr type in "+s);
@@ -235,5 +243,8 @@ public class DashErrors {
 	}
 	public static String UnsupportedExpr(String s1, Expr e) {
 		throw new ErrorFatal("unsupported expression type in: "+ s1+ " " + e.toString());
+	}
+	public static void bufferIndexDoesNotMatchBufferNumber() {
+		throw new ErrorFatal("bufferIndexDoesNotMatchBufferNumber");
 	}
 }

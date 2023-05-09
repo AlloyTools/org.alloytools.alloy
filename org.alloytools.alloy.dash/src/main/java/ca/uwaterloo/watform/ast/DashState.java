@@ -19,7 +19,7 @@ import ca.uwaterloo.watform.parser.StateTable;
 import ca.uwaterloo.watform.parser.TransTable;
 import ca.uwaterloo.watform.parser.EventTable;
 import ca.uwaterloo.watform.parser.VarTable;
-import ca.uwaterloo.watform.parser.BufferTable;
+//import ca.uwaterloo.watform.parser.BufferTable;
 
 public class DashState  extends Dash {
 
@@ -119,7 +119,7 @@ public class DashState  extends Dash {
 	 * check for errors in the state hierarchy
 	 * and put all states in the state table
 	 */
-	public void resolve(StateTable st, TransTable tt, EventTable et, VarTable vt, BufferTable bt, List<String> params, List<String> ances)  {
+	public void resolve(StateTable st, TransTable tt, EventTable et, VarTable vt, List<String> params, List<String> ances)  {
 		if (DashFQN.isFQN(name)) DashErrors.stateNameCantBeFQN(pos, name);
 		String sfqn = DashFQN.fqn(ances,name);
 		//System.out.println("Resolving state "+sfqn);
@@ -208,7 +208,7 @@ public class DashState  extends Dash {
 				invList, initList, actionList, conditionList)) DashErrors.addStateToStateTableDup(sfqn);;
 
 			// add all substates to the table
-			for (DashState s: substatesList) s.resolve(st, tt, et, vt, bt, newParams, newAnces);
+			for (DashState s: substatesList) s.resolve(st, tt, et, vt, newParams, newAnces);
 
 			// make sure defaults are correct
 			// if there's only one child it is automatically the default
@@ -284,7 +284,7 @@ public class DashState  extends Dash {
 			for (String x: v.getNames()) {
 				if (DashFQN.isFQN(x)) DashErrors.varNameCantBeFQN(v.getPos(), x);
 				String xfqn = DashFQN.fqn(sfqn,x);
-				if (!vt.add(xfqn,k, newParams, t)) DashErrors.duplicateVarName(v.getPos(),x);
+				if (!vt.addVar(xfqn,k, newParams, t)) DashErrors.duplicateVarName(v.getPos(),x);
 			}
 		}
 		xItems.removeAll(varDeclsList);
@@ -301,11 +301,14 @@ public class DashState  extends Dash {
 		for (DashBufferDecls b:bufferDeclsList) {
 			DashStrings.IntEnvKind k = b.getKind();
 			String el = b.getElement();
+			Integer idx = b.getStartIndex();
 			for (String x: b.getNames()) {
 				if (DashFQN.isFQN(x)) DashErrors.bufferNameCantBeFQN(b.getPos(), x);
 				String xfqn = DashFQN.fqn(sfqn,x);
-				if (!bt.add(xfqn,k, newParams, el)) DashErrors.duplicateBufferName(b.getPos(),x);
+				if (!vt.addBuffer(xfqn,k, newParams, el, idx)) DashErrors.duplicateBufferName(b.getPos(),x);
+				idx++;
 			}
+			if (idx != b.getEndIndex()+1) DashErrors.bufferIndexDoesNotMatchBufferNumber();
 		}
 		xItems.removeAll(bufferDeclsList);
 

@@ -19,13 +19,17 @@ public class DashStrings {
 	public static String noneName = "none";
 	public static String intName = "int";
 	public static String utilBooleanName = "util/boolean";
-	public static String utilCTLpathName = "util/ctl_path";
+	public static String utilTcmcPathName = "util/tcmc_path";
 	public static String utilOrderingName = "util/ordering";
 	public static String utilBufferName = "util/buffer";
 	public static String sigName = "sig";
 	public static String predName = "pred";
 	public static String factName = "fact";
-	
+	public static String orderingFirstName = "first";
+	public static String orderingNextName = "next";
+	public static String orderingLastName = "last";
+
+
 
 	// used for printing: parts of Dash syntax
 	// must be in sync with Dash-cup-symbols.txt
@@ -37,12 +41,13 @@ public class DashStrings {
 	public static String envName = "env";
 	public static String bufName = "buf";
 
-	// init is a reserved word in Electrum
-	public static String initName = "initial";
+	// init is a reserved word in Dash
+	public static String initFactName = "initial";
 	public static String electrumInitName = "init";
 	public static String invName = "inv";
 	public static String actionName = "action";
 	public static String conditionName = "condition";
+	public static String initName = "init";
 
 	public static String transName = "trans";
 	public static String fromName = "from";
@@ -61,7 +66,12 @@ public class DashStrings {
 	public static String stableName = "stable";
 	public static String equalsName = "equals";
 	public static String isEnabled = "isEnabled";
-	
+	public static String tracesFactName = "traces_fact";
+	public static String electrumFactName = "electrum_fact";
+	public static String tcmcFactName = "tcmc_fact";
+	public static String ksSigmaName = "tcmc/ks_sigma";
+	public static String ksS0Name = "tcmc/ks_s0";
+
 	// sig/field names
 	public static String snapshotName = "Snapshot";
 	public static String confName = "conf";
@@ -90,7 +100,7 @@ public class DashStrings {
 	public static String bufferName = "buffer";
 	public static String bufferIndexName = "bufIdx";
 
-
+	public static String thisName = "this";
 
 	public static String tracesName = "traces";
 	

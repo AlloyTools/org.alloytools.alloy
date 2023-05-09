@@ -8,7 +8,7 @@
  * https://opensource.org/licenses/BSD-2-Clause.
  */
 
-module ctl_subgraph[S]
+module tcmc_path[S]
 
 // ********** Kripke structure *************************************************
 
@@ -17,35 +17,44 @@ one sig TS {
     sigma: S -> S,
 }
 
-// ********* Subgraph definition ***********************************************
+// ********* Path definition ***************************************************
 
-// Reify the transition relation as a signature.
-sig Transition {
-    transFrom: S,
-    transTo: S
+// The path is a linked list of nodes.
+sig PathNode {
+    // Each node has 0 or 1 successor.
+    nextNode: lone PathNode,
+    // Each node points to a different state.
+    nodeState: disj one S
 }
 
-// We can project Transition onto the transition system.
-fun subState: S { Transition.(transFrom + transTo) }
-fun subSigma: S -> S { ~transFrom.transTo }
+// The path has a start node.
+one sig P0 in PathNode {}
+
+// We can project PathNode onto the transition system.
+fun pathState: S { PathNode.nodeState }
+fun pathSigma: S -> S { ~nodeState.nextNode.nodeState }
 
 fact {
-    // The subgraph respects transitions.
-    subSigma in TS.sigma
-    // There are no duplicate Transition elements.
-    all t, t': Transition |
-        t.transFrom = t'.transFrom && t.transTo = t'.transTo => t = t'
-    // The subgraph is connected.
-    some s: S | s.~transFrom.(*(transTo.~transFrom)) = Transition
+    // The path respects transitions.
+    pathSigma in TS.sigma
+    // The start node is in an initial state.
+    P0.nodeState in TS.S0
+    // The path is connected.
+    P0.*nextNode = PathNode
+}
+
+// Allow the user to optionally enforce a finite path.
+pred finitePath {
+    some p : PathNode | no p.nextNode
 }
 
 // ********** Model setup functions ********************************************
 
 // Set by users in their model files.
 
-fun initialState: S { TS.S0 }
+fun ks_s0: S { TS.S0 }
 
-fun nextState: S -> S { TS.sigma }
+fun ks_sigma: S -> S { TS.sigma }
 
 // ********** Helper functions *************************************************
 
@@ -61,14 +70,14 @@ fun imp_[phi, si: S]: S { not_[phi] + si }
 
 // ********** Temporal operators ***********************************************
 
-fun ex[phi: S]: S { subSigma.phi }
+fun ex[phi: S]: S { pathSigma.phi }
 
 fun ax[phi:S]: S { not_[ex[not_[phi]]] }
 
-fun ef[phi: S]: S { (*(subSigma)).phi }
+fun ef[phi: S]: S { (*(pathSigma)).phi }
 
 fun eg[phi:S]: S {
-    let R = domainRes[subSigma, phi] |
+    let R = domainRes[pathSigma, phi] |
         *R.((^R & id[S]).S)
 }
 
@@ -77,7 +86,7 @@ fun af[phi: S]: S { not_[eg[not_[phi]]] }
 fun ag[phi: S]: S { not_[ef[not_[phi]]] }
 
 fun eu[phi, si: S]: S {
-    (*(domainRes[subSigma, phi])).si
+    (*(domainRes[pathSigma, phi])).si
 }
 
 // TODO: Why was this only defined in ctlfc.als and not ctl.als?

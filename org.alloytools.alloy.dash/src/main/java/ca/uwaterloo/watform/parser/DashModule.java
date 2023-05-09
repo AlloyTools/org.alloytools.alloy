@@ -38,7 +38,6 @@ public class DashModule extends CompModuleHelper {
 	public Integer rootEndLine = null;
 
 	// derived during resolveAllDash phase
-	private int numBuffers = 0;
 	private int maxDepthParams = 0;
 	private boolean[] transAtThisParamDepth; 
 	private SymbolTable symbolTable;
@@ -46,7 +45,6 @@ public class DashModule extends CompModuleHelper {
 	private TransTable transTable = new TransTable();
 	private EventTable eventTable = new EventTable();
 	private VarTable varTable = new VarTable();
-	private BufferTable bufferTable = new BufferTable();
 
 	// once created and parsed, the following are
 	// the phases of a DashModule
@@ -98,6 +96,7 @@ public class DashModule extends CompModuleHelper {
 			// including recursively for open stmts
 			// make sure we only do import on second parsing pass
 			DashSituation.haveCountedBuffers = false;
+			DashSituation.bufferIndex = 0;
 		}		
 	}
 
@@ -204,7 +203,7 @@ public class DashModule extends CompModuleHelper {
         String noAlias = null;
         booleanOpen = this.addOpenSimple(DashStrings.utilBooleanName, null, noAlias); 
         if (DashOptions.isTcmc) 
-        	opens += this.addOpenSimple(DashStrings.utilCTLpathName, Arrays.asList(DashStrings.snapshotName), noAlias);
+        	opens += this.addOpenSimple(DashStrings.utilTcmcPathName, Arrays.asList(DashStrings.snapshotName), noAlias);
         else if (DashOptions.isTraces) 
         	opens += this.addOpenSimple(DashStrings.utilOrderingName, Arrays.asList(DashStrings.snapshotName),DashStrings.snapshotName);
         // add the open statements for the buffers
@@ -231,8 +230,11 @@ public class DashModule extends CompModuleHelper {
 		if (root != null) return root.name;
 		else { DashErrors.toAlloyNoDash(); return null; }
 	}
-	public int getNumBuffers() {
-		return numBuffers;
+	public List<Integer> getBufferIndices() {
+		return varTable.getBufferIndices();
+	}
+	public boolean hasBuffers() {
+		return (!getBufferIndices().isEmpty());
 	}
     public boolean hasInternalEvents() {
 		return eventTable.hasInternalEvents();
@@ -328,11 +330,11 @@ public class DashModule extends CompModuleHelper {
     public List<String> getAllVarNames() {
     	return varTable.getAllVarNames();
     }
-    public List<String> getVarParams(String vfqn) {
+    public List<String> getVarBufferParams(String vfqn) {
     	return varTable.getParams(vfqn);
     }
     public Expr getVarType(String vfqn) {
-    	return varTable.getType(vfqn);
+    	return varTable.getVarType(vfqn);
     }
 	public Boolean transAtThisParamDepth(int i) {
 		if (i > maxDepthParams) { DashErrors.tooHighParamDepth(); return null; }
@@ -348,6 +350,19 @@ public class DashModule extends CompModuleHelper {
 	}
 	public List<Expr> getInvs() {
 		return stateTable.getInvs();
+	}
+	public List<String> getAllBufferNames() {
+		return varTable.getAllBufferNames();
+	}
+	public int getBufferIndex(String bfqn) {
+		return varTable.getBufferIndex(bfqn);
+	}
+	public String getBufferElement(String bfqn) {
+		return varTable.getBufferElement(bfqn);
+	}
+	public boolean isInternal(String vfqn) {
+		// works for buffers also
+		return varTable.isInternal(vfqn);
 	}
 	// stuff about both states and trans
 	public DashRef getScope(String tfqn) {
@@ -500,7 +515,7 @@ public class DashModule extends CompModuleHelper {
 			root = roots.get(0);
 			// passed with empty set of params, empty set of ancestors
 			stateTable.setRoot(root.name);
-			root.resolve(stateTable,transTable, eventTable, varTable, bufferTable, new ArrayList<String>(),new ArrayList<String>());
+			root.resolve(stateTable,transTable, eventTable, varTable, new ArrayList<String>(),new ArrayList<String>());
 			// have to do states first so siblings of trans parent state
 			// are in place to search for src/dest
 			// root.resolveTransTable(stateTable,transTable);

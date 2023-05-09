@@ -20,10 +20,15 @@ import ca.uwaterloo.watform.core.DashRef;
 
 public class VarTable {
 
-	// stores Var Decls in a HashMap based on the event FQN
+	// stores Var, Buffer Decls in a HashMap based on the event FQN
 
-	private HashMap<String,VarElement> table;
+	private HashMap<String,VarElement> varTable;
+	private HashMap<String,BufferElement> bufferTable;
 
+	public VarTable() {
+		this.varTable = new HashMap<String,VarElement>();
+		this.bufferTable = new HashMap<String,BufferElement>();
+	}
 
 	public class VarElement {
 		private IntEnvKind kind;
@@ -48,48 +53,127 @@ public class VarTable {
 		}
 	}
 
-	public VarTable() {
-		this.table = new HashMap<String,VarElement>();
-	}
 	public String toString() {
 		String s = new String("VAR TABLE\n");
-		for (String k:table.keySet()) {
+		for (String k:varTable.keySet()) {
 			s += " ----- \n";
 			s += k + "\n";
-			s += table.get(k).toString();
+			s += varTable.get(k).toString();
+		}
+		s += "\nBUFFER TABLE\n";
+		for (String k:bufferTable.keySet()) {
+			s += " ----- \n";
+			s += k + "\n";
+			s += bufferTable.get(k).toString();
 		}
 		return s;
 	}	
-	public Boolean add(String vfqn, IntEnvKind k, List<String> prms, Expr t) {
+	public Boolean addVar(String vfqn, IntEnvKind k, List<String> prms, Expr t) {
 		assert(prms!=null);
-		if (table.containsKey(vfqn)) return false;
+		if (varTable.containsKey(vfqn)) return false;
 		if (hasPrime(vfqn)) { DashErrors.nameShouldNotBePrimed(vfqn); return false; }
-		else { table.put(vfqn, new VarElement(k,prms, t)); return true; }
+		else { varTable.put(vfqn, new VarElement(k,prms, t)); return true; }
 	}
 	public void resolveAllVarTable() {
 		// TODO
 	}
 	public List<String> getAllVarNames() {
-		return new ArrayList<String>(table.keySet());
+		return new ArrayList<String>(varTable.keySet());
 	}
-	public List<String> allVarsOfState(String sfqn) {
+	public List<String> getAllNames() {
+		// vars plus buffers
+		List<String> x = getAllVarNames();
+		x.addAll(getAllBufferNames());
+		return x;
+	}
+	public List<String> getVarsOfState(String sfqn) {
 		// return all events declared in this state
 		// will have the sfqn as a prefix
-		return table.keySet().stream()
+		return varTable.keySet().stream()
 			// prefix of vfqn are state names
 			.filter(i -> DashFQN.chopPrefixFromFQN(i).equals(sfqn))
 			.collect(Collectors.toList());	
 	}
-	public List<String> getParams(String vfqn) {
-		//System.out.println(table);
-		if (table.containsKey(vfqn)) return table.get(vfqn).params;
-		else { DashErrors.varDoesNotExist("getParams", vfqn); return null; }
+	public List<String> getBuffersOfState(String sfqn) {
+		// return all events declared in this state
+		// will have the sfqn as a prefix
+		return bufferTable.keySet().stream()
+			// prefix of vfqn are state names
+			.filter(i -> DashFQN.chopPrefixFromFQN(i).equals(sfqn))
+			.collect(Collectors.toList());	
 	}
-	public Expr getType(String vfqn) {
-		if (table.containsKey(vfqn)) return table.get(vfqn).typ;
+	public List<String> getNamesOfState(String sfqn) {
+		List<String> x = getVarsOfState(sfqn);
+		x.addAll(getBuffersOfState(sfqn));
+		return x;		
+	}
+	// same function for buffers and variables
+	public List<String> getParams(String fqn) {
+		if (bufferTable.containsKey(fqn)) return bufferTable.get(fqn).params;
+		if (varTable.containsKey(fqn)) return varTable.get(fqn).params;
+		else { DashErrors.varBufferDoesNotExist("getParams", fqn); return null; }
+	}
+	public Expr getVarType(String vfqn) {
+		if (varTable.containsKey(vfqn)) return varTable.get(vfqn).typ;
 		else { DashErrors.varDoesNotExist("getType", vfqn); return null; }
 	}
+	// same function for buffers and variables
+	public boolean isInternal(String fqn) {
+		if (bufferTable.containsKey(fqn)) return (bufferTable.get(fqn).kind == IntEnvKind.INT);
+		if (varTable.containsKey(fqn)) return (varTable.get(fqn).kind == IntEnvKind.INT);
+		else { DashErrors.varBufferDoesNotExist("isInternal", fqn); return false; }
+	}
 
+	public class BufferElement {
+		private IntEnvKind kind;
+		private List<String> params;
+		private String element;
+		private Integer index;
+
+		public BufferElement(
+			IntEnvKind k,
+			List<String> prms,
+			String e,
+			Integer idx) {
+			assert(prms != null);
+			this.kind = k;
+			this.params = prms;
+			this.element = e;
+			this.index = idx;
+		}
+		public String toString() {
+			String s = new String();
+			s += "kind: "+kind+"\n";
+			s += "params: "+ NoneStringIfNeeded(params) +"\n";
+			s += "element: "+element.toString() + "\n";
+			s += "index:" + index;
+			return s;
+		}
+	}
+
+	public List<String> getAllBufferNames() {
+		return new ArrayList<String>(bufferTable.keySet());
+	}
+	public List<Integer> getBufferIndices() {
+		List<Integer> k = new ArrayList();
+		for (int i=0; i< getAllBufferNames().size();i++) k.add(i);
+		return k;
+	}
+
+	public int getBufferIndex(String bfqn) {
+		if (bufferTable.containsKey(bfqn)) return bufferTable.get(bfqn).index;
+		else { DashErrors.bufferDoesNotExist("getIndex", bfqn); return -1; }
+	}
+	public String getBufferElement(String bfqn) {
+		if (bufferTable.containsKey(bfqn)) return bufferTable.get(bfqn).element;
+		else { DashErrors.bufferDoesNotExist("getElement", bfqn); return null; }
+	}
+
+	public Boolean addBuffer(String vfqn, IntEnvKind k, List<String> prms, String el, Integer idx) {
+		assert(prms!=null);
+		if (bufferTable.containsKey(vfqn)) return false;
+		else { bufferTable.put(vfqn, new BufferElement(k,prms, el, idx)); return true; }
+	}
 
 
 	/*
@@ -97,7 +181,6 @@ public class VarTable {
 		fqn is a parameter to determine transition parameters and for error messages
 		used for when and do parts of a transitions
 
-		TODO: buffers, this
 	*/
 
 
@@ -231,6 +314,17 @@ public class VarTable {
 		List<Expr> paramValues;
 		if (isExprVar(exp)) {
 			v = getVarName((ExprVar) exp);	
+			if (v.startsWith(thisName)) {
+				// thisAID gets replaced with pAID as a normal variable
+				// not a processref
+				String suffix = v.substring(thisName.length(),v.length());
+				String match = "";
+				for (String x:params) 
+					if (x.equals(suffix))
+						match = x;
+				if (!match.isEmpty())
+					return createVar(pName+match);
+			}
 			paramValues = new ArrayList<Expr>();
 		} else if (isPrimedVar(exp)) {
 			v = getVarName((ExprVar) getSub(exp))+PRIME;	
@@ -244,7 +338,8 @@ public class VarTable {
 		Boolean isPrimed = false;
 		if (hasPrime(v)) {
 			isPrimed = true;
-			vfqn = vfqn.substring(0,vfqn.length()-1);
+			vfqn = removePrime(vfqn); // vfqn.substring(0,vfqn.length()-1);
+
 		}
 		
 		// only place primes can be is in "do" expressions
@@ -256,13 +351,15 @@ public class VarTable {
 		if (paramValues.isEmpty()) {
 			// if no param values must be within the region of the same params (could be prefix of params)
 			for (String s:region) 
-				for (String x:allVarsOfState(s)) {
+				// buffers and vars
+				for (String x:getNamesOfState(s)) {
 					if (DashFQN.suffix(x,vfqn)) matches.add(x);
 				}
 		} else {
 			// if it has params values, could be suffix of any var
 			// and later we check it has the right number of params
-			for (String x:getAllVarNames()) {
+			// vars and buffers
+			for (String x:getAllNames()) {
 				if (DashFQN.suffix(x,vfqn)) matches.add(x);
 			}		
 		}
@@ -300,6 +397,10 @@ public class VarTable {
 				DashErrors.fqnVarWrongNumberParameters(xType, v, fqn); 
 				return null;
 			} else {
+				if (isPrimed && !isInternal(m)) { 
+					DashErrors.cantPrimeAnExternal(v, fqn);
+					return null;
+				}
 				if (isPrimed) m = m+PRIME;
 				//System.out.println("here2" + m);
 				return DashRef.DashRefExpr(
@@ -310,5 +411,75 @@ public class VarTable {
 						.collect(Collectors.toList()));
 			}
 		}
+	}
+
+	// must be done after resolve
+	// might be primed or unprimed
+	public List<Expr> collectDashRefs(Expr exp) {
+		if (DashRef.isDashRefProcessRef(exp)) {
+			List<Expr> x = new ArrayList<Expr>();
+			x.add(exp);
+			return x;
+		} else if (isExprBinary(exp)) {
+			List<Expr> x = new ArrayList<Expr>(collectDashRefs(getLeft(exp)));
+			x.addAll(collectDashRefs(getRight(exp)));
+			return x;
+		} else if (isExprBadJoin(exp)) {
+			List<Expr> x = new ArrayList<Expr>(collectDashRefs(getLeft(exp)));
+			x.addAll(collectDashRefs(getRight(exp)));
+			return x;
+		} else if (exp instanceof ExprCall) {
+			List<Expr> x = new ArrayList<Expr>();
+			for (Expr e: ((ExprCall) exp).args) x.addAll(collectDashRefs(e));
+			return x;
+		} else if (exp instanceof ExprChoice){
+			List<Expr> x = new ArrayList<Expr>();
+			for (Expr e: ((ExprChoice) exp).choices) x.addAll(collectDashRefs(e));
+			return x;
+		} else if (exp instanceof ExprITE){
+			List<Expr> x = new ArrayList<Expr>(collectDashRefs(getCond(exp)));
+			x.addAll(collectDashRefs(getLeft(exp)));
+			x.addAll(collectDashRefs(getRight(exp)));
+			return x;
+		} else if (exp instanceof ExprList){
+			List<Expr> x = new ArrayList<Expr>();
+			for (Expr e: ((ExprCall) exp).args) x.addAll(collectDashRefs(e));
+			return x;
+		} else if (exp instanceof ExprUnary){
+			return collectDashRefs(((ExprUnary) exp).sub);
+		} else if (exp instanceof ExprLet){
+			List<Expr> x = new ArrayList<Expr>(collectDashRefs(((ExprLet) exp).expr));
+			x.addAll(collectDashRefs(((ExprLet) exp).sub));
+			return x;
+		} else if (exp instanceof ExprQt){
+			List<Expr> x = new ArrayList<Expr>();
+			List<Expr> ll = ((ExprQt) exp).decls.stream()
+				.map(i -> i.expr)
+				.collect(Collectors.toList());
+			for (Expr e: ll) x.addAll(collectDashRefs(e));
+			x.addAll(collectDashRefs(((ExprQt) exp).sub));
+			return x;
+		} else if (exp instanceof ExprConstant){
+			return new ArrayList<Expr>();
+		} else {
+			DashErrors.UnsupportedExpr("collectDashRefs", "");
+			return null;
+		}
+	}
+
+	// returns the primed variables in an exp (but w/o the primes)
+	public List<Expr> primedDashRefs(Expr exp) {
+		List<Expr> drs = collectDashRefs(exp);
+		List<Expr> o = new ArrayList<Expr>();
+		String v;
+		List<Expr> paramValues;
+		for (Expr e: drs) {
+			v = DashRef.nameOfDashRefExpr(e);
+			paramValues = DashRef.paramValuesOfDashRefExpr(e);
+			if (hasPrime(v)) {
+				o.add(DashRef.DashRefExpr(removePrime(v), paramValues));
+			}
+		}
+		return o;
 	}
 }

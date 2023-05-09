@@ -6,7 +6,7 @@ import edu.mit.csail.sdg.alloy4.Pair;
 // everything must be static
 public class DashSituation {
 
-    // we need a little bit of knowledge of the state of the process
+    // we need a little bit of knowledge of the state of the process because
     // open statements have to be done before anything else in an
     // Alloy file, but we don't know how many buffers we have
     // so we have to run parsing once to count buffers
@@ -21,9 +21,10 @@ public class DashSituation {
     // its a pain to make a pair in Alloy (Pair class is difficult)
     // or Java where javafx.util.Pair does not seem to be available 
     // for this version of Alloy
-    // so just keep two lists insync
+    // so just keep two lists in sync
     public static List<String> bufferNames = new ArrayList<String>();
     public static List<String> bufferElements = new ArrayList<String>();
+    public static int bufferIndex = 0;
     // we will need more here to know the names of the elements
     // of the buffers for the open statements
 }
