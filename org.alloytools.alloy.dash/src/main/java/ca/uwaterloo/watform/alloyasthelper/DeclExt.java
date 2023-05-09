@@ -13,6 +13,7 @@ import edu.mit.csail.sdg.ast.ExprVar;
 import ca.uwaterloo.watform.core.DashErrors;
 
 import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
+import ca.uwaterloo.watform.alloyasthelper.ExprToString;
 
 public class DeclExt extends Decl {
 
@@ -44,7 +45,8 @@ public class DeclExt extends Decl {
         names.forEach(n -> sj.add(n.toString()));
         x += sj.toString();
         x += " : ";
-        x += expr.toString();
+        ExprToString eToString = new ExprToString(false);
+        x += eToString.toString(expr);
         return x;
     }
 

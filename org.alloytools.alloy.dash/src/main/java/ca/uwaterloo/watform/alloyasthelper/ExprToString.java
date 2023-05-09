@@ -124,8 +124,9 @@ public class ExprToString {
             out.print(s);
         }
         else if (expr.op == ExprBinary.Op.ISSEQ_ARROW_LONE) {
-            out.print("seq ");
+            out.print("(seq ");
             ExprToOut(expr.right);
+            out.print(")");
         }
         else if (expr.op == ExprBinary.Op.JOIN) {
             out.print("(");
@@ -295,60 +296,70 @@ public class ExprToString {
     private void ExprUnaryToOut(ExprUnary expr) {
         
         switch (expr.op) {
-            /*
+            // this ops don't print properly with toString
+            // e.g. set X becomes set of X
             case SOMEOF :
                 out.print("some (");
                 ExprToOut(expr.sub);
                 out.print(")");
+                break;
             case LONEOF :
                 out.print("lone (");
+                ExprToOut(expr.sub);
                 out.print(")");
+                break;
             case ONEOF :
                 out.print("one (");
+                ExprToOut(expr.sub);
                 out.print(")");
+                break;
             case SETOF :
                 out.print("set (");
+                ExprToOut(expr.sub);
                 out.print(")");
+                break;
             case EXACTLYOF :
                 out.print("exactly (");
+                ExprToOut(expr.sub);
                 out.print(")");
+                break;
             case CAST2INT :
                 out.print("int[");
                 ExprToOut(expr.sub);
                 out.print(']');
-
+                break;
             case CAST2SIGINT :
                 out.print("Int[");
                 ExprToOut(expr.sub);
                 out.print(']');
-
+                break;
             case PRIME :
                 //TODO: perhaps this one should not exist?
                 //TODO: other temporal formulas that should not exist?
                 out.print('(');
                 ExprToOut(expr.sub);
                 out.print(")'");
-
+                break;
             case RCLOSURE :
                 out.print("* (");
                 ExprToOut(expr.sub);
                 out.print(")");
-
+                break;
             case TRANSPOSE :
                 out.print("~ (");
                 ExprToOut(expr.sub);
                 out.print(")");
-
+                break;
             case CLOSURE :
                 out.print("^ (");
                 ExprToOut(expr.sub);
                 out.print(")");
-
+                break;
             case NOT :
                 out.print("! {");
                 ExprToOut(expr.sub);
                 out.print("}");
-            */
+                break;
             case NOOP :
                 ExprToOut(expr.sub);
                 break;
