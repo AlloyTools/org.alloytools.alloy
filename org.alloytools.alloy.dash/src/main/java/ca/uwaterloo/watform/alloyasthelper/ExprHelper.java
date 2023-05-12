@@ -337,10 +337,14 @@ public class ExprHelper  {
         return o;
     }
 
-    public static String myExprToString(Expr e) {
+    /* these wrap the object creation and call to the pretty printer */
+    public static String ppExpr(Expr e) {
         ExprToString eToString = new ExprToString(false);
-        return eToString.toString(e);
+        return eToString.exprToString(e);
     }
 
-
+    public static String ppDecl(Decl d) {
+        ExprToString eToString = new ExprToString(false);
+        return eToString.declToString(d);
+    }
 }

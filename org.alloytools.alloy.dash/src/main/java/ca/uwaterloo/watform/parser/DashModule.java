@@ -87,7 +87,7 @@ public class DashModule extends CompModuleHelper {
 		initializeDashModule();
 	}
 	private void initializeDashModule() {	
-		assert (!DashOptions.isElectrum && (DashOptions.isTcmc || DashOptions.isTraces));
+		//assert (!DashOptions.isElectrum && (DashOptions.isTcmc || DashOptions.isTraces));
 		// do the open stmts for Dash after we know how many buffers
 		// b/c the opens are parsed during parsing
 		if (DashSituation.haveCountedBuffers) {
@@ -150,30 +150,47 @@ public class DashModule extends CompModuleHelper {
 				String r;
 				Integer k = 0;
 				Boolean writeBooleanOpen = true;
-				if (rootStartLine == 1) s += opens;
-				else {	
+				Boolean wroteOpens = false;
+				//System.out.println(opens);
+				//if (rootStartLine == 1) {
+					// assume there were no opens in the file
+				//	s += booleanOpen;
+				//	s += opens;
+				//} else {	
+
+				//System.out.println(rootStartLine);
+
+				// lines in file start counting at 1
+				k = 0;
 					for (int j= 0; j < rootStartLine-1; j++) {
 						k = j;
+						//System.out.println(j);
 						r = br.readLine();
+						// empty line
 						if (!(r.replaceAll("\\s+","").equals(""))) {
 							if (r.contains(DashStrings.moduleName) || r.contains(DashStrings.openName)) {
+								//make sure we don't open boolean twice
 								if (r.contains(DashStrings.openName) && r.contains(DashStrings.utilBooleanName)) writeBooleanOpen = false;
 								s += r +"\n";
 							} else {
+								// we've reached the end of the opens in the file
+								// now add our own opens and quit this loop
 								if (writeBooleanOpen) s += booleanOpen;
 								s += opens + "\n";
 								// have to write the line after module/opens
+								// that we just read
 								s += r +"\n";
+								wroteOpens = true;
 								break;
 							}
 						} else s += "\n";
 					}
-					// there was nothing before "state"
-					if (k == rootStartLine-1) s += opens;
+					if (!wroteOpens) { s += booleanOpen; s += opens; }
+					// add all the lines after the opens and before 'state'
 					if (k+1 < rootStartLine-1) {
 			    		for (int i = k+1; i < rootStartLine -1 ; i++) s += br.readLine() + "\n";
 			    	}
-			    }
+			    //}
 				
 				// skip Dash stuff
 				for (int i = 0; i <= rootEndLine - rootStartLine+1; i++) br.readLine();
@@ -201,6 +218,9 @@ public class DashModule extends CompModuleHelper {
 	public void importModules(List<String> bufElements, List<String> bufNames) {
 		//System.out.println("Adding open stmts");
         String noAlias = null;
+        // module might already include it
+        // safe to reopen it internally?
+        // but don't want it printed twice?
         booleanOpen = this.addOpenSimple(DashStrings.utilBooleanName, null, noAlias); 
         if (DashOptions.isTcmc) 
         	opens += this.addOpenSimple(DashStrings.utilTcmcPathName, Arrays.asList(DashStrings.snapshotName), noAlias);

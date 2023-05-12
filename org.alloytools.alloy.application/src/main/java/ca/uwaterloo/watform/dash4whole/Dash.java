@@ -10,6 +10,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 
+import edu.mit.csail.sdg.alloy4.Version;
+
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4viz.VizGUI;
 import edu.mit.csail.sdg.ast.Command;
@@ -85,6 +87,7 @@ public class Dash {
             }
         }
 
+        System.out.println("Alloy/Dash Analyzer: " + Version.getShortversion() + " built " + Version.buildDate());
         DashOptions.isTraces = (method.equals("traces"));
         DashOptions.isTcmc = (method.equals("tcmc"));
         DashOptions.isElectrum = (method.equals("electrum"));    

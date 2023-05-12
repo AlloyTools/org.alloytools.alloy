@@ -45,8 +45,8 @@ public class DeclExt extends Decl {
         names.forEach(n -> sj.add(n.toString()));
         x += sj.toString();
         x += " : ";
-        ExprToString eToString = new ExprToString(false);
-        x += eToString.toString(expr);
+        //ExprToString eToString = new ExprToString(false);
+        x += ExprHelper.ppExpr(expr);
         return x;
     }
 

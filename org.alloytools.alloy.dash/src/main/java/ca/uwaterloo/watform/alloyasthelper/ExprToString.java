@@ -24,11 +24,25 @@ import ca.uwaterloo.watform.core.DashFQN;
 import ca.uwaterloo.watform.core.DashRef;
 import ca.uwaterloo.watform.core.DashErrors;
 import ca.uwaterloo.watform.core.DashUtilFcns;
+import ca.uwaterloo.watform.core.DashStrings;
 
+/* 
+    Notes on the pretty printer primitives
+    .begin(boolean consistent, int spaces) - start block
+    .beginC(x) = .begin(true,x)
+    .end() - end block
+    .print(string text)
+    .brk(int spacesifnotbroken, int spacestoaddorsubtractfromindentifbroken)
+    .brk(x) = .brk(x,0) 
+    .brk() = .brk(1,0)
+
+    consistent block means if break required then all have breaks
+    inconsistent block means put as much as possible on a line
+*/
 public class ExprToString {
 
-    int indent = 4;
-    int lineWidth = 80;
+    int indent = DashStrings.tab.length();
+    int lineWidth = 60;
     StringBackend back = new StringBackend(lineWidth);
     DataLayouter<NoExceptions> out = new DataLayouter<NoExceptions>(back, indent);;
     Boolean isAfterAlloyResolveAll;
@@ -38,11 +52,19 @@ public class ExprToString {
         this.isAfterAlloyResolveAll = isAfterAlloyResolveAll;
     }
 
-    public String toString(Expr e)  {
+    public String exprToString(Expr e)  {
         out.beginC(0);
         ExprToOut(e);
-        out.end().close();
+        out.end();
+        out.close();
         return back.getString();
+    }
+    public String declToString(Decl d) {
+        out.beginC(0);
+        DeclToOut(d);
+        out.end();
+        out.close();
+        return back.getString();        
     }
     private void ExprToOut(Expr expr) {
         
@@ -74,12 +96,14 @@ public class ExprToString {
         } else if (expr instanceof ExprUnary){
             ExprUnaryToOut((ExprUnary)expr);
         } else if (expr instanceof ExprVar){
-            ExprVarToOut((ExprVar)expr);
+            out.print(cleanLabel(((ExprVar) expr).label));
         } else if (expr instanceof Sig){
-            SigToOut((Sig)expr);
+            out.print(cleanLabel(((Sig) expr).label));
         } else if (expr instanceof Field){
-            FieldToOut((Field)expr);
-        } else DashErrors.missingExpr("ExprToOut :" +expr.getClass().getName());
+            out.print("(").print(cleanLabel(((Field) expr).label)).print(")");
+        } else {
+            DashErrors.missingExpr("ExprToOut :" +expr.getClass().getName());
+        }
     }
     /*
     private void ExprBad(ExprBad expr) {
@@ -99,16 +123,18 @@ public class ExprToString {
     }
     */
 
-    
+    /*
     private Boolean isBinary(Expr e) {
         return (e instanceof ExprBinary);
     }
+    */
     private void ExprBinaryToOut(ExprBinary expr) {
         if (DashRef.isDashRefProcessRef(expr)) {
             //   Root/A/B[exp1, exp2]/v1
             String v = DashRef.nameOfDashRefExpr(expr);
             String n = DashFQN.chopNameFromFQN(v);
             String prefix = DashFQN.chopPrefixFromFQN(v);
+            //TODO: should do proper pretty printing for these!
             String s = prefix;
             s += "[";
             List<String> el = new ArrayList<String>();
@@ -125,9 +151,20 @@ public class ExprToString {
         }
         else if (expr.op == ExprBinary.Op.ISSEQ_ARROW_LONE) {
             out.print("(seq ");
+            out.beginC(2);
             ExprToOut(expr.right);
+            out.end();
             out.print(")");
+        } else {
+            out.beginI(2);
+            addBracketsIfNeeded(getLeft(expr));
+            out.brk(1,0);
+            out.print(expr.op);
+            out.brk(1,0);
+            addBracketsIfNeeded(getRight(expr));  
+            out.end();                 
         }
+        /*
         else if (expr.op == ExprBinary.Op.JOIN) {
             out.print("(");
             ExprBinaryJoinToOut(expr);
@@ -148,7 +185,7 @@ public class ExprToString {
                 ExprToOut(expr.left);
                 out.print(' ').print(expr.op).print(' ');
             }
-            if (isBinary(expr.right)  && !(exprOp(expr.right) == exprOp(expr)) && !(exprOp(expr.right) == ExprBinary.Op.JOIN)){   
+            if (isBinary(expr.right)  && !({exprOp}(expr.right) == exprOp(expr)) && !(exprOp(expr.right) == ExprBinary.Op.JOIN)){   
                 out.print('{').print(' ');
                 ExprToOut(expr.right);
                 out.print(' ').print("}");
@@ -161,19 +198,27 @@ public class ExprToString {
             out.print(' ').print(expr.op).print(' ');
             ExprToOut(expr.right);
         }
+        */
     }
-    
+
+    private void addBracketsIfNeeded(Expr expr) {
+        if (!isExprVar(expr)) {
+            out.beginC(2);
+            out.print("(");      
+        }    
+        ExprToOut(expr);
+         if (!isExprVar(expr)) {
+            out.print(")");
+            out.end();
+        }            
+    }    
     private void ExprBadJoinToOut(ExprBadJoin expr) {
-        out.print("(");
-        ExprToOut(expr.left);
-        out.print(")");
+        addBracketsIfNeeded(expr.left);
         out.print('.');
-        out.print("(");
-        ExprToOut(expr.right);
-        out.print(")");
+        addBracketsIfNeeded(expr.right);
     }
 
-
+    /*
     private void ExprBinaryJoinToOut(ExprBinary expr) {
         // The Alloy resolve dot joins (this) to a variable reference in a variable. We should not bring the ("this")
         // We also do not print (Snapshot <: ...)
@@ -197,18 +242,21 @@ public class ExprToString {
             }
         }
     }
+    */
 
     private void ExprCallToOut(ExprCall expr) {
         out.print(cleanLabel(expr.fun.label));
         if (expr.args.size() == 0)
             return;
-        out.print('[').beginCInd();
+        out.print('[');
+        out.beginC(2);
         for (int i = 0; i < expr.args.size(); i++) {
-            if (i > 0)
-                out.print(", ");
+            if (i > 0) out.print(", ");
             ExprToOut(expr.args.get(i));
         }
-        out.print(']').end();
+        out.end();
+        out.print(']');
+
     }
 
     private void ExprChoiceToOut(ExprChoice expr) {
@@ -230,49 +278,69 @@ public class ExprToString {
     }
 
     private void ExprITEToOut(ExprITE expr) {
-        out.print('(').beginCInd();
-        ExprToOut(expr.cond);
-        out.print(" => ").brk(1,0);
-        ExprToOut(expr.left);
-        out.brk(1,-indent).print(" else ").print("{").brk(1,0);
-        ExprToOut(expr.right);
-        out.print(" }");
-        out.brk(1,-indent).end().print(')');
+        out.beginC(2);
+        addBracketsIfNeeded(expr.cond);
+        out.print("=>");
+        out.brk(1,indent);
+        addBracketsIfNeeded(expr.left);
+        out.brk(1,0);
+        out.print("else");
+        //{")
+        out.brk(1,indent);
+        addBracketsIfNeeded(expr.right);
+        //out.print(" }");
+        out.brk(1,-indent);
+        out.end();
+        //out.print(')');
     }
 
     private void ExprLetToOut(ExprLet expr) {
         out.print("(let ").print(cleanLabel(expr.var.label)).print("= ").print(expr.toString()).print(" | ");
+        out.beginC(2);
         ExprToOut(expr.sub);
+        out.end();
         out.print(')');
     }
 
     private void ExprListToOut(ExprList expr) {
         if (expr.op == ExprList.Op.AND ) {
             String op = " and";
+            out.beginC(2);
             for (int i = 0; i < expr.args.size(); i++) {
                 if (i > 0)
                     out.print(op).brk(1,0);
                 ExprToOut(expr.args.get(i));
             }
+            out.end();
         }
         else if (expr.op == ExprList.Op.OR) {
             String op = " or";
             out.print("{ ");
+            out.beginC(2);
             for (int i = 0; i < expr.args.size(); i++) {
-                if (i > 0)
-                    out.print(op).brk(1,0);
+                if (i > 0) {
+                    out.print(op);
+                    out.brk(1,0);
+                }
                 ExprToOut(expr.args.get(i));
             }
+            out.end();
             out.print(" }");
         }
         else {
-            out.print(expr.op).print("[").beginCInd().brk(1,0);
+            out.print(expr.op);
+            out.print("[");
+            out.beginCInd();
+            out.brk(1,0);
+            out.beginC(2);
             for (int i = 0; i < expr.args.size(); i++) {
                 if (i > 0)
                     out.print(",").brk(1,0);
                 ExprToOut(expr.args.get(i));
             }
-            out.brk(1,-indent).end().print(']');
+            out.brk(1,-indent);
+            out.end();
+            out.print(']');
         }
     }
 
@@ -296,32 +364,37 @@ public class ExprToString {
     private void ExprUnaryToOut(ExprUnary expr) {
         
         switch (expr.op) {
-            // this ops don't print properly with toString
+            // special cases for the 
+            // ones that the Alloy op.toString()
+            // does not seem to print in a way that matches
+            // how the symbol is input
             // e.g. set X becomes set of X
             case SOMEOF :
-                out.print("some (");
-                ExprToOut(expr.sub);
-                out.print(")");
+                out.print("some");
+                out.brk(1);
+                addBracketsIfNeeded(expr.sub);
                 break;
             case LONEOF :
-                out.print("lone (");
-                ExprToOut(expr.sub);
-                out.print(")");
+                out.print("lone");
+                out.brk(1);
+                addBracketsIfNeeded(expr.sub);
                 break;
             case ONEOF :
-                out.print("one (");
-                ExprToOut(expr.sub);
-                out.print(")");
+                out.print("one");
+
+                out.brk(1);
+                addBracketsIfNeeded(expr.sub);
+                break;
+
+            case EXACTLYOF :
+                out.print("exactly");
+                out.brk(1);
+                addBracketsIfNeeded(expr.sub);
                 break;
             case SETOF :
-                out.print("set (");
-                ExprToOut(expr.sub);
-                out.print(")");
-                break;
-            case EXACTLYOF :
-                out.print("exactly (");
-                ExprToOut(expr.sub);
-                out.print(")");
+                out.print("set");
+                out.brk(1);
+                addBracketsIfNeeded(expr.sub);
                 break;
             case CAST2INT :
                 out.print("int[");
@@ -336,45 +409,43 @@ public class ExprToString {
             case PRIME :
                 //TODO: perhaps this one should not exist?
                 //TODO: other temporal formulas that should not exist?
-                out.print('(');
-                ExprToOut(expr.sub);
-                out.print(")'");
+                addBracketsIfNeeded(expr.sub);
+                out.print("'");
                 break;
             case RCLOSURE :
-                out.print("* (");
-                ExprToOut(expr.sub);
-                out.print(")");
+                out.print("*");
+                out.brk(1,0);
+                addBracketsIfNeeded(expr.sub);
                 break;
             case TRANSPOSE :
-                out.print("~ (");
-                ExprToOut(expr.sub);
-                out.print(")");
+                out.print("~");
+                out.brk(1,0);
+                addBracketsIfNeeded(expr.sub);
                 break;
             case CLOSURE :
-                out.print("^ (");
-                ExprToOut(expr.sub);
-                out.print(")");
+                out.print("^");
+                out.brk(1);
+                addBracketsIfNeeded(expr.sub);
                 break;
             case NOT :
-                out.print("! {");
-                ExprToOut(expr.sub);
-                out.print("}");
+                out.print("!");
+                out.brk(1,0);
+                addBracketsIfNeeded(expr.sub);
                 break;
             case NOOP :
                 ExprToOut(expr.sub);
                 break;
             default :
-                // this puts in more brackets that usual
-                // but since we can have
-                // #var become #(s.var)
-                // the brackets might be necessary
-                out.print(expr.op).print('(');
-                ExprToOut(expr.sub);
-                out.print(")");
+                // many operators print okay
+                // e.g., one, 
+                out.print(expr.op);
+                out.brk(1);
+                addBracketsIfNeeded(expr.sub);
         }
 
     }
 
+    /*
     private void ExprVarToOut(ExprVar expr) {
         out.print(cleanLabel(expr.label));
     }
@@ -386,9 +457,11 @@ public class ExprToString {
     private void FieldToOut(Field field) {
         out.print("(").print(cleanLabel(field.label)).print(")");
     }
+    */
 
     // Helper method to print a list of declarations
-    private void DeclsToOut(ConstList<Decl> decls) {
+    private void DeclsToOut(List<Decl> decls) {
+        //TODO add appropriate breaks here
         boolean first = true;
         for (Decl decl : decls) {
             StringJoiner namesJoiner = new StringJoiner(",");
@@ -406,6 +479,20 @@ public class ExprToString {
         }
     }
 
+    private void DeclToOut(Decl decl) {
+       if (decl.disjoint != null) {
+            out.print("disj").print(" ");
+        }
+        //StringJoiner namesJoiner = new StringJoiner(",");
+        //decl.names.forEach(name -> namesJoiner.add(cleanLabel(name.label)));
+        //if (!first) {
+        //    out.print(",");
+        //}
+        //first = false;
+        out.print(DashUtilFcns.strCommaList(decl.names));
+        out.print(": ");
+        ExprToOut(decl.expr);        
+    }
     // Helper method to change "{path/label}" to "label"
     private String cleanLabel(String label) {
         if (!label.contains("this/")) {
@@ -421,11 +508,12 @@ public class ExprToString {
         return label;
     }
 
-    
+    /*
     private ExprBinary.Op exprOp (Expr expr) {
         if (expr instanceof ExprBinary)
             return ((ExprBinary) expr).op;
         return null;
     }
+    */
 
 }

@@ -191,7 +191,7 @@ public class AddSnapshotSignature {
                 decls.add(DeclExt.newSetDeclExt(eventsName+"0", allEventsName));
             List<String> cop;        
             for (int i = 1; i <= d.getMaxDepthParams(); i++) {
-                cop = Collections.nCopies(i+1,identifierName);
+                cop = Collections.nCopies(i,identifierName);
                 // scopesUsed 1, etc. 
                 //if (d.transAtThisParamDepth(i)) 
                     decls.add((Decl) new DeclExt(

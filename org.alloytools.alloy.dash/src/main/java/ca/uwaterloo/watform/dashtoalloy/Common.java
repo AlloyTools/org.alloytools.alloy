@@ -82,7 +82,7 @@ public class Common {
     }
 
     public static Decl scopeDecl(int i) {
-        return (Decl) new DeclExt(DashStrings.scopeName + i, DashStrings.allEventsName);
+        return (Decl) new DeclExt(DashStrings.scopeName + i, DashStrings.stateLabelName);
     }
 
     // common vars
@@ -220,11 +220,18 @@ public class Common {
         return e;
     }
 
-    public static Expr translateDashRef(DashRef e) {
+    public static Expr translateDashRefToArrow(DashRef e) {
         List<Expr> ll = new ArrayList<Expr>(e.getParamValues());
         Collections.reverse(ll);
         ll.add(createVar(translateFQN(e.getName())));
         return createArrowExprList(ll);
+    }
+
+    public static Expr translateDashRefToJoin(DashRef e) {
+        List<Expr> ll = new ArrayList<Expr>(e.getParamValues());
+        Collections.reverse(ll);
+        ll.add(createVar(translateFQN(e.getName())));
+        return createJoinList(ll);
     }
 
     //TODO better name!

@@ -25,13 +25,13 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.parser.CompModule;
 
 import ca.uwaterloo.watform.core.DashStrings;
-import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
-import ca.uwaterloo.watform.alloyasthelper.ExprToString;
+import static ca.uwaterloo.watform.alloyasthelper.ExprHelper.*;
+//import static ca.uwaterloo.watform.alloyasthelper.ExprToString.*;
 
 public class CompModuleHelper extends CompModule {
 
     private String space = " ";
-    private String tab = "  ";
+    private String tab = DashStrings.tab;
 
     // this class is never instantiated
     public CompModuleHelper(CompModule world, String filename, String path) {
@@ -39,11 +39,11 @@ public class CompModuleHelper extends CompModule {
     }
 
     public String addOpenSimple(String name, List<String> args, String aliasName) {
-        ExprVar alias = (aliasName == null) ? null : ExprHelper.createVar(aliasName);
+        ExprVar alias = (aliasName == null) ? null : createVar(aliasName);
         List<ExprVar> argsExprList = new ArrayList<ExprVar>();
         if (args != null)  
-            for (String a: args) argsExprList.add(ExprHelper.createVar(a));
-        addOpen(null, null, ExprHelper.createVar(name), argsExprList, alias);
+            for (String a: args) argsExprList.add(createVar(a));
+        addOpen(null, null, createVar(name), argsExprList, alias);
         // build the string that is this open
         String s = DashStrings.openName + " "+name;
         if (args != null) {
@@ -113,8 +113,8 @@ public class CompModuleHelper extends CompModule {
         addSig( 
             Pos.UNKNOWN,
             extension, 
-            ExprHelper.createVar(DashStrings.extendsName), 
-            ExprHelper.createExprVarList(new ArrayList<String>(Arrays.asList(extended))), 
+            createVar(DashStrings.extendsName), 
+            createExprVarList(new ArrayList<String>(Arrays.asList(extended))), 
             new ArrayList<Decl>(), 
             null,
             AttrType.ABSTRACT.makenull(Pos.UNKNOWN), 
@@ -136,8 +136,8 @@ public class CompModuleHelper extends CompModule {
         addSig(
             Pos.UNKNOWN,
             extension, 
-            ExprHelper.createVar(DashStrings.extendsName), 
-            ExprHelper.createExprVarList(new ArrayList<String>(Arrays.asList(extended))), 
+            createVar(DashStrings.extendsName), 
+            createExprVarList(new ArrayList<String>(Arrays.asList(extended))), 
             new ArrayList<Decl>(), 
             null, 
             null, 
@@ -159,8 +159,8 @@ public class CompModuleHelper extends CompModule {
         addSig(
             Pos.UNKNOWN,
             extension, 
-            ExprHelper.createVar(DashStrings.extendsName), 
-            ExprHelper.createExprVarList(new ArrayList<String>(Arrays.asList(extended))), 
+            createVar(DashStrings.extendsName), 
+            createExprVarList(new ArrayList<String>(Arrays.asList(extended))), 
             new ArrayList<Decl>(), 
             null, 
             null, 
@@ -192,9 +192,9 @@ public class CompModuleHelper extends CompModule {
             null,
             null);
         String s = DashStrings.sigName + space + name;
-        s += " {\n";
-        StringJoiner j = new StringJoiner(",\n");
-        decls.forEach(i -> j.add(tab + i.toString()));
+        s += " {\n"+tab;
+        StringJoiner j = new StringJoiner(",\n"+tab);
+        decls.forEach(i -> j.add(ppDecl(i)));
         s += j.toString() + "\n}\n";
         //System.out.println(s);
         return s;
@@ -204,8 +204,8 @@ public class CompModuleHelper extends CompModule {
         addSig(
             Pos.UNKNOWN,
             extension, 
-            ExprHelper.createVar(DashStrings.extendsName), 
-            ExprHelper.createExprVarList(new ArrayList<String>(Arrays.asList(extended))), 
+            createVar(DashStrings.extendsName), 
+            createExprVarList(new ArrayList<String>(Arrays.asList(extended))), 
             decls, 
             null, 
             null, 
@@ -218,8 +218,9 @@ public class CompModuleHelper extends CompModule {
         s += extension + space + DashStrings.extendsName + space;
         s += extended;
         s += " {\n";
-        StringJoiner j = new StringJoiner(",\n");
-        decls.forEach(i -> j.add(tab + i.toString()));
+        //s += ppDecls(decls);
+        StringJoiner j = new StringJoiner(",\n"+tab);
+        decls.forEach(i -> j.add(ppDecl(i)));
         s += j.toString() + "\n}\n";
         //System.out.println(s);
         return s;
@@ -240,8 +241,9 @@ public class CompModuleHelper extends CompModule {
             null,
             null);
         String s = DashStrings.sigName + space + name + space + "{\n";
+        //s += ppDecls(decls);
         StringJoiner j = new StringJoiner(",\n");
-        decls.forEach(i -> j.add(tab + i.toString()));
+        decls.forEach(i -> j.add(ppDecl(i)));
         s += j.toString() + "\n}\n";
         //System.out.println(s);
         return s;
@@ -251,7 +253,7 @@ public class CompModuleHelper extends CompModule {
         addSig(
             Pos.UNKNOWN,
             name,
-            ExprHelper.createVar(DashStrings.inName), 
+            createVar(DashStrings.inName), 
             Arrays.asList(typ),
             new ArrayList<Decl>(),
             null,
@@ -264,7 +266,7 @@ public class CompModuleHelper extends CompModule {
             );
         String s = DashStrings.varName + space + DashStrings.sigName + space;
         s += name + space + DashStrings.inName + space;
-        s += typ.toString(); 
+        s += ppExpr(typ); 
         s += " { }\n";
         //System.out.println(s);
         return s;
@@ -275,7 +277,7 @@ public class CompModuleHelper extends CompModule {
         addSig(
             Pos.UNKNOWN,
             name,
-            ExprHelper.createVar(DashStrings.inName), 
+            createVar(DashStrings.inName), 
             typ,
             new ArrayList<Decl>(),
             null,
@@ -288,7 +290,7 @@ public class CompModuleHelper extends CompModule {
             );
         String s = DashStrings.varName + space + DashStrings.sigName + space;
         s += name + space + DashStrings.inName + space;
-        s += typ.toString(); 
+        s += ppExpr(((Expr) typ)); 
         s += " { }\n";
         //System.out.println(s);
         return s;
@@ -304,14 +306,15 @@ public class CompModuleHelper extends CompModule {
      * t is return type; null if predicate
      */
     public String addPredSimple(String name, List<Decl> decls, List<Expr> eList) {
-        Expr body = ExprHelper.createAndFromList(eList);
-        addFunc(Pos.UNKNOWN, Pos.UNKNOWN, ExprHelper.createVar(name), null, decls, null, body);
+        Expr body = createAndFromList(eList);
+        addFunc(Pos.UNKNOWN, Pos.UNKNOWN, createVar(name), null, decls, null, body);
         String s = new String();
         s += DashStrings.predName + " " + name;
         if (!decls.isEmpty()) {
             s += " [";
+            //s += ppDecls(decls);
             StringJoiner j = new StringJoiner(", ");
-            decls.forEach(i -> j.add(i.toString()));
+            decls.forEach(i -> j.add(ppDecl(i)));
             s += j.toString() + "]";
         } 
         // we have to use our own printer
@@ -323,14 +326,14 @@ public class CompModuleHelper extends CompModule {
         // but remember the predicate call to testIfNextStable is nested 
         // inside an ITE
 
-        s += " {\n "+tab;
+        s += " {\n"+tab;
         StringJoiner sj = new StringJoiner("\n" + tab);   
         for (Expr e: eList) {
-            ExprToString eToString = new ExprToString(false);
-            sj.add(eToString.toString(e));
+            //ExprToString eToString = new ExprToString(false);
+            sj.add(ppExpr(e));
         }
-        s += sj.toString() + "\n";
-        s+= "}\n\n";
+        s += sj.toString();
+        s += "\n}\n\n";
         return s;
     }
 
@@ -341,7 +344,7 @@ public class CompModuleHelper extends CompModule {
      */
     
     public String addFactSimple(String name, List<Expr> eList) {
-        Expr body = ExprHelper.createAndFromList(eList);
+        Expr body = createAndFromList(eList);
         addFact(Pos.UNKNOWN,name,body);
         String s = new String();
         s += DashStrings.factName + " " + name + " {";
@@ -349,8 +352,8 @@ public class CompModuleHelper extends CompModule {
         s += tab;
         StringJoiner sj = new StringJoiner("\n" + tab);   
         for (Expr e: eList) {
-            ExprToString eToString = new ExprToString(false);
-            sj.add(eToString.toString(e));
+            //ExprToString eToString = new ExprToString(false);
+            sj.add(ppExpr(e));
         }        
         s += sj.toString() + "\n";
         s+= "}\n\n";
@@ -380,6 +383,7 @@ public class CompModuleHelper extends CompModule {
     }
     // this seems incomplete -> DROP IT EVENTUALLY
     // also need to print facts
+    /*
     public String sigsToString() {
         StringBuilder sb = new StringBuilder("");
         for(Sig sig: sigs.values()) {
@@ -424,4 +428,7 @@ public class CompModuleHelper extends CompModule {
         }
         return sb.toString();
     }
+    */
+
+
 }

@@ -4,6 +4,9 @@ package ca.uwaterloo.watform.core;
 
 public class DashStrings {
 
+	// pretty printing anywhere
+	public static String tab = "  ";
+
 	/* alloy keywords */
 	public static String moduleName = "module";
 	public static String extendsName = "extends";
@@ -138,4 +141,6 @@ public class DashStrings {
 		if (hasPrime(s)) return s.substring(0, s.length()-1);
 		else return s;
 	}
+
+	
 }

@@ -53,7 +53,7 @@ public class AddTransPre {
 
         // p3 -> p2 -> p1 -> src in s.confVar(i)
         // src does not have to be a basic state      
-        body.add(createIn(translateDashRef(d.getTransSrc(tfqn)),curConf(prs.size())));
+        body.add(createIn(translateDashRefToArrow(d.getTransSrc(tfqn)),curConf(prs.size())));
 
         if (d.getTransWhen(tfqn) != null)
             body.add(translateExpr(d.getTransWhen(tfqn),d));
@@ -62,7 +62,7 @@ public class AddTransPre {
         List<DashRef> nonO = d.nonOrthogonalScopesOf(tfqn);
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             List<Expr> u = DashRef.hasNumParams(nonO,i).stream()
-                .map(x -> translateDashRef(x))
+                .map(x -> translateDashRefToArrow(x))
                 .collect(Collectors.toList());
             for (Expr x: u) body.add(createNot(createIn(x,curScopesUsed(i))));
         }
@@ -73,11 +73,11 @@ public class AddTransPre {
             // trig_events_t1
             DashRef ev = d.getTransOn(tfqn);
             int sz = ev.getParamValues().size();
-            Expr ifBranch = createIn(translateDashRef(ev),
+            Expr ifBranch = createIn(translateDashRefToArrow(ev),
                 createIntersect(
                     curEvents(sz), 
                     allEnvironmentalEventsVar()));
-            Expr elseBranch = createIn(translateDashRef(ev), curEvents(sz));
+            Expr elseBranch = createIn(translateDashRefToArrow(ev), curEvents(sz));
             body.add(createITE(
                 curStableTrue(),
                 ifBranch,
@@ -86,7 +86,7 @@ public class AddTransPre {
         } else if (d.getTransOn(tfqn) != null) {
             DashRef ev = d.getTransOn(tfqn);
             int sz = ev.getParamValues().size();
-            body.add(createIn(translateDashRef(ev),curEvents(sz)));
+            body.add(createIn(translateDashRefToArrow(ev),curEvents(sz)));
         }
         
         /*

@@ -83,10 +83,10 @@ public class AddTransPost {
         List<DashRef> exited = d.exited(tfqn);
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             List<Expr> ent = DashRef.hasNumParams(entered,i).stream()
-                .map(x -> translateDashRef(x))
+                .map(x -> translateDashRefToArrow(x))
                 .collect(Collectors.toList());
             List<Expr> exi = DashRef.hasNumParams(exited,i).stream()
-                .map(x -> translateDashRef(x))
+                .map(x -> translateDashRefToArrow(x))
                 .collect(Collectors.toList());
             Expr e = curConf(i);
             if (!exi.isEmpty()) e = createDiff(e,createDiffList(exi));
@@ -97,7 +97,7 @@ public class AddTransPost {
         List<DashRef> sU = d.scopesUsed(tfqn);
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             List<Expr> u = DashRef.hasNumParams(sU,i).stream()
-                .map(x -> translateDashRef(x))
+                .map(x -> translateDashRefToArrow(x))
                 .collect(Collectors.toList());
             Expr e = curScopesUsed(i);
             if (!u.isEmpty()) e = createUnion(e,createUnionFromList(u));
@@ -118,7 +118,7 @@ public class AddTransPost {
         Expr c1; 
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             if (d.hasEventsAti(i)) {
-                if (ev != null && ev.getParamValues().size() == i) rhs = translateDashRef(ev);
+                if (ev != null && ev.getParamValues().size() == i) rhs = translateDashRefToArrow(ev);
                 else rhs = createNone();
                 case1.add(createEquals(
                     createIntersect(nextEvents(i),allInternalEventsVar()),
@@ -135,7 +135,7 @@ public class AddTransPost {
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             if (d.hasEventsAti(i)) {
                 q = createIntersect(allInternalEventsVar(), curEvents(i));
-                if (ev != null && ev.getParamValues().size() == i) rhs = createUnion(translateDashRef(ev), q);
+                if (ev != null && ev.getParamValues().size() == i) rhs = createUnion(translateDashRefToArrow(ev), q);
                 else rhs = q;
                 case2.add(createEquals(
                             createIntersect(nextEvents(i),allInternalEventsVar()),
@@ -153,7 +153,7 @@ public class AddTransPost {
         Expr c3; 
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             if (d.hasEventsAti(i)) {
-                if (ev != null && ev.getParamValues().size() == i) rhs1 = translateDashRef(ev);
+                if (ev != null && ev.getParamValues().size() == i) rhs1 = translateDashRefToArrow(ev);
                 else rhs1 = createNone();
                 case3.add(createAnd(
                         createEquals(
@@ -175,7 +175,7 @@ public class AddTransPost {
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             if (d.hasEventsAti(i)) {
                 if (ev != null && ev.getParamValues().size() == i) 
-                    case4.add(createEquals(nextEvents(i),createUnion(curEvents(i), translateDashRef(ev))));
+                    case4.add(createEquals(nextEvents(i),createUnion(curEvents(i), translateDashRefToArrow(ev))));
             }
         }
         if (case4.isEmpty()) c4 = createTrue();
@@ -234,13 +234,13 @@ public class AddTransPost {
         for (int i=0; i <= d.getMaxDepthParams(); i++) {
             //TODO could only have scopesUsedi for i that has scopesUsed
             List<Expr> u = DashRef.hasNumParams(sU,i).stream()
-                .map(x -> translateDashRef(x))
+                .map(x -> translateDashRefToArrow(x))
                 .collect(Collectors.toList());
             if (u.size() == 1) args.add(u.get(0));
             else if (u.size() ==0 ) args.add(createNone());
             else { DashErrors.createTestIfNextStableCallMultipleScopesAtSameLevel(); return null; }
             if (d.hasEventsAti(i)) {
-                if (ev != null && ev.getParamValues().size() == i) args.add(translateDashRef(ev));
+                if (ev != null && ev.getParamValues().size() == i) args.add(translateDashRefToArrow(ev));
                 else args.add(createNone());
             }
         }
