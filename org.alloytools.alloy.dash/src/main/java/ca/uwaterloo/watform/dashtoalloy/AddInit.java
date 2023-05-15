@@ -47,19 +47,21 @@ public class AddInit {
         // so don't try to combine these steps
 
         Expr e;
-        if (!prs.isEmpty())
-            e = createAll(
-                // might need to add "p" to the front of these
-                paramDecls(prs),
-                createAndFromList(body));
-        else e = createAndFromList(body);
-        body = new ArrayList<Expr>();
-        body.add(e);
+        if (!body.isEmpty()) {
+            if (!prs.isEmpty())
+                e = createAll(
+                    // might need to add "p" to the front of these
+                    paramDecls(prs),
+                    createAndFromList(body));
+            else e = createAndFromList(body);
+            body = new ArrayList<Expr>();
+            body.add(e);
+        }
         // init is a reserved word in Electrum
         if (DashOptions.isElectrum) {
             d.alloyString += d.addPredSimple(DashStrings.initFactName, new ArrayList<Decl>(), body);
         } else {
-            d.alloyString += d.addPredSimple(DashStrings.initFactName, curNextParamsDecls(prs),body);
+            d.alloyString += d.addPredSimple(DashStrings.initFactName, curParamsDecls(prs),body);
         }
     }
 }

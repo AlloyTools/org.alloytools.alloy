@@ -80,17 +80,17 @@ public class DashStrings {
 	public static String confName = "conf";
 	public static String scopesUsedName = "scopesUsed";
 
-	public static String stateLabelName = "StateLabel";
-	public static String systemStateName = "SystemState";
+	public static String stateLabelName = "States";
+	//public static String systemStateName = "SystemState";
 	//public static String transitionLabelName = "TransitionLabel";
-	public static String identifierName = "Identifiers";
+	public static String identifierName = "Ids";
 	// how to name parameter variables
 	public static String pName = "p";
 	public static String eventsName = "events";
-	public static String allEventsName = "AllEvents";
-	public static String allEnvironmentalEventsName = "AllEnvironmentalEvents";
-	public static String allInternalEventsName = "AllInternalEvent";
-	public static String variablesName = "Variables";
+	public static String allEventsName = "Events";
+	public static String allEnvironmentalEventsName = "EnvEvents";
+	public static String allInternalEventsName = "IntEvent";
+	public static String variablesName = "Vars";
 
 	public static String preName = "_pre";
 	public static String postName = "_post";
@@ -98,8 +98,8 @@ public class DashStrings {
 	public static String testIfNextStableName = "testIfNextStable";
 	public static String enabledAfterStepName = "_enabledAfterStep";
 	public static String tName = "t";
-	public static String genEventName = "genEvents";
-	public static String scopeName = "scope";
+	public static String genEventName = "genEvs";
+	public static String scopeName = "scp";
 	public static String bufferName = "buffer";
 	public static String bufferIndexName = "bufIdx";
 
@@ -108,7 +108,7 @@ public class DashStrings {
 	public static String tracesName = "traces";
 	
 	public static String curName = "s";
-	public static String nextName = "sNext";
+	public static String nextName = "sn";
 	public static String prime(String a) {
 		return a+"'";
 	};

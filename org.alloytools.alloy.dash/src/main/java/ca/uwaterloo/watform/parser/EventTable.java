@@ -110,6 +110,10 @@ public class EventTable {
 		if (table.containsKey(efqn)) return (table.get(efqn).kind == IntEnvKind.ENV);
 		else { DashErrors.eventTableEventNotFound("isEnvironmentalEvent", efqn); return false; }	
 	}
+	public boolean isInternalEvent(String efqn) {
+		if (table.containsKey(efqn)) return (table.get(efqn).kind == IntEnvKind.INT);
+		else { DashErrors.eventTableEventNotFound("isInternalEvent", efqn); return false; }	
+	}
 	public List<String> allEventsOfState(String sfqn) {
 		// return all events declared in this state
 		// will have the sfqn as a prefix

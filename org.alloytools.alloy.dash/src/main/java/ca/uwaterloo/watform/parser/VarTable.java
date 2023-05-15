@@ -332,7 +332,10 @@ public class VarTable {
 		} else {
 			// name might not be fully resolved
 			v = DashRef.nameOfDashRefExpr(exp);
-			paramValues = DashRef.paramValuesOfDashRefExpr(exp);
+			// have to recurse through param values
+			paramValues = DashRef.paramValuesOfDashRefExpr(exp).stream()
+						.map(i -> resolveExpr(xType, i, region, fqn, params))
+						.collect(Collectors.toList());
 		}
 		String vfqn = DashFQN.fqn(v);
 		Boolean isPrimed = false;

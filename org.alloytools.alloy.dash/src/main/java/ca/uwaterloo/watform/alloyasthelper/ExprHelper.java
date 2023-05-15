@@ -191,6 +191,9 @@ public class ExprHelper  {
         }
         return ret;
     }
+    public static ExprBinary createRangeRes(Expr left, Expr right) {
+        return (ExprBinary) ExprBinary.Op.RANGE.make(Pos.UNKNOWN, Pos.UNKNOWN, left, right);
+    }
     public static Expr createUnionList(List<Expr> elist) {
         Expr ret = null;
         assert(elist!=null);
@@ -307,8 +310,16 @@ public class ExprHelper  {
         return o;
     }   
 
+    // Alloy won't use boolean/True or boolean/False as formulas
+    // but it can be convenient in our code to use them
+    // so let's just simplify them out in formulas
     public static Expr createITE(Expr cond, Expr impliesExpr, Expr elseExpr) {
         if (sEquals(cond, createTrue()))  return (Expr) impliesExpr;
+        if (sEquals(cond,createFalse())) return (Expr) elseExpr;
+        if (sEquals(impliesExpr,createTrue())) return createOr(cond, createAnd(createNot(cond),elseExpr));
+        if (sEquals(impliesExpr,createFalse())) return createAnd(createNot(cond),elseExpr);
+        if (sEquals(elseExpr,createTrue())) return createOr(createAnd(cond,impliesExpr), createNot(cond));
+        if (sEquals(elseExpr,createFalse())) return createAnd(cond,impliesExpr);
         else return (Expr) ExprITE.make(Pos.UNKNOWN, cond, impliesExpr, elseExpr);
     }
 

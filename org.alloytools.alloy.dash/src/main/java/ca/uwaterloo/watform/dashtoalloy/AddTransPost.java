@@ -89,7 +89,12 @@ public class AddTransPost {
                 .map(x -> translateDashRefToArrow(x))
                 .collect(Collectors.toList());
             Expr e = curConf(i);
-            if (!exi.isEmpty()) e = createDiff(e,createDiffList(exi));
+            for (Expr x:ent) {
+                // can't diff ((ent1 - ent2) - ent3)
+                // but have to diff from whole set
+                e = createDiff(e,x);
+            }
+            //if (!exi.isEmpty()) e = createDiff(e,createDiffList(exi));
             if (!ent.isEmpty()) e = createUnion(e,createUnionList(ent));
             body.add(createEquals(nextConf(i),e));
         }
@@ -112,8 +117,8 @@ public class AddTransPost {
         Expr rhs, rhs1, q;
 
         // case 1
-        // forall i. eventsi' & AllInternalEvents = t1_send (if i)
-        //           eventsi' & AllIntermalEvents = none (if not i)  
+        // forall i. eventsi' :> InternalEvents = t1_send (if i)
+        //           eventsi' :> InternalEvents = none (if not i)  
         List<Expr> case1 = new ArrayList<Expr>();    
         Expr c1; 
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
@@ -121,15 +126,16 @@ public class AddTransPost {
                 if (ev != null && ev.getParamValues().size() == i) rhs = translateDashRefToArrow(ev);
                 else rhs = createNone();
                 case1.add(createEquals(
-                    createIntersect(nextEvents(i),allInternalEventsVar()),
+                    createRangeRes(nextEvents(i),allInternalEventsVar()),
                     rhs));
             }
         }
-        if (case1.isEmpty()) c1 = createTrue();
-        else c1 = createAndFromList(case1);
+        //if (case1.isEmpty()) c1 = createTrue();
+        c1 = createAndFromList(case1);
 
         // case 2
-        // forall i: eventsi' & InternalEvent = t1_send_ev (if i) + (InternalEvent & eventsi)           
+        // forall i. eventsi' :> InternalEvents = t1_send_ev (if i) + eventsi 
+        //           eventsi' :> InternalEvents = eventsi (if not i)       
         List<Expr> case2 = new ArrayList<Expr>();   
         Expr c2;
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
@@ -138,34 +144,39 @@ public class AddTransPost {
                 if (ev != null && ev.getParamValues().size() == i) rhs = createUnion(translateDashRefToArrow(ev), q);
                 else rhs = q;
                 case2.add(createEquals(
-                            createIntersect(nextEvents(i),allInternalEventsVar()),
+                            createRangeRes(nextEvents(i),allInternalEventsVar()),
                             rhs));
             }
         }
-        if (case2.isEmpty()) c2 = createTrue();
-        else c2 = createAndFromList(case2);
+        //if (case2.isEmpty()) c2 = createTrue();
+        c2 = createAndFromList(case2);
 
         // case 3
-        // forall i: (eventsi' & InternalEvent = t1_send_ev (if i))
-        //           (eventsi' & InternalEvent = none) (if not i)
-        //       and (eventsi' & EnvironmentalEvent = eventsi & EnvironmentalEvent)
+        // forall i: (eventsi' :> InternalEvent = t1_send_ev (if i))
+        //           (eventsi' :> InternalEvent = none) (if not i)
+        //       and (eventsi' :> EnvironmentalEvent = eventsi :> EnvironmentalEvent)
         List<Expr> case3 = new ArrayList<Expr>();  
         Expr c3; 
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             if (d.hasEventsAti(i)) {
                 if (ev != null && ev.getParamValues().size() == i) rhs1 = translateDashRefToArrow(ev);
                 else rhs1 = createNone();
-                case3.add(createAnd(
-                        createEquals(
-                            createIntersect(nextEvents(i),allInternalEventsVar()), 
-                            rhs1),
-                        createEquals(
-                            createIntersect(nextEvents(i),allEnvironmentalEventsVar()),
-                            createIntersect(curEvents(i),allEnvironmentalEventsVar()) )));
+                if (d.hasEnvironmentalEvents()) 
+                    case3.add(createAnd(
+                            createEquals(
+                                createRangeRes(nextEvents(i),allInternalEventsVar()), 
+                                rhs1),
+                            createEquals(
+                                createRangeRes(nextEvents(i),allEnvironmentalEventsVar()),
+                                createRangeRes(curEvents(i),allEnvironmentalEventsVar()) )));
+                else 
+                    case3.add(createEquals(
+                                createRangeRes(nextEvents(i),allInternalEventsVar()), 
+                                rhs1));
             }
         }
-        if (case3.isEmpty()) c3 = createTrue();
-        else c3 = createAndFromList(case3);
+        //if (case3.isEmpty()) c3 = createTrue();
+        c3 = createAndFromList(case3);
 
         // case 4
         // forall i. eventsi' = eventsi + t1_send (if i)
@@ -178,8 +189,8 @@ public class AddTransPost {
                     case4.add(createEquals(nextEvents(i),createUnion(curEvents(i), translateDashRefToArrow(ev))));
             }
         }
-        if (case4.isEmpty()) c4 = createTrue();
-        else c4 = createAndFromList(case4);
+        //if (case4.isEmpty()) c4 = createTrue();
+        c4 = createAndFromList(case4);
 
         // env_vars_unchanged[s,s']
         
@@ -192,7 +203,8 @@ public class AddTransPost {
                 .collect(Collectors.toList()));
         Expr stableFalseAndEnvNoChange = createAnd(nextStableFalse(), envNoChange);
 
-
+        // big ITE is simplified for boolean/True, boolean/False
+        // b/c Alloy does not allow those as "formulas"
         if (d.hasConcurrency())
             body.add(
             createITE(createTestIfNextStableCall(d, tfqn),

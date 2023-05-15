@@ -347,6 +347,9 @@ public class DashModule extends CompModuleHelper {
     public boolean isEnvironmentalEvent(String efqn) {
     	return eventTable.isEnvironmentalEvent(efqn);
     }
+    public boolean isInternalEvent(String efqn) {
+    	return eventTable.isInternalEvent(efqn);
+    }
     public List<String> getAllVarNames() {
     	return varTable.getAllVarNames();
     }

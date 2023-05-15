@@ -114,7 +114,7 @@ public class AddTransIsEnabledAfterStep {
         Expr ev1, ev2;
         if (ev != null) {
             //ev1: t1_on  in (s.eventsi & EnvEvents) + genEventsi // if t1_on is internal this is false
-            if (d.isEnvironmentalEvent(ev.getName())) {
+            if (d.isInternalEvent(ev.getName())) {
                 ev1 = createFalse();
             } else {
                 ev1 = createIn(
