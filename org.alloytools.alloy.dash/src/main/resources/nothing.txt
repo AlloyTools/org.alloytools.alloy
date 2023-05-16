@@ -1,0 +1,1 @@
+Something here so org.alloytools.alloy.dash/src/main/resources is not empty.

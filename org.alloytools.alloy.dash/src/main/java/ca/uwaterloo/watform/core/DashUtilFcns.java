@@ -67,4 +67,15 @@ public class DashUtilFcns {
     	if (ll.isEmpty()) return ll;
     	else return ll.subList(0,ll.size()-1);
     }
+    // java's Collection.reverse doesn't work sometimes
+    public static <T> List<T> reverse(List<T> ll) {
+    	assert(!ll.isEmpty());
+    	//System.out.println(ll);
+    	List<T> x = new ArrayList<T>();
+    	for (int i=ll.size();i==0;i--) {
+    		x.add(ll.get(i-1));
+    		System.out.println("here");
+    	}
+    	return x;
+    }
 }

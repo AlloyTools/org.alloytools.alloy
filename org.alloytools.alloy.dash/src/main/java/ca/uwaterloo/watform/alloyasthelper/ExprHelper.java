@@ -20,7 +20,7 @@ import edu.mit.csail.sdg.ast.ExprBinary;
 
 import ca.uwaterloo.watform.core.DashStrings;
 import ca.uwaterloo.watform.core.DashErrors;
-
+import ca.uwaterloo.watform.core.DashUtilFcns;
 import ca.uwaterloo.watform.alloyasthelper.ExprToString;
 
 // these are all static
@@ -175,6 +175,9 @@ public class ExprHelper  {
     public static Expr createOne(Expr sub) {
         return (ExprUnary) ExprUnary.Op.ONE.make(Pos.UNKNOWN, sub);
     }
+    public static Expr createSomeOf(Expr sub) {
+        return (ExprUnary) ExprUnary.Op.SOMEOF.make(Pos.UNKNOWN, sub);
+    }
     public static Expr createSet(Expr sub) {
         return (ExprUnary) ExprUnary.Op.SETOF.make(Pos.UNKNOWN,  sub);
     }
@@ -302,10 +305,15 @@ public class ExprHelper  {
     }    
     public static Expr createArrowExprList(List<Expr> eList) {
         assert(eList != null);
-        Collections.reverse(eList);
-        Expr o = eList.get(0);
-        for (Expr e: eList.subList(1,eList.size())) {
-            o = createArrow(e, o);
+        System.out.println("input " + eList);
+        List<Expr> xList = DashUtilFcns.reverse(eList);
+        System.out.println("reversed: " +xList);
+        Expr o = xList.get(0);
+        if (xList.size() == 1) return o;
+        else {
+            for (Expr x: xList.subList(1,xList.size())) {
+                o = createArrow(x, o);
+            }
         }
         return o;
     }   

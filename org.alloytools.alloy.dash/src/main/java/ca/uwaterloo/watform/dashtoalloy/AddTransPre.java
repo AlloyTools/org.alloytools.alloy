@@ -31,7 +31,8 @@ public class AddTransPre {
     // --------------------------------------------------------------------------------------
     /* 
         pred pre_t1[s:Snapshot,pparam0:Param0, ...] {
-            src_state_t1 in <prs for src_state>.s.conf 
+            src_state_t1 in <prs for src_state>.s.conf is not correct!!!
+            src_staet_t1 & <prs for src_state>.s.conf != none
             orthogonal to any scopes uses
             guard_cond_t1 [s] 
             s.stable = True => 
@@ -51,9 +52,13 @@ public class AddTransPre {
         List<Expr> body = new ArrayList<Expr>();
         String tout = translateFQN(tfqn);
 
-        // p3 -> p2 -> p1 -> src in s.confVar(i)
+        // p3 -> p2 -> p1 -> src & s.confVar(i) != none
         // src does not have to be a basic state      
-        body.add(createIn(translateDashRefToArrow(d.getTransSrc(tfqn)),curConf(prs.size())));
+        body.add(
+            createSomeOf(
+                createIntersect(
+                    translateDashRefToArrow(d.getTransSrc(tfqn)),
+                    curConf(prs.size()))));
 
         if (d.getTransWhen(tfqn) != null)
             body.add(translateExpr(d.getTransWhen(tfqn),d));
@@ -74,7 +79,7 @@ public class AddTransPre {
             DashRef ev = d.getTransOn(tfqn);
             int sz = ev.getParamValues().size();
             Expr ifBranch = createIn(translateDashRefToArrow(ev),
-                createIntersect(
+                createRangeRes(
                     curEvents(sz), 
                     allEnvironmentalEventsVar()));
             Expr elseBranch = createIn(translateDashRefToArrow(ev), curEvents(sz));

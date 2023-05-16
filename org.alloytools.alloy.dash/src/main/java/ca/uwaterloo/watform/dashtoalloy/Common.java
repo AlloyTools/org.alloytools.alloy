@@ -17,6 +17,7 @@ import ca.uwaterloo.watform.core.DashUtilFcns;
 import ca.uwaterloo.watform.core.DashRef;
 import ca.uwaterloo.watform.core.DashErrors;
 
+
 // shortens the code to import these statically
 import static ca.uwaterloo.watform.core.DashFQN.*;
 import static ca.uwaterloo.watform.alloyasthelper.ExprHelper.*;
@@ -379,6 +380,15 @@ public class Common {
 
     public static Expr bufferIndexVar(int i) {
         return createVar(DashStrings.bufferIndexName + i);
+    }
+    // none -> none -> none
+    public static Expr createNoneArrow(int i) {
+        if (i==0) return createNone();
+        else {
+            //System.out.println(i);
+            //System.out.println(Collections.nCopies(i+1,createNone()));
+            return createArrowExprList(Collections.nCopies(i+1,createNone()));
+        }
     }
     /*
     public static Expr predJoinCurParams(String name, List<String> prs) {

@@ -140,7 +140,7 @@ public class AddTransPost {
         Expr c2;
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             if (d.hasEventsAti(i)) {
-                q = createIntersect(allInternalEventsVar(), curEvents(i));
+                q = createRangeRes(curEvents(i), allInternalEventsVar());
                 if (ev != null && ev.getParamValues().size() == i) rhs = createUnion(translateDashRefToArrow(ev), q);
                 else rhs = q;
                 case2.add(createEquals(
@@ -253,7 +253,7 @@ public class AddTransPost {
             else { DashErrors.createTestIfNextStableCallMultipleScopesAtSameLevel(); return null; }
             if (d.hasEventsAti(i)) {
                 if (ev != null && ev.getParamValues().size() == i) args.add(translateDashRefToArrow(ev));
-                else args.add(createNone());
+                else args.add(createNoneArrow(i));
             }
         }
         return createPredCall(testIfNextStableName,args);

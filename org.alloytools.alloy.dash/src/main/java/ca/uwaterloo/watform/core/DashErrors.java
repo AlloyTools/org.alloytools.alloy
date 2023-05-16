@@ -14,15 +14,15 @@ public class DashErrors {
 
 	// syntax errors --------------------------------------------
 
-	public static String onlyOneStateMsg = "Model can only have one 'state' section";
+	public static String onlyOneStateMsg = "Dash model can only have one 'state' section";
 	public static void onlyOneState(Pos o) throws Err {
 		throw new ErrorSyntax(o,onlyOneStateMsg);
 	}
-	public static String noTransMsg = "Model does not contain any transitions.";
+	public static String noTransMsg = "Dash Model does not contain any transitions.";
 	public static void noTrans() throws Err {
 		throw new ErrorSyntax(noTransMsg);
 	}
-	public static String noStatesMsg = "Model must have at least one state.";
+	public static String noStatesMsg = "Dash model must have at least one state.";
 	public static void noStates() throws Err {
 		throw new ErrorSyntax(noStatesMsg);
 	}

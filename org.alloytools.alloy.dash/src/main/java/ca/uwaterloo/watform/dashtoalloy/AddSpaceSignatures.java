@@ -35,12 +35,7 @@ public class AddSpaceSignatures {
     public static void addSpaceSignatures(DashModule d) {
         // abstract sig Statelabel {}
         d.alloyString += d.addAbstractSigSimple(DashStrings.stateLabelName);
-        // Root
-        //if (d.hasConcurrency() || d.getImmChildren(d.getRootName()).isEmpty())
-            d.alloyString += d.addExtendsSigSimple(d.getRootName(),DashStrings.stateLabelName);
-        //else 
-            //d.alloyString += d.addAbstractExtendsSigSimple(d.getRootName(),DashStrings.stateLabelName);
-        //System.out.println(d.getRootName());
+        d.alloyString += d.addAbstractExtendsSigSimple(d.getRootName(),DashStrings.stateLabelName);
         recurseCreateStateSpaceSigs(d, d.getRootName());
         d.alloyString += "\n";
 
@@ -97,12 +92,15 @@ public class AddSpaceSignatures {
     private static void recurseCreateStateSpaceSigs(DashModule d, String parent) {
         for (String child: d.getImmChildren(parent)) {
             //System.out.println(translateFQN(child)+" "+translateFQN(parent));
-            if (d.isLeaf(child) || d.isAnd(child)) d.alloyString += d.addOneExtendsSigSimple(translateFQN(child),translateFQN(parent));
-            else 
+            if (d.isLeaf(child)) d.alloyString += d.addOneExtendsSigSimple(translateFQN(child),translateFQN(parent));
+            else {
                 //if (d.isAnd(parent)) 
                     //d.alloyString += d.addExtendsSigSimple(translateFQN(child), translateFQN(parent));
                 //else 
-                d.alloyString += d.addAbstractExtendsSigSimple(translateFQN(child), translateFQN(parent));
+                String x = d.addAbstractExtendsSigSimple(translateFQN(child), translateFQN(parent));
+                d.alloyString += x;
+                //System.out.println("HERE" + x);
+            }
             if (!d.isLeaf(child)) recurseCreateStateSpaceSigs(d,child);  
         }  
     }

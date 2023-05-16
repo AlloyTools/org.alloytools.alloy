@@ -11,6 +11,12 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.Collections;
 import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;  
+import java.time.LocalDateTime;    
+
+
+
+
 
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
@@ -61,8 +67,18 @@ public class DashModule extends CompModuleHelper {
 	}
 	private Status status = Status.CREATED;
 
-	// strings for statements resulting from the translation
+	
+   	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
+   	LocalDateTime now = LocalDateTime.now();  
+
+    // strings for statements resulting from the translation
 	public String alloyString = new String();
+	public String commentString = new String(
+		"/*\n" +
+		"   Automatically created via translation of a Dash model to Alloy\n" +
+		"   on "+dtf.format(now) + "\n" +
+		"*/\n\n"
+		);
 	// the open statements added for Dash translation to Alloy 
 	// go at the beginning of the model so these are separate from the others
 	private String opens = new String();
@@ -134,7 +150,7 @@ public class DashModule extends CompModuleHelper {
 		return s;
 	}
 	public String toStringAlloy() {	
-		String s = "";
+		String s = new String(commentString);
 		/*
 		if (rootStartLine != null) {
 			s += "Path " + getFilePath()  +"\n";
