@@ -43,7 +43,7 @@ public class AddTransIsEnabledAfterStep {
             ... ] 
     {   
         // many of these may depend on param values
-        src_state_t1 in s'.confi // where i is depth of src_state, 
+        some (src_state_t1 & s'.confi) // where i is depth of src_state, 
         guard_cond_t1[s'] 
         (s.stable = True) =>
             o1: forall i. not(t1_nonOrthScopei in scopesi) 
@@ -75,7 +75,11 @@ public class AddTransIsEnabledAfterStep {
 
         // p3 -> p2 -> p1 -> src in s'.confVar(i)
         // src does not have to be a basic state  
-        body.add(createIn(translateDashRefToArrow(d.getTransSrc(tfqn)),nextConf(prs.size())));
+        body.add(
+            createSomeOf(
+                createIntersect(
+                    translateDashRefToArrow(d.getTransSrc(tfqn)),
+                    nextConf(prs.size()))));
 
         // primed guard condition is true 
         // TODO

@@ -304,10 +304,11 @@ public class ExprHelper  {
         return o;
     }    
     public static Expr createArrowExprList(List<Expr> eList) {
-        assert(eList != null);
-        System.out.println("input " + eList);
+        assert(!eList.isEmpty());
+        //System.out.println("input " + eList);
         List<Expr> xList = DashUtilFcns.reverse(eList);
-        System.out.println("reversed: " +xList);
+        //assert(!xList.isEmpty());
+        //System.out.println("reversed: " +xList);
         Expr o = xList.get(0);
         if (xList.size() == 1) return o;
         else {

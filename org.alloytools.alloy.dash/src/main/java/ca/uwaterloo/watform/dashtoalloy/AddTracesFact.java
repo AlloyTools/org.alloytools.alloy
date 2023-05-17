@@ -48,9 +48,9 @@ public class AddTracesFact {
 		assert(DashOptions.isTraces);
         List<Expr> body = new ArrayList<Expr>();
  
-        Expr snapShotFirst = createVar(snapshotName + "/" + orderingFirstName);
-        Expr snapShotLast = createVar(snapshotName + "/" + orderingLastName);
-        Expr snapShotNext = createVar(snapshotName + "/" + orderingNextName);
+        Expr snapShotFirst = createVar(snapshotName + "/" + tracesFirstName);
+        Expr snapShotLast = createVar(snapshotName + "/" + tracesLastName);
+        Expr snapShotNext = createVar(snapshotName + "/" + tracesNextName);
 
 		List<Expr> args = new ArrayList<Expr>();
 		args.add(snapShotFirst);

@@ -60,7 +60,7 @@ public class AddTcmcFact {
  			createAll(
  				decls, 
  				createIff(
- 					createIn(curVar(), createVar(ksS0Name)),
+ 					createIn(curVar(), createVar(tcmcKsS0Name)),
  					createPredCall(initFactName,args))));
 
  		body.add(
@@ -69,7 +69,7 @@ public class AddTcmcFact {
 	 			createIff(
 	 				createIn(
 	 					createArrow(curVar(), nextVar()),
-	 					createVar(ksSigmaName)),
+	 					createVar(tcmcKsSigmaName)),
 	 				createPredCall(smallStepName, curNextVars()))));
 
         d.alloyString += d.addFactSimple(tcmcFactName, body);

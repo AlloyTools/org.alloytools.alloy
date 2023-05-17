@@ -31,8 +31,7 @@ public class AddTransPre {
     // --------------------------------------------------------------------------------------
     /* 
         pred pre_t1[s:Snapshot,pparam0:Param0, ...] {
-            src_state_t1 in <prs for src_state>.s.conf is not correct!!!
-            src_staet_t1 & <prs for src_state>.s.conf != none
+            some (src_staet_t1 & <prs for src_state>.s.conf)
             orthogonal to any scopes uses
             guard_cond_t1 [s] 
             s.stable = True => 

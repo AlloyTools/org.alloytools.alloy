@@ -70,12 +70,11 @@ public class DashUtilFcns {
     // java's Collection.reverse doesn't work sometimes
     public static <T> List<T> reverse(List<T> ll) {
     	assert(!ll.isEmpty());
-    	//System.out.println(ll);
     	List<T> x = new ArrayList<T>();
-    	for (int i=ll.size();i==0;i--) {
-    		x.add(ll.get(i-1));
-    		System.out.println("here");
+    	for (int i=ll.size()-1;i>=0;i--) {
+    		x.add(ll.get(i));
     	}
+    	assert(x.size() == ll.size());
     	return x;
     }
 }

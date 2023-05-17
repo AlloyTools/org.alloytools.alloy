@@ -241,7 +241,7 @@ public class DashModule extends CompModuleHelper {
         if (DashOptions.isTcmc) 
         	opens += this.addOpenSimple(DashStrings.utilTcmcPathName, Arrays.asList(DashStrings.snapshotName), noAlias);
         else if (DashOptions.isTraces) 
-        	opens += this.addOpenSimple(DashStrings.utilOrderingName, Arrays.asList(DashStrings.snapshotName),DashStrings.snapshotName);
+        	opens += this.addOpenSimple(DashStrings.utilTracesName, Arrays.asList(DashStrings.snapshotName),DashStrings.snapshotName);
         // add the open statements for the buffers
         if (bufElements != null ) 
         	for (int i = 0; i < bufElements.size(); i++) 
