@@ -404,6 +404,17 @@ public class StateTable {
 						sfqn, 
 						getParams(sfqn)))
 					.collect(Collectors.toList()));
+			// have to resolve variables here because need
+			// other parameters to resolveExpr
+			for (String vfqn: vt.getVarsOfState(sfqn)) {
+				vt.setVarType(vfqn,
+					vt.resolveExpr(
+						"var", 
+						vt.getVarType(vfqn),
+						getRegion(sfqn), 
+						sfqn, 
+						getParams(sfqn)));
+			}
 		}
 		isResolved = true;
 	}

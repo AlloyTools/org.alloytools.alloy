@@ -3,6 +3,8 @@
 	we do not know what order items within a state will be parsed in.
 */
 
+// Not currently used
+
 package ca.uwaterloo.watform.ast;
 
 import ca.uwaterloo.watform.core.DashStrings;

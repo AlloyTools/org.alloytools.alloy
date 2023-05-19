@@ -46,7 +46,7 @@ public class DashModule extends CompModuleHelper {
 	// derived during resolveAllDash phase
 	private int maxDepthParams = 0;
 	private boolean[] transAtThisParamDepth; 
-	private SymbolTable symbolTable;
+	//private SymbolTable symbolTable;
 	private StateTable stateTable = new StateTable();
 	private TransTable transTable = new TransTable();
 	private EventTable eventTable = new EventTable();
@@ -565,7 +565,7 @@ public class DashModule extends CompModuleHelper {
 			stateTable.resolve(getRootName(), varTable);
 
 			transTable.resolve(stateTable, eventTable, varTable);
-
+			varTable.resolve();
 			maxDepthParams = stateTable.getMaxDepthParams();
 
 			transAtThisParamDepth = transTable.transAtThisParamDepth(maxDepthParams);

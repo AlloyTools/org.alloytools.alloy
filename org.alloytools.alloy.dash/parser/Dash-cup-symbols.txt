@@ -14,8 +14,8 @@
 
     ch.put(DashSym.INIT, "init");
     ch.put(DashSym.INVARIANT, "invariant");
-    ch.put(DashSym.ACTION, "action");
-    ch.put(DashSym.CONDITION, "condition");
+    //ch.put(DashSym.ACTION, "action");
+    //ch.put(DashSym.CONDITION, "condition");
 
     ch.put(DashSym.TRANS, "trans");
 

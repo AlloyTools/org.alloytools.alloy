@@ -51,8 +51,15 @@ public class VarTable {
 			s += "typ: "+typ.toString() + "\n";
 			return s;
 		}
+		public void setType(Expr typ) {
+			this.typ = typ;
+		}
 	}
 
+	public void setVarType(String vfqn, Expr typ) {
+		if (varTable.containsKey(vfqn)) varTable.get(vfqn).setType(typ);
+		else { DashErrors.doesNotExist("setVarType", vfqn); }
+	}
 	public String toString() {
 		String s = new String("VAR TABLE\n");
 		for (String k:varTable.keySet()) {
@@ -74,8 +81,8 @@ public class VarTable {
 		if (hasPrime(vfqn)) { DashErrors.nameShouldNotBePrimed(vfqn); return false; }
 		else { varTable.put(vfqn, new VarElement(k,prms, t)); return true; }
 	}
-	public void resolveAllVarTable() {
-		// TODO
+	public void resolve() {
+		//anything?
 	}
 	public List<String> getAllVarNames() {
 		return new ArrayList<String>(varTable.keySet());

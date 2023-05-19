@@ -91,7 +91,7 @@ public class AddSnapshotSignature {
                 .filter(i -> d.getVarBufferParams(i).size() == 0 && isExprVar(d.getVarType(i)))
                 .collect(Collectors.toList());
             for (String v: allvfqnsNoParamsSimpleTyp) 
-                d.alloyString += d.addVarSigSimple(translateFQN(v), ((ExprVar) d.getVarType(v)) );
+                d.alloyString += d.addVarSigSimple(translateFQN(v), ((ExprVar) translateExpr(d.getVarType(v),d)) );
             
             // vfqns with no params and arrow type (A -> B)
             // becomes sig A { var vfqn: B }
@@ -109,7 +109,7 @@ public class AddSnapshotSignature {
             if (!allvfqnsNoParamsArrowTyp.isEmpty()) {
                 decls = new ArrayList<Decl>();
                 for (String v: allvfqnsNoParamsArrowTyp) 
-                    decls.add(DeclExt.newVarDeclExt(translateFQN(v), d.getVarType(v)));
+                    decls.add(DeclExt.newVarDeclExt(translateFQN(v), translateExpr(d.getVarType(v),d)));
                 d.alloyString += d.addOneSigWithDeclsSimple(DashStrings.variablesName, decls);
             }
 
@@ -135,10 +135,10 @@ public class AddSnapshotSignature {
                 decls = new ArrayList<Decl>();
                 for (String v: allvfqnsWithThisFirstParam) {
                     if (d.getVarBufferParams(v).size() == 1) {
-                        decls.add(DeclExt.newVarDeclExt(v, d.getVarType(v)));
+                        decls.add(DeclExt.newVarDeclExt(v, translateExpr(d.getVarType(v),d)));
                     } else {
                         plist = createVarList(d.getVarBufferParams(v).subList(1, d.getVarBufferParams(v).size()-1));
-                        plist.add(d.getVarType(v));
+                        plist.add(translateExpr(d.getVarType(v),d));
                         decls.add(DeclExt.newVarDeclExt(translateFQN(v),createArrowExprList(plist)));
                     }
                 }
@@ -215,7 +215,7 @@ public class AddSnapshotSignature {
             List<Expr> typlist;
             for (String vfqn: d.getAllVarNames()) {
                 typlist = createVarList(d.getVarBufferParams(vfqn)); // could be empty
-                typlist.add(d.getVarType(vfqn));
+                typlist.add(translateExpr(d.getVarType(vfqn),d));
                 if (typlist.size() > 1 )
                     decls.add((Decl) new DeclExt(
                         translateFQN(vfqn), 

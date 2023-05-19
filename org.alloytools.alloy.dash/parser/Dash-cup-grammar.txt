@@ -267,12 +267,12 @@ StateItem ::= INVARIANT:o Name:n Super:v
         {:  RESULT = new DashInv(o, n.label, v); :};
 
 // action
-StateItem ::= ACTION:o Name:n LBRACKET Expr:e RBRACKET LBRACE RBRACE
-        {:  RESULT = new DashAction(o, n.label, e); :};
+//StateItem ::= ACTION:o Name:n LBRACKET Expr:e RBRACKET LBRACE RBRACE
+//        {:  RESULT = new DashAction(o, n.label, e); :};
 
 // condition
-StateItem ::= CONDITION:o Name:n LBRACKET Expr:e RBRACKET LBRACE RBRACE
-        {:  RESULT = new DashCondition(o, n.label, e); :};
+//StateItem ::= CONDITION:o Name:n LBRACKET Expr:e RBRACKET LBRACE RBRACE
+//        {:  RESULT = new DashCondition(o, n.label, e); :};
 
 // transition
 StateItem ::= TRANS:o Name:n LBRACE TransItemList:c RBRACE 

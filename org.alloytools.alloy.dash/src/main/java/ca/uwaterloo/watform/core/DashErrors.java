@@ -247,4 +247,7 @@ public class DashErrors {
 	public static void bufferIndexDoesNotMatchBufferNumber() {
 		throw new ErrorFatal("bufferIndexDoesNotMatchBufferNumber");
 	}
+	public static void doesNotExist(String fcnName, String m) {
+		throw new ErrorFatal("fcn "+fcnName+" arg "+m+"not in table");
+	}
 }

@@ -124,7 +124,7 @@ public class AddTransPost {
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             if (d.hasEventsAti(i)) {
                 if (ev != null && ev.getParamValues().size() == i) rhs = translateDashRefToArrow(ev);
-                else rhs = createNone();
+                else rhs = createNoneArrow(i);
                 case1.add(createEquals(
                     createRangeRes(nextEvents(i),allInternalEventsVar()),
                     rhs));
@@ -160,7 +160,7 @@ public class AddTransPost {
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             if (d.hasEventsAti(i)) {
                 if (ev != null && ev.getParamValues().size() == i) rhs1 = translateDashRefToArrow(ev);
-                else rhs1 = createNone();
+                else rhs1 = createNoneArrow(i);
                 if (d.hasEnvironmentalEvents()) 
                     case3.add(createAnd(
                             createEquals(
@@ -218,9 +218,7 @@ public class AddTransPost {
                     createITE(curStableTrue(),
                         c3,
                         c4))));
-        else 
-            body.add(
-                createAnd(nextStableTrue(), c1));
+        
 
         d.alloyString += d.addPredSimple(tout+postName,curNextParamsDecls(prs),body);
     }

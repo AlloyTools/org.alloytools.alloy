@@ -69,7 +69,7 @@ public class AddTransIsEnabledAfterStep {
         for (int i=0; i<= d.getMaxDepthParams(); i++) {
             decls.add(scopeDecl(i));
             if (d.hasEventsAti(i)) {
-                decls.add(genEventsDecl(i));
+                decls.add(genEventDecl(i));
             }
         }    
 
@@ -155,12 +155,14 @@ public class AddTransIsEnabledAfterStep {
         d.alloyString += d.addPredSimple(tout+DashStrings.enabledAfterStepName,decls,body);
     }
 
+    /*
     public static Decl genEventsDecl(int i) {
         return (Decl) new DeclExt(DashStrings.genEventName + i, DashStrings.allEventsName);
     }
+    
     public static Expr genEventsVar(int i) {
         return createVar(DashStrings.genEventName + i);
     }
-
+    */
 
 }

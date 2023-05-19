@@ -150,11 +150,11 @@ public class ExprToString {
             out.print(s);
         }
         else if (expr.op == ExprBinary.Op.ISSEQ_ARROW_LONE) {
-            out.print("(seq ");
+            out.print("seq ");
             out.beginC(2);
             ExprToOut(expr.right);
             out.end();
-            out.print(")");
+            //out.print(")");
         } else {
             out.beginI(2);
             addBracketsIfNeeded(getLeft(expr));
@@ -202,12 +202,12 @@ public class ExprToString {
     }
 
     private void addBracketsIfNeeded(Expr expr) {
-        if (!isExprVar(expr)) {
+        if (!(isExprVar(expr) || (isExprUnary(expr) && !isExprCard(expr) ))) {
             out.beginC(2);
             out.print("(");      
         }    
         ExprToOut(expr);
-         if (!isExprVar(expr)) {
+         if (!(isExprVar(expr) || (isExprUnary(expr) && !isExprCard(expr) ) )) {
             out.print(")");
             out.end();
         }            

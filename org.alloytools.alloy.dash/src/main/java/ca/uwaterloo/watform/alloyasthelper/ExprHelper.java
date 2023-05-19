@@ -37,6 +37,10 @@ public class ExprHelper  {
     public static boolean isExprUnary(Expr e) {
         return (e instanceof ExprUnary);
     }
+    public static boolean isExprCard(Expr e) {
+        return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.CARDINALITY));
+    }
+    
     public static boolean isExprJoin(Expr e) {
         return ((e instanceof ExprBinary) && ((ExprBinary) e).op.equals(ExprBinary.Op.JOIN));
     }

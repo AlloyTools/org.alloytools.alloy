@@ -79,10 +79,15 @@ public class Common {
     }
 
     public static Decl genEventDecl(int i) {
-        List<String>cop = Collections.nCopies(i,DashStrings.identifierName);
-        return (Decl) new DeclExt(
+        if (i==0) return (Decl) new DeclExt(
+                        DashStrings.genEventName + i,
+                        createVar(DashStrings.allEventsName));
+        else {
+            List<String>cop = Collections.nCopies(i,DashStrings.identifierName);
+            return (Decl) new DeclExt(
                         DashStrings.genEventName + i,
                         createArrowStringList(DashUtilFcns.newListWith(cop, DashStrings.allEventsName)));
+        }
     }
 
     public static Decl scopeDecl(int i) {
