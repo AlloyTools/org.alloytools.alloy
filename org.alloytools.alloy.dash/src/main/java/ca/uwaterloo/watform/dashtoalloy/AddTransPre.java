@@ -47,7 +47,7 @@ public class AddTransPre {
         Assumption: prs for src state and trig events are a subset of prs for trans
     */
     public static void addTransPre(DashModule d, String tfqn) {
-        List<String> prs = d.getTransParams(tfqn); 
+        List<Integer> prsIdx = d.getTransParamsIdx(tfqn); 
         List<Expr> body = new ArrayList<Expr>();
         String tout = translateFQN(tfqn);
 
@@ -57,7 +57,7 @@ public class AddTransPre {
             createSomeOf(
                 createIntersect(
                     translateDashRefToArrow(d.getTransSrc(tfqn)),
-                    curConf(prs.size()))));
+                    curConf(prsIdx.size()))));
 
         if (d.getTransWhen(tfqn) != null)
             body.add(translateExpr(d.getTransWhen(tfqn),d));
@@ -100,7 +100,7 @@ public class AddTransPre {
         */
 
         // not a higher priority transition enabled
-        d.alloyString += d.addPredSimple(tout+DashStrings.preName, curParamsDecls(prs), body); 
+        d.alloyString += d.addPredSimple(tout+DashStrings.preName, curParamsDecls(prsIdx,d.getAllParamsInOrder()), body); 
         d.alloyString += "\n";
     }
 }

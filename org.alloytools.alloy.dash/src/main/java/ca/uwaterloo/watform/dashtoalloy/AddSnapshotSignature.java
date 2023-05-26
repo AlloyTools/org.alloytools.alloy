@@ -123,7 +123,7 @@ public class AddSnapshotSignature {
             List<String> allbfqnsWithThisFirstParam;
             List<Expr> plist;
 
-            for (String prm: d.getAllParams()) {
+            for (String prm: DashUtilFcns.listToSet(d.getAllParamsInOrder())) {
 
                 // variables with parameters grouped with parameter
                 allvfqnsWithThisFirstParam = allvfqns.stream()
@@ -185,6 +185,7 @@ public class AddSnapshotSignature {
 
             // scopesUsed0, conf0, event0
             //if (d.transAtThisParamDepth(0))
+            //TODO: if no concurrency, don't need scopesUsed !!
             decls.add(DeclExt.newSetDeclExt(scopesUsedName+"0", stateLabelName));
             decls.add(DeclExt.newSetDeclExt(confName+"0", stateLabelName));
             if (d.hasEvents())

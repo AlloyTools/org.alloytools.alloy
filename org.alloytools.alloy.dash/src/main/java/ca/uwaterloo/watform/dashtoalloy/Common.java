@@ -42,9 +42,14 @@ public class Common {
     }
 
     // p0:P0
-    public static Decl paramDecl(String n) {
-        return (Decl) new DeclExt(DashStrings.pName+n, n);
+    public static Decl paramDecl(Integer n, String name) {
+        return (Decl) new DeclExt(DashStrings.pName+n+"_"+name, name);
     }
+
+    //pi: Identfiers
+    //public static Decl posParamDecl(Integer i) {
+    //    return (Decl) new DeclExt(DashStrings.pName+Integer.toString(i), DashStrings.identifierName);
+    //}
 
     // [s:Snapshot, s':Snapshot] 
     public static List<Decl> curNextDecls() {
@@ -57,24 +62,24 @@ public class Common {
     }
 
     // [p0:P0, p1:P1, ...]
-    public static List<Decl> paramDecls(List<String> prs) {
+    public static List<Decl> paramDecls(List<Integer> prsIdx , List<String> prs) {
         List<Decl> o = new ArrayList<Decl>();
-        for (String n: prs) o.add(paramDecl(n));
+        for (int i=0;i<prsIdx.size();i++) o.add(paramDecl(prsIdx.get(i),  prs.get(i)));
         return o;
     }
 
     // s:Snapshot, p0:P0, p1:P1, ...]
-    public static List<Decl> curParamsDecls(List<String> prs) {
+    public static List<Decl> curParamsDecls(List<Integer> prsIdx, List<String> prs) {
         List<Decl> o = new ArrayList<Decl>();
         if (!DashOptions.isElectrum) o.add(curDecl());
-        o.addAll(paramDecls(prs));
+        o.addAll(paramDecls(prsIdx,  prs));
         return o;
     }
     // s:Snapshot, s':Snapshot, p0:P0, p1:P1, ...]
-    public static List<Decl> curNextParamsDecls(List<String> prs) {
+    public static List<Decl> curNextParamsDecls(List<Integer> prsIdx, List<String> prs) {
         List<Decl> o = new ArrayList<Decl>();
         if (!DashOptions.isElectrum) { o.add(curDecl()); o.add(nextDecl()); }
-        o.addAll(paramDecls(prs));
+        o.addAll(paramDecls(prsIdx,  prs));
         return o;
     }
 
@@ -113,30 +118,39 @@ public class Common {
         o.add(nextVar());
         return o;        
     }
-    // [p1,p2,...]
-    public static List<Expr> paramVars(List<String> names) {
+    //pi: Identfiers
+    //public static Expr posParamVar(Integer i) {
+    //    return createVar(DashStrings.pName+Integer.toString(i));
+    //}
+    // p0_AID
+    public static Expr paramVar(Integer i, String n) {
+        return createVar(DashStrings.pName+Integer.toString(i)+"_"+n);
+    }
+    // [p0_AID,p1_AID,...]
+    public static List<Expr> paramVars(List<Integer> prsIdx, List<String> prs) {
+        assert(prsIdx.size() == prs.size());
         List<Expr> o = new ArrayList<Expr>();
-        for (String n: names) o.add(createVar(DashStrings.pName+n));
+        for (int i=0;i<prsIdx.size();i++) o.add(paramVar(prsIdx.get(i),prs.get(i)));
         return o;
     }
     // [s, p1,p2,...]
-    public static List<Expr> curParamVars(List<String> params) {
+    public static List<Expr> curParamVars(List<Integer> prsIdx, List<String> prs) {
         List<Expr> o = new ArrayList<Expr>();
         o.add(curVar());
-        o.addAll(paramVars(params));
+        o.addAll(paramVars(prsIdx,prs));
         return o;
     }
     // [s', p1,p2,...]
-    public static List<Expr> nextParamVars(List<String> params) {
+    public static List<Expr> nextParamVars(List<Integer> prsIdx, List<String> prs) {
         List<Expr> o = new ArrayList<Expr>();
         o.add(nextVar());
-        o.addAll(paramVars(params));
+        o.addAll(paramVars(prsIdx, prs));
         return o;
     }
     // [s,s',  p1,p2,...]
-    public static List<Expr> curNextParamVars(List<String> params) {
+    public static List<Expr> curNextParamVars(List<Integer> prsIdx, List<String> prs) {
         List<Expr> o = new ArrayList<Expr>(curNextVars());
-        o.addAll(paramVars(params));
+        o.addAll(paramVars(prsIdx,prs));
         return o;
     }
 
@@ -222,15 +236,17 @@ public class Common {
             return createJoin(nextVar(), e);
         }
     }
+    /*
     // p3 -> p2 -> p1 -> x
-    public static Expr paramsToXArrow(List<String> prs, String x) {
-        Collections.reverse(prs);
+    public static Expr paramsToXArrow(List<Integer> prsIdx, List<String> prs, String x) {
+        Collections.reverse(prsIdx);
         Expr e = createVar(x);
-        for (String p: prs) {
-            e = createArrow(createVar(p),e);
+        for (int i=0;i<prsIdx.size();i++) {
+            e = createArrow(paramVar(prsIdx.get(i),prs.get(i)),e);
         }
         return e;
     }
+    */
 
     public static Expr translateDashRefToArrow(DashRef e) {
         List<Expr> ll = new ArrayList<Expr>(e.getParamValues());

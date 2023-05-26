@@ -55,7 +55,7 @@ public class AddSpaceSignatures {
         if (!DashOptions.isElectrum)
             if (d.getMaxDepthParams() != 0) {
                 d.alloyString += d.addAbstractSigSimple(DashStrings.identifierName);
-                for (String s: d.getAllParams())
+                for (String s: DashUtilFcns.listToSet(d.getAllParamsInOrder()))
                     d.alloyString += d.addExtendsSigSimple(s, DashStrings.identifierName);
                 d.alloyString += "\n";
             }

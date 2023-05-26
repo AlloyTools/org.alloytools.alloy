@@ -250,4 +250,7 @@ public class DashErrors {
 	public static void doesNotExist(String fcnName, String m) {
 		throw new ErrorFatal("fcn "+fcnName+" arg "+m+"not in table");
 	}
+	public static void noInitialEntered(){
+		throw new ErrorFatal("there are no default initial states");
+	}
 }

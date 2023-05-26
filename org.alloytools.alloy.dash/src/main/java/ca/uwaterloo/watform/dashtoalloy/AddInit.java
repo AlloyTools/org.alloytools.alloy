@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.IntStream;
 
 import edu.mit.csail.sdg.ast.Decl;
 //import edu.mit.csail.sdg.ast.ExprVar;
@@ -12,8 +13,9 @@ import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.DashOptions;
 import ca.uwaterloo.watform.core.DashStrings;
-//import ca.uwaterloo.watform.core.DashUtilFcns;
-//import ca.uwaterloo.watform.core.DashRef;
+import ca.uwaterloo.watform.core.DashUtilFcns;
+import ca.uwaterloo.watform.core.DashErrors;
+import ca.uwaterloo.watform.core.DashRef;
 
 // shortens the code to import these statically
 import static ca.uwaterloo.watform.core.DashFQN.*;
@@ -35,9 +37,32 @@ public class AddInit {
     */        
     public static void addInit(DashModule d) {
 
-        List<String> prs = d.getAllParams();
+        List<String> prs = d.getAllParamsInOrder();
         List<Expr> body = new ArrayList<Expr>();
         
+        // forall i. confi = default entries
+        List<DashRef> entered = d.initialEntered();
+        if (entered.isEmpty()) DashErrors.noInitialEntered();
+        for (int i=0;i <= d.getMaxDepthParams(); i++) {
+            List<Expr> ent = DashRef.hasNumParams(entered,i).stream()
+                .map(x -> translateDashRefToArrow(x))
+                .collect(Collectors.toList());
+            if (!ent.isEmpty()) body.add(createEquals(curConf(i),createUnionList(ent)));
+            else body.add(createEquals(curConf(i), createNone()));
+        }
+        for (int i = 1; i <= d.getMaxDepthParams(); i++) {
+            // scopesUsedi = none
+            body.add(createEquals(
+                curScopesUsed(i),
+                createNone()));
+            // no limits on initial set of events except that they must be environmental
+            body.add(createIn(
+                curEvents(i),
+                allEnvironmentalEventsVar()));
+        }
+        
+
+
         // even if these are empty we need this predicate to exist
         for (Expr i: d.getInits())
             // these may have the use of parameters in them
@@ -50,9 +75,8 @@ public class AddInit {
         if (!body.isEmpty()) {
             if (!prs.isEmpty())
                 e = createAll(
-                    // might need to add "p" to the front of these
-                    paramDecls(prs),
-                    createAndFromList(body));
+                        paramDecls(DashUtilFcns.listOfInt(0,prs.size()-1), prs),
+                        createAndFromList(body));
             else e = createAndFromList(body);
             body = new ArrayList<Expr>();
             body.add(e);
@@ -61,7 +85,10 @@ public class AddInit {
         if (DashOptions.isElectrum) {
             d.alloyString += d.addPredSimple(DashStrings.initFactName, new ArrayList<Decl>(), body);
         } else {
-            d.alloyString += d.addPredSimple(DashStrings.initFactName, curParamsDecls(prs),body);
+            d.alloyString += d.addPredSimple(
+                DashStrings.initFactName, 
+                curParamsDecls(DashUtilFcns.listOfInt(0,prs.size()-1), prs),
+                body);
         }
     }
 }

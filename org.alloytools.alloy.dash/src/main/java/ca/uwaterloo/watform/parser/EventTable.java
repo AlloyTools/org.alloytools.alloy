@@ -16,6 +16,7 @@ import ca.uwaterloo.watform.core.DashFQN;
 import ca.uwaterloo.watform.core.DashRef;
 
 import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
+import ca.uwaterloo.watform.dashtoalloy.Common;
 
 public class EventTable {
 
@@ -27,18 +28,22 @@ public class EventTable {
 	public class EventElement {
 		private IntEnvKind kind;
 		private List<String> params;
+		private List<Integer> paramsIdx;
 
 		public EventElement(
 			IntEnvKind k,
-			List<String> prms) {
+			List<String> prms,
+			List<Integer> prmsIdx) {
 			assert(prms != null);
 			this.kind = k;
 			this.params = prms;
+			this.paramsIdx = prmsIdx;
 		}
 		public String toString() {
 			String s = new String();
 			s += "kind: "+kind+"\n";
 			s += "params: "+ NoneStringIfNeeded(params) +"\n";
+			s += "paramsIdx: "+ NoneStringIfNeeded(paramsIdx) +"\n";
 			return s;
 		}
 	}
@@ -56,11 +61,11 @@ public class EventTable {
 		}
 		return s;
 	}	
-	public Boolean add(String efqn, IntEnvKind k, List<String> prms) {
+	public Boolean add(String efqn, IntEnvKind k, List<String> prms, List<Integer> prmsIdx) {
 		assert(prms!=null);
 		if (table.containsKey(efqn)) return false;
 		else if (hasPrime(efqn)) { DashErrors.nameShouldNotBePrimed(efqn); return false; }
-		else { table.put(efqn, new EventElement(k,prms)); return true; }
+		else { table.put(efqn, new EventElement(k,prms,prmsIdx)); return true; }
 	}
 	public void resolveAllEventTable() {
 		// TODO
@@ -106,6 +111,10 @@ public class EventTable {
 		if (table.containsKey(efqn)) return table.get(efqn).params;
 		else { DashErrors.eventTableEventNotFound("getParams", efqn); return null; }
 	}
+	public List<Integer> getParamsIdx(String efqn) {
+		if (table.containsKey(efqn)) return table.get(efqn).paramsIdx;
+		else { DashErrors.eventTableEventNotFound("getParamsIdx", efqn); return null; }
+	}
 	public boolean isEnvironmentalEvent(String efqn) {
 		if (table.containsKey(efqn)) return (table.get(efqn).kind == IntEnvKind.ENV);
 		else { DashErrors.eventTableEventNotFound("isEnvironmentalEvent", efqn); return false; }	
@@ -122,7 +131,7 @@ public class EventTable {
 			.collect(Collectors.toList());	
 	}
 
-	public DashRef resolveEvent(String xType, Expr exp, List<String> region, String tfqn, List<String> tparams, VarTable vt) {
+	public DashRef resolveEvent(String xType, Expr exp, List<String> region, String tfqn, List<Integer> tparamsIdx, List<String> tparams, VarTable vt) {
 
 
 		// don't include isDashRefJoin here because that is only possible for actions not events
@@ -147,7 +156,7 @@ public class EventTable {
 				paramValues = 
 					// have to recursive through expressions in parameters
 					DashRef.paramValuesOfDashRefExpr(exp).stream()
-						.map(i -> vt.resolveExpr(xType, i, region, tfqn, tparams))
+						.map(i -> vt.resolveExpr(xType, i, region, tfqn, tparamsIdx, tparams))
 						.collect(Collectors.toList());
 			}
 			String efqn = DashFQN.fqn(e);
@@ -178,7 +187,7 @@ public class EventTable {
 				String m = matches.get(0);	
 				if (paramValues.isEmpty()) {
 					// must have same param values as trans b/c in same conc region
-					if (getParams(m).size() > tparams.size()) {
+					if (getParams(m).size() > tparamsIdx.size()) {
 						// getRegion did not return things that all
 						// have the same parameter values
 						DashErrors.regionMatchesWrongParamNumber();
@@ -186,8 +195,9 @@ public class EventTable {
 					} else {
 						// but could be a subset of transition param values
 						List<Expr> prmValues = 
-							ExprHelper.createVarList(pName,
-								tparams.subList(0, getParams(m).size() ));
+							Common.paramVars(
+								tparamsIdx.subList(0, getParamsIdx(m).size()),
+								tparams.subList(0,getParams(m).size()) );
 						return new DashRef(m, prmValues);							
 					}
 				} else if (getParams(m).size() != paramValues.size()) { 

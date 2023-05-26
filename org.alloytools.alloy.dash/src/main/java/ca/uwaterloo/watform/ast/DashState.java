@@ -119,7 +119,7 @@ public class DashState  extends Dash {
 	 * check for errors in the state hierarchy
 	 * and put all states in the state table
 	 */
-	public void resolve(StateTable st, TransTable tt, EventTable et, VarTable vt, List<String> params, List<String> ances)  {
+	public void resolve(StateTable st, TransTable tt, EventTable et, VarTable vt, List<String> params, List<Integer> paramsIdx, List<String> ances)  {
 		if (DashFQN.isFQN(name)) DashErrors.stateNameCantBeFQN(pos, name);
 		String sfqn = DashFQN.fqn(ances,name);
 		//System.out.println("Resolving state "+sfqn);
@@ -177,7 +177,12 @@ public class DashState  extends Dash {
 		List<String> newAnces = new ArrayList<String>(ances);
 		newAnces.add(name);		
 		List<String> newParams = new ArrayList<String>(params);
-		if (param != null) newParams.add(param);
+		List<Integer> newParamsIdx = new ArrayList<Integer>(paramsIdx);
+		if (param != null) {
+			newParams.add(param);
+			int idx = st.addToParamsList(param);
+			newParamsIdx.add(idx);
+		}
 
 		List<DashState> substatesList = new ArrayList<DashState>();
 		if (items != null)
@@ -190,7 +195,7 @@ public class DashState  extends Dash {
 
 
 		if (substatesList.isEmpty() ) {
-			if (!st.add(sfqn, kind, param, newParams, def, DashFQN.fqn(ances), new ArrayList<String>(),
+			if (!st.add(sfqn, kind, param, newParams, newParamsIdx, def, DashFQN.fqn(ances), new ArrayList<String>(),
 				invList, initList, actionList, conditionList)) DashErrors.addStateToStateTableDup(sfqn);;
 			
 		} else {
@@ -204,11 +209,11 @@ public class DashState  extends Dash {
 				DashErrors.dupSiblingNames(DashUtilFcns.strCommaList(dups.stream().collect(Collectors.toList())));
 
 			// add this state to the table
-			if (!st.add(sfqn,kind, param, newParams,def, DashFQN.fqn(ances), childFQNs,
+			if (!st.add(sfqn,kind, param, newParams,newParamsIdx, def, DashFQN.fqn(ances), childFQNs,
 				invList, initList, actionList, conditionList)) DashErrors.addStateToStateTableDup(sfqn);;
 
 			// add all substates to the table
-			for (DashState s: substatesList) s.resolve(st, tt, et, vt, newParams, newAnces);
+			for (DashState s: substatesList) s.resolve(st, tt, et, vt, newParams, newParamsIdx, newAnces);
 
 			// make sure defaults are correct
 			// if there's only one child it is automatically the default
@@ -264,7 +269,7 @@ public class DashState  extends Dash {
 			for (String x: e.getNames()) {
 				if (DashFQN.isFQN(x)) DashErrors.eventNameCantBeFQN(e.getPos(), x);
 				String xfqn = DashFQN.fqn(sfqn,x);
-				if (!et.add(xfqn,k, newParams)) DashErrors.duplicateEventName(e.getPos(),x);
+				if (!et.add(xfqn,k, newParams, newParamsIdx)) DashErrors.duplicateEventName(e.getPos(),x);
 			}
 		}
 		xItems.removeAll(eventDeclsList);
@@ -284,7 +289,7 @@ public class DashState  extends Dash {
 			for (String x: v.getNames()) {
 				if (DashFQN.isFQN(x)) DashErrors.varNameCantBeFQN(v.getPos(), x);
 				String xfqn = DashFQN.fqn(sfqn,x);
-				if (!vt.addVar(xfqn,k, newParams, t)) DashErrors.duplicateVarName(v.getPos(),x);
+				if (!vt.addVar(xfqn,k, newParams, newParamsIdx, t)) DashErrors.duplicateVarName(v.getPos(),x);
 			}
 		}
 		xItems.removeAll(varDeclsList);
@@ -305,7 +310,7 @@ public class DashState  extends Dash {
 			for (String x: b.getNames()) {
 				if (DashFQN.isFQN(x)) DashErrors.bufferNameCantBeFQN(b.getPos(), x);
 				String xfqn = DashFQN.fqn(sfqn,x);
-				if (!vt.addBuffer(xfqn,k, newParams, el, idx)) DashErrors.duplicateBufferName(b.getPos(),x);
+				if (!vt.addBuffer(xfqn,k, newParams, newParamsIdx, el, idx)) DashErrors.duplicateBufferName(b.getPos(),x);
 				idx++;
 			}
 			if (idx != b.getEndIndex()+1) DashErrors.bufferIndexDoesNotMatchBufferNumber();
@@ -322,7 +327,7 @@ public class DashState  extends Dash {
 				.collect(Collectors.toList());
 		for (DashTrans t:transList) {
 			//System.out.println("newAnces: " +newAnces);
-			t.resolve(tt, newParams, newAnces);
+			t.resolve(tt, newParams, newParamsIdx, newAnces);
 		}
 		xItems.removeAll(transList);
 

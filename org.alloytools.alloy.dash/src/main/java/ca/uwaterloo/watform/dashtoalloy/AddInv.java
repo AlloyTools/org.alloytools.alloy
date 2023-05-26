@@ -14,7 +14,7 @@ import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.DashOptions;
 import ca.uwaterloo.watform.core.DashStrings;
-//import ca.uwaterloo.watform.core.DashUtilFcns;
+import ca.uwaterloo.watform.core.DashUtilFcns;
 //import ca.uwaterloo.watform.core.DashRef;
 
 // shortens the code to import these statically
@@ -38,7 +38,7 @@ public class AddInv {
     */        
     public static void addInv(DashModule d) {
 
-        List<String> prs = d.getAllParams();
+        List<String> prs = d.getAllParamsInOrder();
         List<Expr> body = new ArrayList<Expr>();
        
         // since this is a fact, we don't need it if there are no invariants 
@@ -54,7 +54,7 @@ public class AddInv {
             if (!prs.isEmpty())
                 e = createAll(
                     // might need to add "p" to the front of these
-                    paramDecls(prs),
+                    paramDecls(DashUtilFcns.listOfInt(0,prs.size()-1), prs),
                     createAndFromList(body));
             else e = createAndFromList(body);
             List<Decl> decls = new ArrayList<Decl>();

@@ -23,6 +23,7 @@ import static ca.uwaterloo.watform.core.DashUtilFcns.*;
 import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
 //import ca.uwaterloo.watform.alloyasthelper.ExprToString;
 import ca.uwaterloo.watform.ast.*;
+import ca.uwaterloo.watform.dashtoalloy.Common;
 
 		// env events cannot be generated
 		// env vars cannot be primed anywhere
@@ -34,6 +35,7 @@ public class TransTable {
 
 	public class TransElement {
 		public List<String> params; // null if no params
+		public List<Integer> paramsIdx;
 		public List<DashFrom> fromList;
 		public List<DashOn> onList;
 		public List<DashWhen> whenList;
@@ -56,6 +58,7 @@ public class TransTable {
 		*/
 		public TransElement(
 			List<String> prms,
+			List<Integer> prmsIdx,
 			List<DashFrom> fl, 
 			List<DashOn> ol,
 			List<DashWhen> wl,
@@ -72,6 +75,7 @@ public class TransTable {
 		*/
 		{
 			this.params = prms;
+			this.paramsIdx = prmsIdx;
 			this.fromList = fl;
 			this.onList = ol;
 			this.whenList = wl;
@@ -82,6 +86,7 @@ public class TransTable {
 		public String toString() {
 			String s = new String();
 			s += "params: " + NoneStringIfNeeded(params) +"\n";
+			s += "paramsIdx: " + NoneStringIfNeeded(paramsIdx) +"\n";
 			s += "src: " + NoneStringIfNeeded(src) + "\n";
 			s += "dest: " + NoneStringIfNeeded(dest) + "\n";
 			s += "on: " + NoneStringIfNeeded(on) + "\n";
@@ -118,6 +123,7 @@ public class TransTable {
 	public boolean add(
 			String tfqn,
 			List<String> params,
+			List<Integer> paramsIdx,
 			List<DashFrom> fromList,
 			List<DashOn> onList,
 			List<DashWhen> whenList,
@@ -130,6 +136,7 @@ public class TransTable {
 		//System.out.println("onList: " + NoneStringIfNeeded(onList));
 		assert(!tfqn.isEmpty());
 		assert(params != null );
+		assert(paramsIdx != null);
 		assert(fromList != null);
 		assert(onList != null);
 		assert(whenList != null);
@@ -138,7 +145,7 @@ public class TransTable {
 		assert(doList != null);
 		if (table.containsKey(tfqn)) return false;
 		else if (DashStrings.hasPrime(tfqn)) { DashErrors.nameShouldNotBePrimed(tfqn); return false; }
-		else { table.put(tfqn, new TransElement(params,fromList,onList,whenList,gotoList,sendList,doList)); return true; }
+		else { table.put(tfqn, new TransElement(params,paramsIdx, fromList,onList,whenList,gotoList,sendList,doList)); return true; }
 	}
 	public String toString() {
 		String s = new String();
@@ -157,6 +164,10 @@ public class TransTable {
 	public List<String> getParams(String t) {
 		if (table.containsKey(t)) return table.get(t).params;
 		else { DashErrors.transDoesNotExist("getParams", t); return null; }
+	}
+	public List<Integer> getParamsIdx(String t) {
+		if (table.containsKey(t)) return table.get(t).paramsIdx;
+		else { DashErrors.transDoesNotExist("getParamsIdx", t); return null; }
 	}
 	public DashRef getSrc(String t) {
 		if (table.containsKey(t)) return table.get(t).src;
@@ -229,14 +240,15 @@ public class TransTable {
 			else if (fList.isEmpty()) 
 				// can be a loop on root
 				table.get(tfqn)
-					.setSrc(new DashRef(parentFQN, ExprHelper.createVarList(DashStrings.pName,getParams(tfqn))));
+					.setSrc(new DashRef(parentFQN, Common.paramVars(getParamsIdx(tfqn), getParams(tfqn))));
 			else 
 				table.get(tfqn)
 					.setSrc(
 						st.resolveSrcDest("from", 
 							fList.get(0), 
 							tfqn,
-							getParams(tfqn), 
+							getParamsIdx(tfqn), 
+							getParams(tfqn),
 							vt));
 	
 			// determining the dest state
@@ -249,14 +261,15 @@ public class TransTable {
 			else if (gList.isEmpty()) 
 				// can be a loop on root
 				table.get(tfqn)
-					.setDest(new DashRef(parentFQN, ExprHelper.createVarList(DashStrings.pName,getParams(tfqn))));
+					.setDest(new DashRef(parentFQN, Common.paramVars(getParamsIdx(tfqn),getParams(tfqn))));
 			else 
 				table.get(tfqn)
 					.setDest(
 						st.resolveSrcDest("goto", 
 							gList.get(0), 
 							tfqn,
-							getParams(tfqn), 
+							getParamsIdx(tfqn), 
+							getParams(tfqn),
 							vt));
 
 			// determining the on (event)
@@ -272,6 +285,7 @@ public class TransTable {
 							onExpList.get(0), 
 							st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
 							tfqn, 
+							getParamsIdx(tfqn),
 							getParams(tfqn),
 							vt));
 			}
@@ -289,7 +303,8 @@ public class TransTable {
 							sendExpList.get(0),
 							st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
 							tfqn, 
-							getParams(tfqn), 
+							getParamsIdx(tfqn), 
+							getParams(tfqn),
 							vt));
 			}
 
@@ -306,6 +321,7 @@ public class TransTable {
 							whenExpList.get(0), 
 							st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
 							tfqn, 
+							getParamsIdx(tfqn),
 							getParams(tfqn)));
 			}
 
@@ -321,6 +337,7 @@ public class TransTable {
 						vt.resolveExpr("do", doExpList.get(0), 
 							st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
 							tfqn, 
+							getParamsIdx(tfqn),
 							getParams(tfqn)));
 			}
 
@@ -341,7 +358,7 @@ public class TransTable {
 
 
 
-
+    
 	public boolean[] transAtThisParamDepth(int max) {
 		boolean[] depthsInUse = new boolean[max+1]; // 0..max
 		for (int i=0; i <= max; i++) depthsInUse[i] = false;
@@ -350,5 +367,6 @@ public class TransTable {
 			else depthsInUse[table.get(k).params.size()] = true;
 		return depthsInUse;
 	}
+	
 
 }

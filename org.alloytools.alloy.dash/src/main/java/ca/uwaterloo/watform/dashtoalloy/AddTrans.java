@@ -45,19 +45,19 @@ public class AddTrans {
         
         if (DashOptions.isElectrum) {
             // pre_transName[ p0, p1, p2] -> p2.p1.p0.pre_transName
-            body.add(createPredCall(tout+ preName, paramVars(prs)));
+            body.add(createPredCall(tout+ preName, paramVars(d.getTransParamsIdx(tfqn), d.getTransParams(tfqn))));
             // p2.p1.p0.post_transName
-            body.add(createPredCall(tout + postName, paramVars(prs)));
+            body.add(createPredCall(tout + postName, paramVars(d.getTransParamsIdx(tfqn), d.getTransParams(tfqn))));
             // p2.p1.p0.semantics_transName
             //body.add(createPredCall(tout + semanticsName, paramVars(prs)));
         } else {
             // pre_transName[s, p0, p1, p2] -> p2.p1.p0.s.pre_transName
-            body.add(createPredCall(tout + preName, curParamVars(prs)));
+            body.add(createPredCall(tout + preName, curParamVars(d.getTransParamsIdx(tfqn), d.getTransParams(tfqn))));
             // p2.p1.p0.s'.s.post_transName
-            body.add(createPredCall(tout + postName, curNextParamVars(prs)));
+            body.add(createPredCall(tout + postName, curNextParamVars(d.getTransParamsIdx(tfqn), d.getTransParams(tfqn))));
             // p2.p1.p0.s'.s.semantics_transName
             //body.add(createPredCall(tout + semanticsName, curNextParamVars(prs)));
         }
-        d.alloyString += d.addPredSimple(tout, curNextParamsDecls(prs), body);
+        d.alloyString += d.addPredSimple(tout, curNextParamsDecls(d.getTransParamsIdx(tfqn),d.getTransParams(tfqn)), body);
     }
 }

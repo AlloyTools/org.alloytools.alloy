@@ -4,8 +4,8 @@ state Root {
 			state S1 {
 				trans t2 {}
 				trans t3 {
-					from Root/A/B/S1[pAID, b1]
-					goto Root/A/B/S1[pAID, b2]
+					from Root/A/B/S1[p0_AID, b1]
+					goto Root/A/B/S1[p0_AID, b2]
 				}
 			}
 		}

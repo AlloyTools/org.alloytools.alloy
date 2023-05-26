@@ -12,7 +12,7 @@ import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.DashOptions;
 import ca.uwaterloo.watform.core.DashStrings;
-//import ca.uwaterloo.watform.core.DashUtilFcns;
+import ca.uwaterloo.watform.core.DashUtilFcns;
 //import ca.uwaterloo.watform.core.DashRef;
 
 // shortens the code to import these statically
@@ -39,16 +39,18 @@ public class AddSmallStep {
     public static void addSmallStep(DashModule d) {
 
         ArrayList<Expr> e = new ArrayList<Expr>();
+        List<String> prs = d.getAllParamsInOrder();
+
         for (String tfqn: d.getAllTransNames()) {
             String tout = translateFQN(tfqn); 
             // p3.p2.p1.t for parameters of this transition
-            if (DashOptions.isElectrum) e.add(createPredCall(tout,paramVars(d.getTransParams(tfqn))));
+            if (DashOptions.isElectrum) e.add(createPredCall(tout,paramVars(d.getTransParamsIdx(tfqn), d.getTransParams(tfqn))));
             // p3.p2.p1.s'.s.t for parameters of this transition
-            else e.add(createPredCall(tout,curNextParamVars(d.getTransParams(tfqn))));
+            else e.add(createPredCall(tout,curNextParamVars(d.getTransParamsIdx(tfqn),d.getTransParams(tfqn))));
         }
         List<Expr> body = new ArrayList<Expr>();
-        if (d.getAllParams().isEmpty()) body.add(createOrFromList(e));
-        else body.add(createSome(paramDecls(d.getAllParams()),createOrFromList(e)));
+        if (d.getAllParamsInOrder().isEmpty()) body.add(createOrFromList(e));
+        else body.add(createSome(paramDecls(DashUtilFcns.listOfInt(0,prs.size()-1),prs),createOrFromList(e)));
 
         //TODO add loop if all notenabled
 

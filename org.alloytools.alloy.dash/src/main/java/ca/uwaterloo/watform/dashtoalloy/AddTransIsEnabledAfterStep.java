@@ -57,14 +57,15 @@ public class AddTransIsEnabledAfterStep {
     public static void  addTransIsEnabledAfterStep(DashModule d, String tfqn) {
 
         String tout = translateFQN(tfqn);
-        List<String> prs = d.getTransParams(tfqn); 
+        List<Integer> prsIdx = d.getTransParamsIdx(tfqn); 
+        List<String> prs = d.getTransParams(tfqn);
         List<Decl> decls = new ArrayList<Decl>();
         List<Expr> body = new ArrayList<Expr>();
 
         if (DashOptions.isElectrum) {
-            decls.addAll(paramDecls(prs));
+            decls.addAll(paramDecls(prsIdx,prs));
         } else {
-            decls.addAll(curNextParamsDecls(prs));
+            decls.addAll(curNextParamsDecls(prsIdx,prs));
         } 
         for (int i=0; i<= d.getMaxDepthParams(); i++) {
             decls.add(scopeDecl(i));
@@ -73,13 +74,13 @@ public class AddTransIsEnabledAfterStep {
             }
         }    
 
-        // p3 -> p2 -> p1 -> src in s'.confVar(i)
+        // some (p3 -> p2 -> p1 -> src & s'.confi)
         // src does not have to be a basic state  
         body.add(
             createSomeOf(
                 createIntersect(
                     translateDashRefToArrow(d.getTransSrc(tfqn)),
-                    nextConf(prs.size()))));
+                    nextConf(prsIdx.size()))));
 
         // primed guard condition is true 
         // TODO

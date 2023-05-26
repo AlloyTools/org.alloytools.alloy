@@ -3,7 +3,7 @@ state Root {
 	conc B [BID] {
 		state S1 {
 			trans t1 {
-				goto Root/B[pBID]
+				goto Root/B[p0_BID]
 			}
 			trans t2 {
 				goto Root/B[b1]

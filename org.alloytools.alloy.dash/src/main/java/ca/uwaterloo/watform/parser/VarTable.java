@@ -17,6 +17,7 @@ import ca.uwaterloo.watform.core.*;
 import static ca.uwaterloo.watform.core.DashUtilFcns.*;
 import static ca.uwaterloo.watform.core.DashStrings.*;
 import ca.uwaterloo.watform.core.DashRef;
+import ca.uwaterloo.watform.dashtoalloy.Common;
 
 public class VarTable {
 
@@ -33,21 +34,25 @@ public class VarTable {
 	public class VarElement {
 		private IntEnvKind kind;
 		private List<String> params;
+		private List<Integer> paramsIdx;
 		private Expr typ;
 
 		public VarElement(
 			IntEnvKind k,
 			List<String> prms,
+			List<Integer> prmsIdx,
 			Expr t) {
 			assert(prms != null);
 			this.kind = k;
 			this.params = prms;
+			this.paramsIdx = prmsIdx;
 			this.typ = t;
 		}
 		public String toString() {
 			String s = new String();
 			s += "kind: "+kind+"\n";
 			s += "params: "+ NoneStringIfNeeded(params) +"\n";
+			s += "paramsIdx: "+ NoneStringIfNeeded(paramsIdx) +"\n";
 			s += "typ: "+typ.toString() + "\n";
 			return s;
 		}
@@ -75,11 +80,11 @@ public class VarTable {
 		}
 		return s;
 	}	
-	public Boolean addVar(String vfqn, IntEnvKind k, List<String> prms, Expr t) {
+	public Boolean addVar(String vfqn, IntEnvKind k, List<String> prms, List<Integer> prmsIdx, Expr t) {
 		assert(prms!=null);
 		if (varTable.containsKey(vfqn)) return false;
 		if (hasPrime(vfqn)) { DashErrors.nameShouldNotBePrimed(vfqn); return false; }
-		else { varTable.put(vfqn, new VarElement(k,prms, t)); return true; }
+		else { varTable.put(vfqn, new VarElement(k,prms, prmsIdx, t)); return true; }
 	}
 	public void resolve() {
 		//anything?
@@ -115,9 +120,15 @@ public class VarTable {
 		return x;		
 	}
 	// same function for buffers and variables
+	//TODO: what if var and buffer have the same name!!!
 	public List<String> getParams(String fqn) {
 		if (bufferTable.containsKey(fqn)) return bufferTable.get(fqn).params;
 		if (varTable.containsKey(fqn)) return varTable.get(fqn).params;
+		else { DashErrors.varBufferDoesNotExist("getParams", fqn); return null; }
+	}
+	public List<Integer> getParamsIdx(String fqn) {
+		if (bufferTable.containsKey(fqn)) return bufferTable.get(fqn).paramsIdx;
+		if (varTable.containsKey(fqn)) return varTable.get(fqn).paramsIdx;
 		else { DashErrors.varBufferDoesNotExist("getParams", fqn); return null; }
 	}
 	public Expr getVarType(String vfqn) {
@@ -134,17 +145,20 @@ public class VarTable {
 	public class BufferElement {
 		private IntEnvKind kind;
 		private List<String> params;
+		private List<Integer> paramsIdx;
 		private String element;
 		private Integer index;
 
 		public BufferElement(
 			IntEnvKind k,
 			List<String> prms,
+			List<Integer> prmsIdx,
 			String e,
 			Integer idx) {
 			assert(prms != null);
 			this.kind = k;
 			this.params = prms;
+			this.paramsIdx = prmsIdx;
 			this.element = e;
 			this.index = idx;
 		}
@@ -152,6 +166,7 @@ public class VarTable {
 			String s = new String();
 			s += "kind: "+kind+"\n";
 			s += "params: "+ NoneStringIfNeeded(params) +"\n";
+			s += "paramsIdx: "+ NoneStringIfNeeded(paramsIdx) +"\n";
 			s += "element: "+element.toString() + "\n";
 			s += "index:" + index;
 			return s;
@@ -176,10 +191,10 @@ public class VarTable {
 		else { DashErrors.bufferDoesNotExist("getElement", bfqn); return null; }
 	}
 
-	public Boolean addBuffer(String vfqn, IntEnvKind k, List<String> prms, String el, Integer idx) {
+	public Boolean addBuffer(String vfqn, IntEnvKind k, List<String> prms, List<Integer> prmsIdx, String el, Integer idx) {
 		assert(prms!=null);
 		if (bufferTable.containsKey(vfqn)) return false;
-		else { bufferTable.put(vfqn, new BufferElement(k,prms, el, idx)); return true; }
+		else { bufferTable.put(vfqn, new BufferElement(k,prms, prmsIdx, el, idx)); return true; }
 	}
 
 
@@ -196,7 +211,7 @@ public class VarTable {
 	// have to recurse through exp types, replace dynamic vars with DashRef and rebuild exp
 	// don't use ExprHelper much here because we want to 
 	// as much about the expression as possible
-	public Expr resolveExpr(String xType, Expr exp, List<String> region,  String fqn, List<String> params) {
+	public Expr resolveExpr(String xType, Expr exp, List<String> region,  String fqn, List<Integer> paramsIdx, List<String> params) {
 		//System.out.println(exp);
 		if (isExprVar(exp)  ||
 			isPrimedVar(exp) ||
@@ -204,21 +219,21 @@ public class VarTable {
 			DashRef.isDashRefProcessRef(exp)) // || 
 			//DashRef.isDashRefBadJoin(exp)) 
 			{
-				return dashRefVar(xType, exp, region,  fqn, params);
+				return dashRefVar(xType, exp, region,  fqn, paramsIdx, params);
 
 		} else if (isExprBinary(exp)) {
 			return ((ExprBinary) exp).op.make(
 				exp.pos,
 				exp.closingBracket,
-				resolveExpr(xType, getLeft(exp), region, fqn, params),
-				resolveExpr(xType, getRight(exp), region, fqn, params));
+				resolveExpr(xType, getLeft(exp), region, fqn, paramsIdx, params),
+				resolveExpr(xType, getRight(exp), region, fqn, paramsIdx, params));
 
 		} else if (isExprBadJoin(exp)) {
 			return ExprBadJoin.make(
 				exp.pos,
 				exp.closingBracket,
-				resolveExpr(xType, getLeft(exp), region, fqn, params),
-				resolveExpr(xType, getRight(exp), region, fqn, params));
+				resolveExpr(xType, getLeft(exp), region, fqn, paramsIdx, params),
+				resolveExpr(xType, getRight(exp), region, fqn, paramsIdx, params));
 
 		} else if (exp instanceof ExprCall) {
 			return ExprCall.make(
@@ -226,7 +241,7 @@ public class VarTable {
 				exp.closingBracket,
 				((ExprCall) exp).fun, 
 				((ExprCall) exp).args.stream()
-				.map(i -> resolveExpr(xType, i, region, fqn, params))
+				.map(i -> resolveExpr(xType, i, region, fqn, paramsIdx, params))
 				.collect(Collectors.toList()), 
 				((ExprCall) exp).extraWeight);
 
@@ -234,7 +249,7 @@ public class VarTable {
 			//TODO: check into this cast
 			// not sure why is it necessary
 			ConstList<Expr> x = (ConstList<Expr>) ((ExprChoice) exp).choices.stream()
-					.map(i -> resolveExpr(xType, i, region, fqn, params))
+					.map(i -> resolveExpr(xType, i, region, fqn, paramsIdx, params))
 					.collect(Collectors.toList());
 			return ExprChoice.make(
 				false,
@@ -245,9 +260,9 @@ public class VarTable {
 		} else if (exp instanceof ExprITE){
 			return ExprITE.make(
 				exp.pos,
-				resolveExpr(xType, getCond(exp), region, fqn, params),
-				resolveExpr(xType, getLeft(exp), region, fqn, params),
-				resolveExpr(xType, getRight(exp), region, fqn, params));
+				resolveExpr(xType, getCond(exp), region, fqn, paramsIdx, params),
+				resolveExpr(xType, getLeft(exp), region, fqn, paramsIdx, params),
+				resolveExpr(xType, getRight(exp), region, fqn, paramsIdx, params));
 
 		} else if (exp instanceof ExprList){
             return ExprList.make(
@@ -255,22 +270,22 @@ public class VarTable {
             	exp.closingBracket,
             	((ExprList) exp).op,
             	((ExprList) exp).args.stream()
-					.map(i -> resolveExpr(xType, i, region, fqn, params))
+					.map(i -> resolveExpr(xType, i, region, fqn, paramsIdx, params))
 					.collect(Collectors.toList())
             );			
 
 		} else if (exp instanceof ExprUnary){
 			return ((ExprUnary) exp).op.make(
 				exp.pos,
-				resolveExpr(xType, ((ExprUnary) exp).sub, region, fqn, params));
+				resolveExpr(xType, ((ExprUnary) exp).sub, region, fqn, paramsIdx, params));
 
 		} else if (exp instanceof ExprLet){
 			//TODO rule out var name
 			return ExprLet.make(
 				exp.pos, 
 				((ExprLet) exp).var, 
-				resolveExpr(xType, ((ExprLet) exp).expr, region, fqn, params),
-				resolveExpr(xType, ((ExprLet) exp).sub, region, fqn, params));
+				resolveExpr(xType, ((ExprLet) exp).expr, region, fqn, paramsIdx, params),
+				resolveExpr(xType, ((ExprLet) exp).sub, region, fqn, paramsIdx, params));
 
 		} else if (exp instanceof ExprQt){
 			//TODO rule out var names in delcs as dynamic vars later
@@ -283,14 +298,14 @@ public class VarTable {
 					i.disjoint2,
 					i.isVar,
 					i.names,
-					resolveExpr(xType, i.expr, region, fqn, params)))
+					resolveExpr(xType, i.expr, region, fqn, paramsIdx, params)))
 				.collect(Collectors.toList());
 
 			return ((ExprQt) exp).op.make(
 				exp.pos, 
 				exp.closingBracket,  
 				decls, 
-				resolveExpr(xType, ((ExprQt) exp).sub, region, fqn, params));
+				resolveExpr(xType, ((ExprQt) exp).sub, region, fqn, paramsIdx, params));
 
 		} else if (exp instanceof ExprConstant){
 			return exp;
@@ -302,7 +317,7 @@ public class VarTable {
 	}
 
 	// fqn could be trans or state
-	private Expr dashRefVar(String xType, Expr exp, List<String> region, String fqn, List<String> params) {
+	private Expr dashRefVar(String xType, Expr exp, List<String> region, String fqn, List<Integer> paramsIdx, List<String> params) {
 
 		// Join: b1.a1.var
 
@@ -321,7 +336,8 @@ public class VarTable {
 		List<Expr> paramValues;
 		if (isExprVar(exp)) {
 			v = getVarName((ExprVar) exp);	
-			if (v.startsWith(thisName)) {
+			//TODO fix this!!!
+			/*if (v.startsWith(thisName)) {
 				// thisAID gets replaced with pAID as a normal variable
 				// not a processref
 				String suffix = v.substring(thisName.length(),v.length());
@@ -331,7 +347,7 @@ public class VarTable {
 						match = x;
 				if (!match.isEmpty())
 					return createVar(pName+match);
-			}
+			}*/
 			paramValues = new ArrayList<Expr>();
 		} else if (isPrimedVar(exp)) {
 			v = getVarName((ExprVar) getSub(exp))+PRIME;	
@@ -341,7 +357,7 @@ public class VarTable {
 			v = DashRef.nameOfDashRefExpr(exp);
 			// have to recurse through param values
 			paramValues = DashRef.paramValuesOfDashRefExpr(exp).stream()
-						.map(i -> resolveExpr(xType, i, region, fqn, params))
+						.map(i -> resolveExpr(xType, i, region, fqn, paramsIdx, params))
 						.collect(Collectors.toList());
 		}
 		String vfqn = DashFQN.fqn(v);
@@ -387,7 +403,7 @@ public class VarTable {
 			String m = matches.get(0);	
 			if (paramValues.isEmpty()) {
 				// must have same param values as trans b/c in same conc region
-				if (getParams(m).size() > params.size()) {
+				if (getParams(m).size() > paramsIdx.size()) {
 					// getRegion did not return things that all
 					// have the same parameter values
 					DashErrors.regionMatchesWrongParamNumber();
@@ -395,9 +411,9 @@ public class VarTable {
 				} else {
 					// could be a subset of transition param values					
 					List<Expr> prmValues = 
-						createVarList(
-							DashStrings.pName,
-							params.subList(0, getParams(m).size()));
+						Common.paramVars(
+							paramsIdx.subList(0, getParams(m).size()),
+							params.subList(0,getParams(m).size()));
 					if (isPrimed)  m = m + PRIME;
 					//System.out.println("here1" + m);
 					return DashRef.DashRefExpr(m, prmValues);							
@@ -417,7 +433,7 @@ public class VarTable {
 					m, 
 					// have to recursive through expressions in parameters
 					paramValues.stream()
-						.map(i -> resolveExpr(xType, i, region, fqn, params))
+						.map(i -> resolveExpr(xType, i, region, fqn, paramsIdx,params))
 						.collect(Collectors.toList()));
 			}
 		}

@@ -34,9 +34,13 @@ public class AddTestIfNextStable {
 		List<Decl> decls = new ArrayList<Decl>();
 		List<Expr> args = new ArrayList<Expr>();
 		List<Expr> body = new ArrayList<Expr>();
+		List<String> allParams = d.getAllParamsInOrder();
 		if (!DashOptions.isElectrum) {
 			decls.addAll(curNextDecls());
 			args.addAll(curNextVars());
+		}
+		for (int i=0; i < allParams.size(); i++) {
+			decls.add(paramDecl(i,allParams.get(i)));
 		}
 		for (int i=0; i<= d.getMaxDepthParams(); i++) {
 			decls.add(scopeDecl(i));

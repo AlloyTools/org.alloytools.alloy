@@ -36,7 +36,7 @@ public class DashTrans extends Dash {
 		}
 		return s;
 	}
-	public void resolve(TransTable tt, List<String> params, List<String> ances) {
+	public void resolve(TransTable tt, List<String> params, List<Integer> paramsIdx, List<String> ances) {
 
 		if (DashFQN.isFQN(name)) DashErrors.transNameCantBeFQN(pos, name);
 		String tfqn = DashFQN.fqn(ances,name);
@@ -86,7 +86,7 @@ public class DashTrans extends Dash {
 			.collect(Collectors.toList());	
 		xItems.removeAll(doList);
 
-		if (!tt.add(tfqn,params, fromList, onList, whenList, gotoList, sendList, doList)) DashErrors.dupTransNames(pos,name);
+		if (!tt.add(tfqn,params, paramsIdx, fromList, onList, whenList, gotoList, sendList, doList)) DashErrors.dupTransNames(pos,name);
 		//System.out.println(xItems);
 		if (!xItems.isEmpty()) DashErrors.nonEmptyTransItems();
 	}

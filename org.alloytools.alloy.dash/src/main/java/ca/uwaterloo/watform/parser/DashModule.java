@@ -30,6 +30,7 @@ import static ca.uwaterloo.watform.alloyasthelper.ExprHelper.*;
 
 import ca.uwaterloo.watform.parser.CompModuleHelper;
 import ca.uwaterloo.watform.dashtoalloy.DashToAlloy;
+import ca.uwaterloo.watform.dashtoalloy.Common;
 
 public class DashModule extends CompModuleHelper {
 
@@ -51,6 +52,8 @@ public class DashModule extends CompModuleHelper {
 	private TransTable transTable = new TransTable();
 	private EventTable eventTable = new EventTable();
 	private VarTable varTable = new VarTable();
+
+
 
 	// once created and parsed, the following are
 	// the phases of a DashModule
@@ -291,9 +294,10 @@ public class DashModule extends CompModuleHelper {
 		// could precalculate this
 		return maxDepthParams;
 	}
-	public List<String> getAllParams() {
-		return stateTable.getAllParams();
+	public List<String> getAllParamsInOrder() {
+		return stateTable.getAllParamsInOrder();
 	}
+
 
 	//stuff about states (some of these are to expose the stateTable for testing)
 	public boolean isLeaf(String s) {
@@ -329,7 +333,9 @@ public class DashModule extends CompModuleHelper {
 	public List<String> getRegion(String sfqn) {
 		return stateTable.getRegion(sfqn);
 	}
-
+	public List<Integer> getTransParamsIdx(String tfqn) {
+		return transTable.getParamsIdx(tfqn);
+	}
     // stuff about transitions
     public List<String> getAllTransNames() {
     	return transTable.getAllTransNames();
@@ -372,6 +378,9 @@ public class DashModule extends CompModuleHelper {
     public List<String> getVarBufferParams(String vfqn) {
     	return varTable.getParams(vfqn);
     }
+    public List<Integer> getVarBufferParamsIdx(String vfqn) {
+    	return varTable.getParamsIdx(vfqn);
+    }
     public Expr getVarType(String vfqn) {
     	return varTable.getVarType(vfqn);
     }
@@ -410,7 +419,7 @@ public class DashModule extends CompModuleHelper {
 		String sc = DashFQN.longestCommonFQN(src.getName(),dest.getName());
 		// maxCommonParams is max number of params that could have in common
 		// but they don't necessarily have the same values
-		Integer maxCommonParams = stateTable.getParams(sc).size();
+		Integer maxCommonParams = stateTable.getParamsIdx(sc).size();
 		List<Expr> scopeParams = new ArrayList<Expr>();
 		Expr equals = null;
 		Expr s = null;
@@ -464,7 +473,9 @@ public class DashModule extends CompModuleHelper {
 				getScope(tfqn),
 				getTransDest(tfqn));
 	}
-
+	public List<DashRef> initialEntered() {
+		return stateTable.getRootLeafStatesEntered();
+	}
 	public List<DashRef> onlyConc(List<DashRef> dr) {
 		return dr.stream()
 			.filter(x -> isAnd(x.getName()))
@@ -554,7 +565,7 @@ public class DashModule extends CompModuleHelper {
 			root = roots.get(0);
 			// passed with empty set of params, empty set of ancestors
 			stateTable.setRoot(root.name);
-			root.resolve(stateTable,transTable, eventTable, varTable, new ArrayList<String>(),new ArrayList<String>());
+			root.resolve(stateTable,transTable, eventTable, varTable, new ArrayList<String>(),new ArrayList<Integer>(), new ArrayList<String>());
 			// have to do states first so siblings of trans parent state
 			// are in place to search for src/dest
 			// root.resolveTransTable(stateTable,transTable);

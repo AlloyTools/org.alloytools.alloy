@@ -28,6 +28,7 @@ import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
 import ca.uwaterloo.watform.ast.*;
 
 import ca.uwaterloo.watform.parser.VarTable;
+import ca.uwaterloo.watform.dashtoalloy.Common;
 
 public class StateTable {
 	private HashMap<String,StateElement> table;
@@ -35,7 +36,12 @@ public class StateTable {
 	private String root;
 	private List<Expr> inits = new ArrayList<Expr>();
 	private List<Expr> invs  = new ArrayList<Expr>();
+	private List<String> allParamsInOrder = new ArrayList<String>();
 
+	public Integer addToParamsList(String p) {
+		allParamsInOrder.add(p);
+		return allParamsInOrder.size()-1;
+	}
 	private String space = " ";
 
 	/* nested class for elementes in the state table */
@@ -44,6 +50,7 @@ public class StateTable {
 		private DashStrings.StateKind kind; // must exist AND/OR
 		private String param; // may be empty
 		private List<String> params; // null if none; param is last of params if it exists
+		private List<Integer> paramsIdx; // their pos in the list of params (will be a sequence)
 		private DashStrings.DefKind def; 
 		// these all use fullQual names to point to trans in TransTable
 		// or states in this StateTable
@@ -71,6 +78,7 @@ public class StateTable {
 			DashStrings.StateKind k,
 			String prm,
 			List<String> prms, 
+			List<Integer> prmsIdx,
 			DashStrings.DefKind d,
 			String p, 
 			List<String> iChildren,
@@ -91,6 +99,7 @@ public class StateTable {
 			this.kind = k; 
 			this.param = prm;
 			this.params = prms; 
+			this.paramsIdx = prmsIdx;
 			this.def = d; 
 			this.parent = p; 
 			this.immChildren = iChildren; 
@@ -197,6 +206,7 @@ public class StateTable {
 		DashStrings.StateKind k, 
 		String prm, 
 		List<String> prms, 
+		List<Integer> prmsIdx,
 		DashStrings.DefKind d,
 		String p, 
 		List<String> iChildren,
@@ -217,7 +227,7 @@ public class StateTable {
 		//else 
 		if (table.containsKey(fqn)) return false;
 		else if (DashStrings.hasPrime(fqn)) { DashErrors.nameShouldNotBePrimed(fqn); return false; }
-		else { table.put(fqn, new StateElement(k,prm, prms,d,p,iChildren, invL, initL, actL, condL)); return true; }
+		else { table.put(fqn, new StateElement(k,prm, prms,prmsIdx, d,p,iChildren, invL, initL, actL, condL)); return true; }
 		//System.out.println("adding to State table: "+fqn+space+prm + space + prms+space+d+space+p+iChildren);
 	}
 	public void addInit(Expr exp) {
@@ -274,6 +284,11 @@ public class StateTable {
 		if (table.containsKey(s))
 			return table.get(s).params;  
 		else { DashErrors.stateDoesNotExist("getParams", s); return null; }
+	}
+	public List<Integer> getParamsIdx(String s) {
+		if (table.containsKey(s))
+			return table.get(s).paramsIdx;  
+		else { DashErrors.stateDoesNotExist("getParamsIdx", s); return null; }		
 	}
 	public Boolean hasConcurrency(String s) {
 		if (table.containsKey(s)) {
@@ -379,13 +394,14 @@ public class StateTable {
 		}
 		return max;
 	}
-	public List<String> getAllParams() {
+	public List<String> getAllParamsInOrder() {
 		// variety of ways of doing this operation
-		Set<String> allParams = new HashSet<String>();
-		for (String k: table.keySet()) {
-			if (table.get(k).params != null) allParams.addAll(table.get(k).params);
-		}
-		return DashUtilFcns.setToList(allParams);
+		return allParamsInOrder;
+		//Set<String> allParams = new HashSet<String>();
+		//for (String k: table.keySet()) {
+		//	if (table.get(k).params != null) allParams.addAll(table.get(k).params);
+		//}
+		//return DashUtilFcns.setToList(allParams);
 	}
 	public void resolve(String root, VarTable vt) {
 		// resolve inits and invariants
@@ -395,6 +411,7 @@ public class StateTable {
 					.map(i -> vt.resolveExpr("init", i.getInit(), 
 						getRegion(sfqn), 
 						sfqn, 
+						getParamsIdx(sfqn),
 						getParams(sfqn)))
 					.collect(Collectors.toList()));
 			invs.addAll(
@@ -402,6 +419,7 @@ public class StateTable {
 					.map(i -> vt.resolveExpr("inv", i.getInv(), 
 						getRegion(sfqn), 
 						sfqn, 
+						getParamsIdx(sfqn),
 						getParams(sfqn)))
 					.collect(Collectors.toList()));
 			// have to resolve variables here because need
@@ -413,6 +431,7 @@ public class StateTable {
 						vt.getVarType(vfqn),
 						getRegion(sfqn), 
 						sfqn, 
+						getParamsIdx(sfqn),
 						getParams(sfqn)));
 			}
 		}
@@ -430,14 +449,14 @@ public class StateTable {
  
  	// tfqn is needed for error messages
 
-	public DashRef resolveSrcDest(String xType, DashRef x, String tfqn, List<String> tparams, VarTable vt) {
+	public DashRef resolveSrcDest(String xType, DashRef x, String tfqn, List<Integer> tparamsIdx, List<String> tparams, VarTable vt) {
 
 		//System.out.println("Looking for: " + x);
 		String sfqn = DashFQN.fqn(x.getName());
 		String parentFQN = DashFQN.chopPrefixFromFQN(tfqn);
 		// param values might be empty
 		List<Expr> paramValues = x.getParamValues().stream()
-			.map(i -> vt.resolveExpr("from", i, getRegion(parentFQN), tfqn, tparams))
+			.map(i -> vt.resolveExpr("from", i, getRegion(parentFQN), tfqn, tparamsIdx, tparams))
 			.collect(Collectors.toList());
 
 		List<String> matches = new ArrayList<String>();
@@ -462,7 +481,7 @@ public class StateTable {
 			String m = matches.get(0);
 			if (paramValues.isEmpty()) {
 				// must have same param values as trans b/c in same conc region
-				if (getParams(m).size() > tparams.size()) {
+				if (getParams(m).size() > tparamsIdx.size()) {
 					// getRegion did not return things that all
 					// have the same parameter values
 					DashErrors.regionMatchesWrongParamNumber();
@@ -470,8 +489,9 @@ public class StateTable {
 				} else {
 					// but could be a subset of transition param values
 					List<Expr> prmValues = 
-						ExprHelper.createVarList(pName,
-							tparams.subList(0, getParams(m).size() ));
+						Common.paramVars(
+							tparamsIdx.subList(0, getParams(m).size()), 
+							tparams.subList(0, getParams(m).size()) );
 					return new DashRef(m, prmValues);							
 				}
 			} else if (getParams(m).size() != paramValues.size()) { 
@@ -538,6 +558,11 @@ public class StateTable {
 			}
 		}
 		return r;		
+	}
+	public List<DashRef> getRootLeafStatesEntered() {
+		List<Expr> x = new ArrayList<Expr>();
+		//System.out.println(getLeafStatesEntered(new DashRef(root,x)));
+		return getLeafStatesEntered(new DashRef(root,x));
 	}
 	public List<DashRef> allPrefixDashRefs(DashRef s) {
 		List<String> allPrefixFQNs = DashFQN.allPrefixes(s.getName());

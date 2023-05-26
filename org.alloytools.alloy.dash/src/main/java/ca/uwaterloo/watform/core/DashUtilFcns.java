@@ -77,4 +77,11 @@ public class DashUtilFcns {
     	assert(x.size() == ll.size());
     	return x;
     }
+
+    public static List<Integer> listOfInt(int start, int stop) {
+    	assert(start <= stop);
+    	List<Integer> x = new ArrayList<Integer>();
+    	for (int i=start; i <= stop; i++) x.add(i);
+    	return x;
+    }
 }
