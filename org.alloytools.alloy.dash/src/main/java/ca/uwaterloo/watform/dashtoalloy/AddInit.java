@@ -83,8 +83,7 @@ public class AddInit {
             body = new ArrayList<Expr>();
             body.add(e);
         }
-        
-        body.add(curStableTrue());
+        if (d.hasConcurrency()) body.add(curStableTrue());
         // init is a reserved word in Electrum
         if (DashOptions.isElectrum) {
             d.alloyString += d.addPredSimple(DashStrings.initFactName, new ArrayList<Decl>(), body);
