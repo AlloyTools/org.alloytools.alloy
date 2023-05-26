@@ -60,6 +60,7 @@ public class AddInit {
                 curEvents(i),
                 allEnvironmentalEventsVar()));
         }
+        body.add(curStableTrue());
         
 
 
