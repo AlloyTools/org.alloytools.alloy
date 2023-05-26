@@ -60,6 +60,7 @@ public class AddInit {
                 curEvents(i),
                 allEnvironmentalEventsVar()));
         }
+        //TODO could put this outside of quantifiers
         body.add(curStableTrue());
         
 
