@@ -6,6 +6,7 @@ import java.util.*;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.parser.CompModule;
+import edu.mit.csail.sdg.parser.CompUtil;
 
 import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
@@ -14,38 +15,81 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 
 import ca.uwaterloo.watform.core.DashSituation;
 import ca.uwaterloo.watform.core.DashOptions;
+import ca.uwaterloo.watform.core.DashErrors;
 import ca.uwaterloo.watform.parser.DashUtil;
 import ca.uwaterloo.watform.parser.DashModule;
 
 
 // no io in these!
-
+// A4 reporter is not used in Dash stuff
 
 public class MainFunctions {
 
-    // both these function expect DashOptions to be set 
+    // all these function expect DashOptions to be set 
 
-    public static DashModule parseAndResolveDashFile(String filename, A4Reporter rep) {
-        DashModule dash = null;
+    public static DashModule parseDashFile(String filename, A4Reporter rep) {
+        //DashOptions.isTraces = true;
 
-        DashOptions.isTraces = true;
+        // some necessary initialization for two passes of parsing
         DashSituation.haveCountedBuffers = false;
         DashSituation.bufferElements = new ArrayList<String>();
         DashSituation.bufferNames = new ArrayList<String>();
-        dash = DashUtil.parseEverything_fromFileDash(rep, null, filename); 
-        if (dash == null) {
-            System.err.println("Empty Alloy file");
+        // first pass to collect buffers for open statements
+        DashModule d = DashUtil.parseEverything_fromFileDash(rep, null, filename); 
+        if (d == null) {
+            DashErrors.emptyFile(filename);
         } else {
             DashSituation.haveCountedBuffers = true;
-            dash = DashUtil.parseEverything_fromFileDash(rep, null, filename); 
-            //System.out.println(filename + " parsed successfully.");
-            // well-formedness checks
-            dash.resolveAllDash(rep); 
-            //System.out.println(dash.toString());
+            // second pass, which will put in appropriate open statements for buffers
+            d = DashUtil.parseEverything_fromFileDash(rep, null, filename); 
         }
- 
-        return dash;     
+        return d;     
     }
+    public static DashModule resolveDash(DashModule d, A4Reporter rep) {
+        if (d == null) {
+           DashErrors.emptyModule();
+        } else { 
+           // done in place
+           d.resolveAllDash(rep);
+        }
+        return d;
+    }
+    public static DashModule translate(DashModule d, A4Reporter rep) {
+        if (d == null) {
+            DashErrors.emptyModule();
+        } else {
+            // done in place 
+            d.translate();
+        }
+        return d;
+    }
+
+    public static CompModule resolveAlloy(CompModule c, A4Reporter rep) {
+        CompModule o = null;
+        if (c == null) {
+            DashErrors.emptyModule();
+        } else {
+            o = CompModule.resolveAll(rep,c);
+        }
+        return o;
+    }
+
+    // make our CLI also work for .als files
+    public static CompModule parseAlloyFile(String filename, A4Reporter rep) {
+        CompModule c = CompUtil.parseEverything_fromFile(rep, null, filename);
+        if (c == null) {
+            DashErrors.emptyFile(filename);
+        } 
+        return c;
+    }
+
+    // for testing
+    public static DashModule parseAndResolveDashFile(String filename, A4Reporter rep) {
+        DashModule d = parseDashFile(filename,rep);
+        return resolveDash(d,rep);
+    }
+
+    /*
     // only needed for testing
     public static void parseAndResolveAlloyFile(String filename, A4Reporter rep) {
         DashModule dash = null;
@@ -67,16 +111,16 @@ public class MainFunctions {
             }
         }
     }
-    public static String dumpString(DashModule dash) {
+    
+    public static String alloyString(DashModule dash) {
         String s = null;
- 
         if (dash != null) {
             s = dash.toString();
         }
-    
         return s;
     }
-
+    */
+    /*
     public static DashModule translate(DashModule dash, A4Reporter rep) {
 
         DashOptions.isTraces = true;
@@ -91,17 +135,11 @@ public class MainFunctions {
         return dash;
     }
 
+    */
    public static A4Solution executeCommand(Command cmd, CompModule alloy, A4Reporter rep, A4Options options) {
-
-
         //TODO this should be an option also
         options.solver = A4Options.SatSolver.SAT4J;
-
         A4Solution ans = TranslateAlloyToKodkod.execute_command(rep, alloy.getAllReachableSigs(), cmd, options); 
         return ans;
-
     }
-
-
-
 }

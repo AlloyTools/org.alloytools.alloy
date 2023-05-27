@@ -588,7 +588,7 @@ public class DashModule extends CompModuleHelper {
 
 	public void translate() {
 		assert(status == Status.RESOLVED_DASH);
-		System.out.println("Translating to Alloy");
+		//System.out.println("Translating to Alloy");
 		// this is so we can partition the translation
 		// code into a different file
 		// translation is done in place
@@ -596,6 +596,7 @@ public class DashModule extends CompModuleHelper {
 		// if no errors 
 		status = Status.TRANSLATED_TO_ALLOY;
 	}
+	/*
 	public void resolveAllAlloy(A4Reporter rep) {
     	// this method in CompModule is static and takes a CompModule as
     	// input and returns one as output even though it makes all the 
@@ -606,11 +607,11 @@ public class DashModule extends CompModuleHelper {
     	//assert(status == Status.TRANSLATED_TO_ALLOY);
     	//System.out.println("Resolving Alloy");
     	// this quits if it throws an error
-    	//resolveAll(rep == null ? A4Reporter.NOP : rep, this);
+    	resolveAll(rep == null ? A4Reporter.NOP : rep, (CompModule) this);
     	// if no errors
-    	status = Status.RESOLVED_ALLOY;
+    	//status = Status.RESOLVED_ALLOY;
     }
-
+	*/
     // for testing
     public List<String> getDefaults(String s) {
     	return stateTable.getDefaults(s);

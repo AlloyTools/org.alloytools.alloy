@@ -21,6 +21,7 @@ import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 
 import ca.uwaterloo.watform.core.DashOptions;
+import ca.uwaterloo.watform.core.DashErrors;
 // import ca.uwaterloo.watform.parser.DashUtil;
 import ca.uwaterloo.watform.core.DashUtilFcns;
 import ca.uwaterloo.watform.parser.DashModule;
@@ -33,11 +34,41 @@ public class Dash {
 
    @SuppressWarnings("resource" )
 
+   public static void executeCommands(CompModule c, Integer cmdnum, A4Reporter rep) {
+        // Choose some default options for how you want to execute the commands
+        A4Options options = new A4Options();
+
+        List<Command> commands = c.getAllCommands();
+        // this is an annoying way to convert a list to an array
+        Integer i = 1;
+        for (Command cmd : commands) { 
+            if (i == cmdnum | cmdnum == 0) {
+                System.out.println("Executing command: " + cmd);
+                A4Solution ans = null;
+                try {
+                    ans = MainFunctions.executeCommand(cmd,c,rep, options);
+                } catch (Exception e) {
+                    DashUtilFcns.handleException(e);
+                }
+                if (ans.satisfiable()) {
+                    System.out.println("Result: SAT");
+                } else {
+                    System.out.println("Result: UNSAT");
+                }
+            }
+            i++;
+        }
+        if (cmdnum >= i) {
+            System.err.println("Command number: " + cmdnum + " does not exist in file");
+        }
+   }
 
    public static void main(String args[]) throws Exception { 
 
         if(args.length == 0) {
-            System.out.println("Arguments: (-m traces|tcmc|electrum) (-c #) (-p) (-t) filename(s); -c is cmdnum; -t is translateOnly");
+            System.out.println("Arguments: (-m traces|tcmc|electrum) (-c #) (-p) (-t) (-r) filename(s)");
+            System.out.println(" -c is cmdnum; -t is translateOnly; -r is resolveOnly; -p is printDash");
+            System.out.println("if given a .als files, it runs all its commands");
             System.exit(0);
         }
 
@@ -51,6 +82,7 @@ public class Dash {
         Integer cmdnum = 0;
         Boolean translateOnly = false;
         Boolean printOnly = false;
+        Boolean resolveOnly = false;
 
         for (int i=0; i<args.length;i++) {
             if (args[i].equals("-m")) {
@@ -81,6 +113,8 @@ public class Dash {
                 translateOnly = true;
             } else if (args[i].equals("-p")) {
                 printOnly = true;
+            } else if (args[i].equals("-r")) {
+                resolveOnly = true;
             } else {
                 // everything else is a file name
                 filelist.add(args[i]);
@@ -115,86 +149,55 @@ public class Dash {
             if (directory.toString() != null)
                 DashOptions.dashModelLocation = directory.toString();
 
-            //Parse+typecheck the model
+            
             System.out.println("Reading: " + filename );
 
             A4Reporter rep = new A4Reporter();
-            CompModule alloymodule = null;
-            DashModule d = null;
-            try {
-                d = MainFunctions.parseAndResolveDashFile(filename, rep);
-            } catch (Exception e) {
-                DashUtilFcns.handleException(e);
-            }
-            if (printOnly) {  
-                if (d != null) {
-                    try {
-                        String o = MainFunctions.dumpString(d);
-                        System.out.println(o);
-                        System.out.println("File parsed successfully.");
-                    } catch (Exception e) {
-                        DashUtilFcns.handleException(e);
-                    }
-                }
-            } else {
+
+            if (filename.endsWith(".als")) {
                 try {
-                    alloymodule = MainFunctions.translate(d, rep);
+                    CompModule c = MainFunctions.parseAlloyFile(filename, rep);
+                    System.out.println("Parsed Alloy file");
+                    if (c == null) DashErrors.emptyFile(filename);
+                    c = MainFunctions.resolveAlloy(c,rep);
+                    // will raise an exception if problems
+                    System.out.println("Resolved Alloy file");
+                    executeCommands(c,cmdnum,rep);
                 } catch (Exception e) {
                     DashUtilFcns.handleException(e);
                 }
-                if (alloymodule == null) {
-                    System.err.println("Something went wrong");
-                    System.exit(1);
-                }
-                if (translateOnly) {
-                    try {
-                        // have to fix output name
-                        String outfilename = filename.substring(0,filename.length()-4) + "-" + method + ".als";
-                        File out = new File(outfilename);
-                        if (!out.exists()) {
-                            out.createNewFile();
-                        }
-                        System.out.println("Creating: " + outfilename);
-                        FileWriter fw = new FileWriter(out.getAbsoluteFile());
-                        BufferedWriter bw = new BufferedWriter(fw);
-                        bw.write(alloymodule.toString());
-                        bw.close();
-                        // temporarily, we'll check if it reads in as an AlloyModule okay
-                        // should be no Dash in it
-                        MainFunctions.parseAndResolveAlloyFile(outfilename, rep);
-                        System.out.println("Parsed and Resolved Alloy output file");
-                    } catch(Exception e){
-                        DashUtilFcns.handleException(e);
-                    }
-                } else {
-                    // execute command(s)
-
-                    // Choose some default options for how you want to execute the commands
-                    A4Options options = new A4Options();
-
-                    List<Command> commands = alloymodule.getAllCommands();
-                    // this is an annoying way to convert a list to an array
-                    Integer i = 1;
-                    for (Command cmd : commands) { 
-                        if (i == cmdnum | cmdnum == 0) {
-                            System.out.println("Executing command: " + cmd);
-                            A4Solution ans = null;
-                            try {
-                                ans = MainFunctions.executeCommand(cmd,alloymodule,rep, options);
-                            } catch (Exception e) {
-                                DashUtilFcns.handleException(e);
+            } else {
+                try {
+                    DashModule d = MainFunctions.parseDashFile(filename, rep);
+                    System.out.println("Parsed Dash file");
+                    if (d == null) DashErrors.emptyFile(filename);
+                    if (printOnly) {
+                        System.out.println(d.toStringAlloy());
+                    } else {
+                        d = MainFunctions.resolveDash(d, rep);
+                        System.out.println("Resolved Dash"); 
+                        CompModule c = MainFunctions.translate(d, rep);
+                        System.out.println("Translated Dash to Alloy"); 
+                        // if problem exception would be raised 
+                        if (translateOnly) {
+                            String outfilename = filename.substring(0,filename.length()-4) + "-" + method + ".als";
+                            File out = new File(outfilename);
+                            if (!out.exists()) out.createNewFile();
+                            System.out.println("Creating: " + outfilename);
+                            FileWriter fw = new FileWriter(out.getAbsoluteFile());
+                            BufferedWriter bw = new BufferedWriter(fw);
+                            bw.write(d.toStringAlloy());
+                            bw.close();
+                        } else {
+                            c = MainFunctions.resolveAlloy(c,rep);
+                            System.out.println("Resolved Alloy");
+                            if (!resolveOnly) {
+                                executeCommands(c,cmdnum,rep);
                             }
-                            if (ans.satisfiable()) {
-                                System.out.println("Result: SAT");
-                            } else {
-                                System.out.println("Result: UNSAT");
-                            }
-                        }
-                        i++;
+                        }                   
                     }
-                    if (cmdnum >= i) {
-                        System.err.println("Command number: " + cmdnum + " does not exist in file");
-                    }
+                } catch (Exception e) {
+                    DashUtilFcns.handleException(e);
                 }
             }
         }

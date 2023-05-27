@@ -152,8 +152,14 @@ public class DashErrors {
 	public static String cantPrimeAnExternal(String s1, String s2) {
 		throw new ErrorSyntax(cantPrimeAnExternalMsg + s1 + " in " + s2);
 	}
-
-
+	public static String emptyModuleMsg = "Empty module";
+	public static String emptyModule() {
+		throw new ErrorSyntax(emptyModuleMsg);
+	}
+	public static String emptyFileMsg = "Empty file: ";
+	public static String emptyFile(String fname) {
+		throw new ErrorSyntax(emptyFileMsg+fname);
+	}
 
 	// parts of the code that should be unreachable -------------
 

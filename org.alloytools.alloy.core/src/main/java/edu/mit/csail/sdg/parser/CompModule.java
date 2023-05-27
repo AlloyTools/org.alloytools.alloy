@@ -2199,7 +2199,7 @@ public class CompModule extends Browsable implements Module {
      * This method resolves the entire world; NOTE: if it throws an exception, it
      * may leave the world in an inconsistent state!
      */
-    static CompModule resolveAll(final A4Reporter rep, final CompModule root) throws Err {
+    public static CompModule resolveAll(final A4Reporter rep, final CompModule root) throws Err {
         final List<ErrorWarning> warns = new ArrayList<ErrorWarning>();
         for (CompModule m : root.getAllReachableModules())
             root.allModules.add(m);
