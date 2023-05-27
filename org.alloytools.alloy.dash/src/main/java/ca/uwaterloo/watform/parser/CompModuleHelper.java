@@ -311,9 +311,9 @@ public class CompModuleHelper extends CompModule {
         String s = new String();
         s += DashStrings.predName + " " + name;
         if (!decls.isEmpty()) {
-            s += " [";
+            s += " [\n\t";
             //s += ppDecls(decls);
-            StringJoiner j = new StringJoiner(", ");
+            StringJoiner j = new StringJoiner(",\n\t");
             decls.forEach(i -> j.add(ppDecl(i)));
             s += j.toString() + "]";
         } 

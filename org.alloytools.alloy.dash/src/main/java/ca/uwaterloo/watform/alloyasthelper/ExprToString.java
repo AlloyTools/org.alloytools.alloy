@@ -155,28 +155,35 @@ public class ExprToString {
             ExprToOut(expr.right);
             out.end();
             //out.print(")");
+        } else if (expr.op == ExprBinary.Op.JOIN) {
+            // there are really long join expressions
+            //out.beginI(2);
+            addBracketsIfNeededNoBlocks(getLeft(expr));
+            //out.brk(1,0);
+            out.print(expr.op);
+            //out.brk(1,0);
+            addBracketsIfNeededNoBlocks(getRight(expr));  
+            //out.end();  
         } else {
             out.beginI(2);
             addBracketsIfNeeded(getLeft(expr));
-            out.brk(1,0);
+            //out.brk(1,0);
+            out.print(" ");
             out.print(expr.op);
             out.brk(1,0);
             addBracketsIfNeeded(getRight(expr));  
             out.end();                 
-        }
+
         /*
-        else if (expr.op == ExprBinary.Op.JOIN) {
-            out.print("(");
-            ExprBinaryJoinToOut(expr);
-            out.print(")");
         } else if (expr.op == ExprBinary.Op.IMPLIES) {
             ExprToOut(expr.left);
             out.print(" => ").print("{ ");
             ExprToOut(expr.right);
             out.print(" } ");
         }
+        
         // This used to ensure that binary expressions have proper braces around them
-        else if ( isBinary(expr.right) || isBinary(expr.left)  ) {    
+        } else if ( isBinary(expr.right) || isBinary(expr.left)  ) {    
             if ( isBinary(expr.left) && !(exprOp(expr.left) == exprOp(expr)) && !(exprOp(expr.left) == ExprBinary.Op.JOIN)) {  
                 out.print('{').print(' ');
                 ExprToOut(expr.left);
@@ -197,9 +204,22 @@ public class ExprToString {
             ExprToOut(expr.left);
             out.print(' ').print(expr.op).print(' ');
             ExprToOut(expr.right);
-        }
         */
+        }
+        
     }
+
+    private void addBracketsIfNeededNoBlocks(Expr expr) {
+        if (!(isExprVar(expr) || (isExprUnary(expr) && !isExprCard(expr) ))) {
+            //out.beginC(2);
+            out.print("(");      
+        }    
+        ExprToOut(expr);
+         if (!(isExprVar(expr) || (isExprUnary(expr) && !isExprCard(expr) ) )) {
+            out.print(")");
+            //out.end();
+        }            
+    } 
 
     private void addBracketsIfNeeded(Expr expr) {
         if (!(isExprVar(expr) || (isExprUnary(expr) && !isExprCard(expr) ))) {
@@ -211,13 +231,14 @@ public class ExprToString {
             out.print(")");
             out.end();
         }            
-    }    
+    }  
+
     private void ExprBadJoinToOut(ExprBadJoin expr) {
         addBracketsIfNeeded(expr.left);
         out.print('.');
         addBracketsIfNeeded(expr.right);
     }
-
+    
     /*
     private void ExprBinaryJoinToOut(ExprBinary expr) {
         // The Alloy resolve dot joins (this) to a variable reference in a variable. We should not bring the ("this")
@@ -429,7 +450,7 @@ public class ExprToString {
                 break;
             case NOT :
                 out.print("!");
-                out.brk(1,0);
+                //out.brk(1,0);
                 addBracketsIfNeeded(expr.sub);
                 break;
             case NOOP :

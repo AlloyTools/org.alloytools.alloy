@@ -55,11 +55,13 @@ public class AddInit {
             // scopesUsedi = none
             body.add(createEquals(
                 curScopesUsed(i),
-                createNone()));
+                createNoneArrow(i)));
             // no limits on initial set of events except that they must be environmental
-            body.add(createIn(
-                curEvents(i),
-                allEnvironmentalEventsVar()));
+            //s.events1 :> internalEvents = none -> none
+            if (d.hasEventsAti(i))
+                body.add(createEquals(
+                    createRangeRes(curEvents(i), allInternalEventsVar()),
+                    createNoneArrow(i)));
         }
         
         
