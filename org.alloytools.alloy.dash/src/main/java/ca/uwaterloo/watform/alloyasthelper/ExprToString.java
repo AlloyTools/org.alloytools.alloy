@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.StringJoiner;
 import java.util.List;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import de.uka.ilkd.pp.DataLayouter;
 import de.uka.ilkd.pp.NoExceptions;
@@ -129,25 +130,25 @@ public class ExprToString {
     }
     */
     private void ExprBinaryToOut(ExprBinary expr) {
-        if (DashRef.isDashRefProcessRef(expr)) {
+        if (DashRef.isDashRef(expr)) {
             //   Root/A/B[exp1, exp2]/v1
-            String v = DashRef.nameOfDashRefExpr(expr);
+            /*
+            String v = DashRef.getName(expr);
             String n = DashFQN.chopNameFromFQN(v);
             String prefix = DashFQN.chopPrefixFromFQN(v);
             //TODO: should do proper pretty printing for these!
             String s = prefix;
             s += "[";
             List<String> el = new ArrayList<String>();
-            Expr e1 = getLeft(expr);
-            el.add(e1.toString());
-            while (isExprJoin(e1)) {
-                el.add(e1.toString());
-                e1 = getLeft(e1);
-            }
-            Collections.reverse(el);
-            s += DashUtilFcns.strCommaList(el);
+            List<String> paramValues = 
+                DashRef.getParamValues(expr).stream()
+                .map(i -> i.toString())
+                .collect(Collectors.toList());
+            Collections.reverse(paramValues);
+            s += DashUtilFcns.strCommaList(paramValues);
             s += "]/" + v;
-            out.print(s);
+            */
+            out.print(expr.toString());
         }
         else if (expr.op == ExprBinary.Op.ISSEQ_ARROW_LONE) {
             out.print("seq ");

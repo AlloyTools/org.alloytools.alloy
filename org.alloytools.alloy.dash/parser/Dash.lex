@@ -253,8 +253,8 @@ import edu.mit.csail.sdg.parser.CompModule;
 
 "init"                { return alloy_sym(yytext(), DashSym.INIT        );}
 "invariant"           { return alloy_sym(yytext(), DashSym.INVARIANT   );}
-"action"			  { return alloy_sym(yytext(), DashSym.ACTION   );}
-"condition"			  { return alloy_sym(yytext(), DashSym.CONDITION   );}
+//"action"			  { return alloy_sym(yytext(), DashSym.ACTION   );}
+//"condition"			  { return alloy_sym(yytext(), DashSym.CONDITION   );}
 
 "trans"               { return alloy_sym(yytext(), DashSym.TRANS       );}
 

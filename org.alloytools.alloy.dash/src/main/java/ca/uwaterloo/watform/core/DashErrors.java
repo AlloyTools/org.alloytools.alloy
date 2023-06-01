@@ -68,16 +68,26 @@ public class DashErrors {
 	public static void srcDestCantHaveParam(String xType, String tfqn) throws Err {
 		throw new ErrorSyntax(srcDestCantHaveParamMsg + xType + " of transition "+ tfqn );
 	}
-	public static String ambiguousSrcDestMsg = "State name not unique within this conc/Root region: ";
-	public static void ambiguousSrcDest(String x, String tfqn) throws Err {
-		throw new ErrorSyntax(ambiguousSrcDestMsg + "trans "+tfqn+" "+x);
+	public static String ambiguousRefMsg = "Name not unique: ";
+	public static void ambiguousRef(Pos pos, String expString) throws Err {
+		throw new ErrorSyntax(pos + " " + ambiguousRefMsg + expString);
 	}
-	// below this have not been tested
 
+	// below this have not been tested
+	public static String unknownStateMsg = "State does not exist: ";
+	public static void unknownState(Pos pos, String expString) {
+		throw new ErrorSyntax(pos + " " + unknownStateMsg + expString);
+	}
+	public static String unknownEventMsg = "Event does not exist: ";
+	public static void unknownEvent(Pos pos, String expString) {
+		throw new ErrorSyntax(pos + " " + unknownEventMsg + expString);
+	}
+	
 	public static String nameShouldNotBePrimedMsg = "Declared state/trans/event/var cannot have a primed name: ";
 	public static void nameShouldNotBePrimed(String n) {
 		throw new ErrorSyntax(nameShouldNotBePrimedMsg+n);
 	}
+	
 	public static String transNameCantBeFQNMsg = "Trans name cannot be fully qualified at declaration: ";
 	public static void transNameCantBeFQN(Pos o, String s) {
 		throw new ErrorSyntax(o, transNameCantBeFQNMsg + s);
@@ -113,14 +123,13 @@ public class DashErrors {
 	public static void tooMany(String xType, String tfqn) {
 		throw new ErrorSyntax(tooManyMsg + xType + " in " + tfqn);
 	}
-	public static String unknownEventMsg = "Event does not exist: ";
-	public static void unknownEvent(String xType, String v, String tfqn) {
-		throw new ErrorSyntax(unknownEventMsg +v+" in "+ tfqn +" "+ xType);
-	}
+
+	/*
 	public static String ambiguousEventMsg = "Event name not unique within this conc/Root region: ";
 	public static void ambiguousEvent(String xType, String v, String tfqn) {
 		throw new ErrorSyntax(ambiguousEventMsg +v+" in "+ tfqn + " "+xType);
 	}
+	*/
 	public static String fqnEventMissingParametersMsg = "Fully qualified event name missing paramaters: ";
 	public static void fqnEventMissingParameters(String xType, String v, String tfqn) {
 		throw new ErrorSyntax(fqnEventMissingParametersMsg + v + " in "+tfqn + " " + xType);
@@ -135,9 +144,9 @@ public class DashErrors {
 	//public static void crossRefMoreThanOneArg(Pos o, String n) throws Err {
 	//	throw new ErrorSyntax(o,"Two many args to reference to "+n+" in sibling state");
 	//}
-	public static String noPrimedVarsInMsg = "Primed variables are not allowed in: ";
-	public static void noPrimedVarsIn(String s1, String s2, String s3) {
-		throw new ErrorSyntax(noPrimedVarsInMsg + s1 + " " + s2 + " "+s3);
+	public static String noPrimedVarsMsg = " Primed variables are not allowed in: ";
+	public static void noPrimedVars(Pos pos, String expString) {
+		throw new ErrorSyntax(pos + " " + noPrimedVarsMsg + expString);
 	}
 	public static String ambiguousVarMsg = "Var name not unique within this conc/Root region: ";
 	public static void ambiguousVar(String xType, String v, String tfqn) {
@@ -148,9 +157,9 @@ public class DashErrors {
 		throw new ErrorSyntax(fqnVarWrongNumberParametersMsg + s1 + " "+s2 +" "+s3);
 	}
 
-	public static String cantPrimeAnExternalMsg = "Internal var/buffer cannot be primed: ";
-	public static String cantPrimeAnExternal(String s1, String s2) {
-		throw new ErrorSyntax(cantPrimeAnExternalMsg + s1 + " in " + s2);
+	public static String cantPrimeAnExternalVarMsg = " Internal var/buffer cannot be primed: ";
+	public static String cantPrimeAnExternalVar(Pos pos, String expString) {
+		throw new ErrorSyntax(pos + " " + cantPrimeAnExternalVarMsg + expString);
 	}
 	public static String emptyModuleMsg = "Empty module";
 	public static String emptyModule() {
@@ -160,6 +169,18 @@ public class DashErrors {
 	public static String emptyFile(String fname) {
 		throw new ErrorSyntax(emptyFileMsg+fname);
 	}
+	public static String ambiguousUseOfThisMsg = " Ambiguous use of 'this' ";
+	public static String ambiguousUseOfThis(Pos pos, String expString) {
+		throw new ErrorSyntax(pos + ambiguousUseOfThisMsg + expString);
+	}
+	public static String nonParamUseOfThisMsg = " 'this' must refer to a parametrized state: ";
+	public static String nonParamUseOfThis(Pos pos, String expString) {
+		throw new ErrorSyntax(pos + nonParamUseOfThisMsg + expString);
+	}
+	public static String wrongNumberParamsMsg = " Incorrect number of parameters: ";
+	public static void wrongNumberParams(Pos pos, String expString) {
+		throw new ErrorSyntax(pos + " " + wrongNumberParamsMsg + expString);
+	}
 
 	// parts of the code that should be unreachable -------------
 
@@ -167,9 +188,10 @@ public class DashErrors {
 	public static void ancesNotPrefix(String a, String d) throws Err {
 		throw new ErrorFatal(a + ancesNotPrefixMsg + d);
 	}
-
-
-	// not tested below this line
+	public static String notVarBeforeDashRefMsg = "must be var: ";
+	public static void notVarBeforeDashRef (Pos o, String expString) {
+		throw new ErrorFatal(o + notVarBeforeDashRefMsg + expString);
+	}
 	public static void toAlloyNoDash() throws Err {
 		throw new ErrorFatal("Translating to Alloy when no Dash part");
 	}
@@ -198,7 +220,7 @@ public class DashErrors {
 		throw new ErrorFatal("for function "+s1+", buffer "+n+ " does not exist in buffer table");
 	}
 	public static void varBufferDoesNotExist(String s1, String n) throws Err {
-		throw new ErrorFatal("for function "+s1+", buffer/var "+n+ " does not exist in buffer table");
+		throw new ErrorFatal("for function "+s1+", "+n+ " does not exist in buffer or var table");
 	}
 	public static void missingExpr(String s) throws Err {
 		throw new ErrorFatal("Missing expr type in "+s);
@@ -238,9 +260,7 @@ public class DashErrors {
 	public static void eventTableEventNotFound(String m, String efqn) {
 		throw new ErrorFatal("eventTableEventNotFound: "+m+" "+efqn);
 	}
-	public static void regionMatchesWrongParamNumber() {
-		throw new ErrorFatal("regionMatchesWrongParamNumber");
-	}
+
 	public static void createTestIfNextStableCallMultipleScopesAtSameLevel() {
 		throw new ErrorFatal("createTestIfNextStableCallMultipleScopesAtSameLevel");
 	}

@@ -19,6 +19,9 @@ import ca.uwaterloo.watform.parser.StateTable;
 import ca.uwaterloo.watform.parser.TransTable;
 import ca.uwaterloo.watform.parser.EventTable;
 import ca.uwaterloo.watform.parser.VarTable;
+
+import static ca.uwaterloo.watform.parser.ResolveExpr.*;
+
 //import ca.uwaterloo.watform.parser.BufferTable;
 
 public class DashState  extends Dash {
@@ -119,9 +122,14 @@ public class DashState  extends Dash {
 	 * check for errors in the state hierarchy
 	 * and put all states in the state table
 	 */
-	public void resolve(StateTable st, TransTable tt, EventTable et, VarTable vt, List<String> params, List<Integer> paramsIdx, List<String> ances)  {
+	public void load(StateTable st, TransTable tt, EventTable et, VarTable vt, List<String> ances)  {
+		// this state is not yet in the st
+		// but its parent is in the st
+
 		if (DashFQN.isFQN(name)) DashErrors.stateNameCantBeFQN(pos, name);
 		String sfqn = DashFQN.fqn(ances,name);
+		String parentfqn = DashFQN.fqn(ances);
+
 		//System.out.println("Resolving state "+sfqn);
 
 		// make a copy of the items list so we can
@@ -176,8 +184,12 @@ public class DashState  extends Dash {
 		// continue to add to list everywhere				
 		List<String> newAnces = new ArrayList<String>(ances);
 		newAnces.add(name);		
-		List<String> newParams = new ArrayList<String>(params);
-		List<Integer> newParamsIdx = new ArrayList<Integer>(paramsIdx);
+		List<String> newParams = new ArrayList<String>();
+		List<Integer> newParamsIdx = new ArrayList<Integer>();
+		if (parentfqn != null) {
+			newParams.addAll(st.getParams(parentfqn));
+			newParamsIdx.addAll(st.getParamsIdx(parentfqn));
+		}
 		if (param != null) {
 			newParams.add(param);
 			int idx = st.addToParamsList(param);
@@ -195,7 +207,7 @@ public class DashState  extends Dash {
 
 
 		if (substatesList.isEmpty() ) {
-			if (!st.add(sfqn, kind, param, newParams, newParamsIdx, def, DashFQN.fqn(ances), new ArrayList<String>(),
+			if (!st.add(sfqn, kind, param, newParams, newParamsIdx, def,parentfqn, new ArrayList<String>(),
 				invList, initList, actionList, conditionList)) DashErrors.addStateToStateTableDup(sfqn);;
 			
 		} else {
@@ -209,11 +221,11 @@ public class DashState  extends Dash {
 				DashErrors.dupSiblingNames(DashUtilFcns.strCommaList(dups.stream().collect(Collectors.toList())));
 
 			// add this state to the table
-			if (!st.add(sfqn,kind, param, newParams,newParamsIdx, def, DashFQN.fqn(ances), childFQNs,
+			if (!st.add(sfqn,kind, param, newParams,newParamsIdx, def, parentfqn, childFQNs,
 				invList, initList, actionList, conditionList)) DashErrors.addStateToStateTableDup(sfqn);;
 
 			// add all substates to the table
-			for (DashState s: substatesList) s.resolve(st, tt, et, vt, newParams, newParamsIdx, newAnces);
+			for (DashState s: substatesList) s.load(st, tt, et, vt, newAnces);
 
 			// make sure defaults are correct
 			// if there's only one child it is automatically the default
@@ -325,10 +337,12 @@ public class DashState  extends Dash {
 				.filter(i -> i instanceof DashTrans)
 				.map(p -> (DashTrans) p)
 				.collect(Collectors.toList());
+		
 		for (DashTrans t:transList) {
 			//System.out.println("newAnces: " +newAnces);
-			t.resolve(tt, newParams, newParamsIdx, newAnces);
+			t.load(tt, newParams, newParamsIdx, newAnces);
 		}
+		
 		xItems.removeAll(transList);
 
 

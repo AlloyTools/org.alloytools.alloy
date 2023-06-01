@@ -82,11 +82,11 @@ public class DashWffFailTests {
          //{"unknownSrcDest1", unknownSrcDestMsg}, 
          //{"unknownSrcDest2", unknownSrcDestMsg},
          //{"unknownSrcDest3", unknownSrcDestMsg},
-         {"unknownSrcDest4", unknownSrcDestMsg}, //21
-         {"fqnSrcDestMustHaveRightNumberParams1", fqnSrcDestMustHaveRightNumberParamsMsg}, 
-         {"srcDestCantHaveParam1", fqnSrcDestMustHaveRightNumberParamsMsg}, //23
-         {"ambiguousSrcDest1", ambiguousSrcDestMsg},
-         {"test11",ambiguousSrcDestMsg}
+         {"unknownSrcDest4", unknownStateMsg}, //21
+         {"fqnSrcDestMustHaveRightNumberParams1", wrongNumberParamsMsg}, //22
+         {"srcDestCantHaveParam1", wrongNumberParamsMsg}, //23
+         {"ambiguousSrcDest1", ambiguousRefMsg},
+         {"test11",ambiguousRefMsg}
       });
    }
 

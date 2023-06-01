@@ -125,6 +125,9 @@ public class ExprHelper  {
     public static ExprVar createVar(String v) {
         return ExprVar.make(Pos.UNKNOWN, v);
     }
+    public static ExprVar createVar(Pos p, String v) {
+        return ExprVar.make(p, v);
+    }
     public static List<Expr> createVarList(List<String> vList) {
         List<Expr> retList = new ArrayList<Expr>();
         for (String v: vList) {
@@ -189,6 +192,9 @@ public class ExprHelper  {
     }
     public static ExprBinary createJoin(Expr left, Expr right) {
         return (ExprBinary) ExprBinary.Op.JOIN.make(Pos.UNKNOWN, Pos.UNKNOWN, left, right);
+    }
+    public static ExprBinary createJoin(Pos p, Expr left, Expr right) {
+        return (ExprBinary) ExprBinary.Op.JOIN.make(p, p, left, right);
     }
     public static Expr createJoinList(List<Expr> elist) {
         Expr ret = null;

@@ -44,9 +44,9 @@ public class DashEventTests {
       DashModule d = test("event1");
       String tfqn = "Root/t1";
       assertTrue(
-         on(d, tfqn).equals("Root/ev1[]"));
+         on(d, tfqn).equals("Root/ev1"));
       assertTrue(
-         send(d, tfqn).equals("Root/ev1[]"));
+         send(d, tfqn).equals("Root/ev1"));
    }
 
    @Test
@@ -64,7 +64,7 @@ public class DashEventTests {
       DashModule d = test("event3");
       String tfqn = "Root/t1";
       assertTrue(
-         on(d, tfqn).equals("Root/ev1[]"));
+         on(d, tfqn).equals("Root/ev1"));
       assertTrue(
          send(d, tfqn).equals("none"));
    }

@@ -10,8 +10,8 @@ import ca.uwaterloo.watform.core.DashRef;
 
 public class DashFrom extends Dash {
 
-	public DashRef src;
-	public DashFrom(Pos pos,DashRef d) {
+	public Expr src;
+	public DashFrom(Pos pos,Expr d) {
 		assert(d != null);
 		this.pos = pos;
 		this.src = d;

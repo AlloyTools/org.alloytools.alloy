@@ -125,7 +125,7 @@ public abstract class Expr extends Browsable {
      * @param errors - the list of errors associated with this Expr node (can be
      *            null if there are none)
      */
-    Expr(Pos pos, Pos closingBracket, boolean ambiguous, Type type, int mult, long weight, JoinableList<Err> errors) {
+    public Expr(Pos pos, Pos closingBracket, boolean ambiguous, Type type, int mult, long weight, JoinableList<Err> errors) {
         this.pos = (pos == null ? Pos.UNKNOWN : pos);
         this.closingBracket = (closingBracket == null ? Pos.UNKNOWN : closingBracket);
         this.ambiguous = ambiguous;
@@ -140,7 +140,7 @@ public abstract class Expr extends Browsable {
     }
 
     /** This must only be called by Sig's constructor. */
-    Expr(Pos pos, Type type) {
+    public Expr(Pos pos, Type type) {
         this.closingBracket = Pos.UNKNOWN;
         this.ambiguous = false;
         this.errors = emptyListOfErrors;

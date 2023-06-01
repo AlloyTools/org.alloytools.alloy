@@ -274,7 +274,11 @@ public class StateTable {
 			return table.get(s).param;  
 		else { DashErrors.stateDoesNotExist("getParam", s); return null; }	
 	}
-
+	public Integer getParamIdx(String s) {
+		if (table.containsKey(s) && hasParam(s))
+			return lastElement(table.get(s).paramsIdx);  
+		else { DashErrors.stateDoesNotExist("getParam", s); return null; }	
+	}
 	public boolean hasParam(String s) {
 		if (table.containsKey(s))
 			return table.get(s).param != null;  
@@ -403,6 +407,22 @@ public class StateTable {
 		//}
 		//return DashUtilFcns.setToList(allParams);
 	}
+	public void resolve(String root, EventTable et, VarTable vt) {
+		// resolve inits and invariants
+		for (String sfqn: table.keySet()) {
+			inits.addAll( 
+				table.get(sfqn).origInits.stream()
+					.map(i -> ResolveExpr.resolveExpr(this, et, vt, "var", false, false, true, sfqn, i.getInit()))
+					.collect(Collectors.toList()));
+			invs.addAll(
+				table.get(sfqn).origInvariants.stream()
+					.map(i -> ResolveExpr.resolveExpr(this, et, vt, "var", false, false, true, sfqn, i.getInv()))
+					.collect(Collectors.toList()));
+
+		}
+		isResolved = true;
+	}
+	/*
 	public void resolve(String root, VarTable vt) {
 		// resolve inits and invariants
 		for (String sfqn: table.keySet()) {
@@ -422,6 +442,7 @@ public class StateTable {
 						getParamsIdx(sfqn),
 						getParams(sfqn)))
 					.collect(Collectors.toList()));
+			
 			// have to resolve variables here because need
 			// other parameters to resolveExpr
 			for (String vfqn: vt.getVarsOfState(sfqn)) {
@@ -434,9 +455,11 @@ public class StateTable {
 						getParamsIdx(sfqn),
 						getParams(sfqn)));
 			}
+			
 		}
 		isResolved = true;
 	}
+	*/
 
 	/*
 	 * this fcn figures out the src/dest of a transition
@@ -448,7 +471,7 @@ public class StateTable {
 	 */
  
  	// tfqn is needed for error messages
-
+	/*
 	public DashRef resolveSrcDest(String xType, DashRef x, String tfqn, List<Integer> tparamsIdx, List<String> tparams, VarTable vt) {
 
 		//System.out.println("Looking for: " + x);
@@ -503,7 +526,7 @@ public class StateTable {
 			}
 		}
 	}
-
+	*/
 	public List<Expr> getInits() {
 		return inits;
 	}
@@ -522,7 +545,7 @@ public class StateTable {
 				// exit all copies of the params
 				List<Expr> newParamValues = new ArrayList<Expr>(s.getParamValues());
 				if (hasParam(ch)) newParamValues.add(ExprHelper.createVar(getParam(ch)));
-				r.addAll(getLeafStatesExited(new DashRef(ch, newParamValues)));
+				r.addAll(getLeafStatesExited(DashRef.createStateDashRef(ch, newParamValues)));
 			}
 			return r;
 		}
@@ -554,7 +577,7 @@ public class StateTable {
 				List<Expr> newParamValues = new ArrayList<Expr>(s.getParamValues());
 				if (hasParam(ch))
 					newParamValues.add(ExprHelper.createVar(getParam(ch)));
-				r.addAll(getLeafStatesEntered(new DashRef(ch, newParamValues)));
+				r.addAll(getLeafStatesEntered(DashRef.createStateDashRef(ch, newParamValues)));
 			}
 		}
 		return r;		
@@ -562,7 +585,7 @@ public class StateTable {
 	public List<DashRef> getRootLeafStatesEntered() {
 		List<Expr> x = new ArrayList<Expr>();
 		//System.out.println(getLeafStatesEntered(new DashRef(root,x)));
-		return getLeafStatesEntered(new DashRef(root,x));
+		return getLeafStatesEntered(DashRef.createStateDashRef(root,x));
 	}
 	public List<DashRef> allPrefixDashRefs(DashRef s) {
 		List<String> allPrefixFQNs = DashFQN.allPrefixes(s.getName());
@@ -570,10 +593,10 @@ public class StateTable {
 		int i = 0;
 		for (String x:allPrefixFQNs) {
 			if (isAnd(x) && hasParam(x)) {
-				r.add(new DashRef(x,s.getParamValues().subList(0,i+1)));
+				r.add(DashRef.createStateDashRef(x,s.getParamValues().subList(0,i+1)));
 				i++;
 			} else
-				r.add(new DashRef(x,s.getParamValues().subList(0,i)));
+				r.add(DashRef.createStateDashRef(x,s.getParamValues().subList(0,i)));
 		}
 		assert(i == s.getParamValues().size());
 		return r;
@@ -612,7 +635,7 @@ public class StateTable {
 				e2 = dest.getParamValues().get(p);
 				if (!ExprHelper.sEquals(e1, e2)) {
 					nP.add(ExprHelper.createDiff(e1,e2));
-					r.addAll(getLeafStatesEntered(new DashRef(c.getName(), nP)));
+					r.addAll(getLeafStatesEntered(DashRef.createStateDashRef(c.getName(), nP)));
 				} // if equal this is empty so don't include it
 				xP.add(e2);  // just e2 for next one
 				p++;
@@ -638,7 +661,7 @@ public class StateTable {
 					if (!ExprHelper.sEquals(e1, e2)) {
 						nP.add(ExprHelper.createDiff(e1, e2));
 						r.addAll(getLeafStatesEntered(
-							new DashRef(chOfDest.getName(),nP)));	
+							DashRef.createStateDashRef(chOfDest.getName(),nP)));	
 					} // if equal this is empty so don't include it		
 				}
 				//siblings
@@ -653,7 +676,7 @@ public class StateTable {
 					if (hasParam(ch)) 
 						// add the entire param set
 						nP.add(ExprHelper.createVar(getParam(ch)));
-					r.addAll(getLeafStatesEntered(new DashRef(ch,nP)));		
+					r.addAll(getLeafStatesEntered(DashRef.createStateDashRef(ch,nP)));		
 				}		
 			}
 			// if its an OR state, just go on to the next one

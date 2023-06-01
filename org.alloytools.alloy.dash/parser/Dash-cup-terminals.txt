@@ -14,8 +14,8 @@ terminal Pos BUF;
 
 terminal Pos INIT;             
 terminal Pos INVARIANT;        
-terminal Pos ACTION;
-terminal Pos CONDITION;
+//terminal Pos ACTION;
+//terminal Pos CONDITION;
 
 terminal Pos TRANS;            
 

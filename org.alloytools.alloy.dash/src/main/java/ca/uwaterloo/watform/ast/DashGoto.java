@@ -10,8 +10,8 @@ import ca.uwaterloo.watform.core.DashStrings;
 import ca.uwaterloo.watform.core.DashRef;
 
 public class DashGoto extends Dash {
-	public DashRef dest;
-	public DashGoto(Pos pos,DashRef d) {
+	public Expr dest;
+	public DashGoto(Pos pos,Expr d) {
 		assert(d!=null);
 		this.pos = pos;
 		this.dest = d;

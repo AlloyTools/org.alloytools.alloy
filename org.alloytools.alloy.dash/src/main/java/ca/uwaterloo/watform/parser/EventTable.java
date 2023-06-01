@@ -123,14 +123,14 @@ public class EventTable {
 		if (table.containsKey(efqn)) return (table.get(efqn).kind == IntEnvKind.INT);
 		else { DashErrors.eventTableEventNotFound("isInternalEvent", efqn); return false; }	
 	}
-	public List<String> allEventsOfState(String sfqn) {
+	public List<String> getEventsOfState(String sfqn) {
 		// return all events declared in this state
 		// will have the sfqn as a prefix
 		return table.keySet().stream()
 			.filter(i -> DashFQN.chopPrefixFromFQN(i).equals(sfqn))
 			.collect(Collectors.toList());	
 	}
-
+	/*
 	public DashRef resolveEvent(String xType, Expr exp, List<String> region, String tfqn, List<Integer> tparamsIdx, List<String> tparams, VarTable vt) {
 
 
@@ -143,7 +143,7 @@ public class EventTable {
 		// BadJoin: ev[a1,b1] which became b1.a1.ev in parsing 
 		if (ExprHelper.isExprVar(exp) ||
 			//DashRef.isDashRefArrow(exp) || 
-			DashRef.isDashRefProcessRef(exp))// || 
+			DashRef.isDashRef(exp))// || 
 			//DashRef.isDashRefBadJoin(exp)) 
 		{
 			String e;
@@ -152,10 +152,10 @@ public class EventTable {
 				e = ExprHelper.getVarName((ExprVar) exp);	
 				paramValues = new ArrayList<Expr>();
 			} else {
-				e = DashRef.nameOfDashRefExpr(exp);
+				e = exp.getName();
 				paramValues = 
 					// have to recursive through expressions in parameters
-					DashRef.paramValuesOfDashRefExpr(exp).stream()
+					exp.getParamValues().stream()
 						.map(i -> vt.resolveExpr(xType, i, region, tfqn, tparamsIdx, tparams))
 						.collect(Collectors.toList());
 			}
@@ -214,5 +214,5 @@ public class EventTable {
 		}
 		
 	}
-
+	*/
 }

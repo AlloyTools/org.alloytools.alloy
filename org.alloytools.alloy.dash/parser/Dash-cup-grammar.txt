@@ -5,7 +5,7 @@
 // besides creating a DashState; the parsing also has count buffers and create indexes
 // for those buffers in order to have the correct open statements
 
-// no DashErrors here -- all are checked in wff checks
+// a few Dash errors here
 
 // adding a case for the Spec
 Spec ::= Spec StateRoot:o ;
@@ -288,65 +288,67 @@ TransItemList ::= TransItemList:c TransItem:x
 
 //Exprp is non-empty list of comma-separated Expr
 //Exprs could be empty ist of comma-separated Expr
-TransItem ::= FROM:o Name:n  
-        {: RESULT = new DashFrom(o, new DashRef(o, n.label,DashRef.emptyParamValuesList()));  :};
 
-TransItem ::= FROM:o Name:n LBRACKET Exprp:e RBRACKET 
-        {: RESULT = new DashFrom(o, new DashRef(o,n.label,e));  :};
+// src/dest ---------------------
+TransItem ::= FROM:o Name:n  
+        {: RESULT = new DashFrom(o, DashRef.createStateDashRef(o, n.label,DashRef.emptyParamValuesList()));  :};
+
+TransItem ::= FROM Name:n LBRACKET:o Exprp:e RBRACKET 
+        {: RESULT = new DashFrom(o, DashRef.createStateDashRef(o,n.label,e));  :};
 
 TransItem ::= GOTO:o Name:n   
-        {: RESULT = new DashGoto(o, new DashRef(o,n.label,DashRef.emptyParamValuesList())); :};
+        {: RESULT = new DashGoto(o, DashRef.createStateDashRef(o,n.label,DashRef.emptyParamValuesList())); :};
 
-TransItem ::= GOTO:o Name:n LBRACKET  Exprp:e RBRACKET 
-        {: 
-           RESULT = new DashGoto(o, new DashRef(o, n.label,e));
-        :};
+TransItem ::= GOTO Name:n LBRACKET:o  Exprp:e RBRACKET 
+        {: RESULT = new DashGoto(o, DashRef.createStateDashRef(o, n.label,e)); :};
 
-// this allows "on x.ev1", "on A/ev1[x]" and "on n" in parsing but will have to sort out later to see if correct
-TransItem ::= ON:o Expr:v 
-        {: RESULT = new DashOn(o, v); :};
+// events A/B[a1]/ev1 ---------------------------
 
-//TransItem ::= ON:o Name:n   
-//        {: //RESULT = new DashOn(o, new DashRef(o, n.label,DashRef.emptyParamValuesList()) );  :};
+TransItem ::= ON:o Name:n   
+        {: RESULT = new DashOn(o, DashRef.createEventDashRef(o, n.label,DashRef.emptyParamValuesList()) );  :};
 
-//TransItem ::= ON:o Name:n LBRACKET  Expr:b RBRACKET  
-//        {: //RESULT = new DashOn(o, new DashRef(o,n.label,e) );  :};
+TransItem ::= ON  Name:a LBRACKET:o Exprs:b RBRACKET SLASH Name:e 
+        {: RESULT = new DashOn(o, DashRef.createEventDashRef(o, a.toString() + '/' + e.label, b)); :};
 
+TransItem ::= SEND:o Name:n   
+        {: RESULT = new DashSend(o, DashRef.createEventDashRef(o,  n.label,DashRef.emptyParamValuesList()) );  :};
+
+TransItem ::= SEND  Name:a LBRACKET:o Exprs:b RBRACKET SLASH Name:e 
+        {: RESULT = new DashSend(o, DashRef.createEventDashRef(o, a.toString() + '/' + e.label, DashRef.emptyParamValuesList()) ); :};
+
+
+// actions/guards 
 TransItem ::= WHEN:o Expr:v 
         {:  RESULT = new DashWhen(o, v); :};
 
 TransItem ::= DO:o   Expr:v  
         {:  RESULT = new DashDo(o, v); :};
 
-// this allows Send x.ev1 and "Send n" in parsing but will have to sort out later to see if correct
-TransItem ::= SEND:o Expr:v 
-        {: RESULT = new DashSend(o, v); :};
-
-//TransItem ::= SEND:o Name:n   
-//        {: RESULT = new DashSend(o, new DashRef(o, n.label,DashRef.emptyParamValuesList()) );  :};
-
-//TransItem ::= SEND:o Name:n LBRACKET  Exprp:e RBRACKET  
-//        {: RESULT = new DashSend(o, new DashRef(o,n.label,e) );  :};
-
-// DASH PLUS PROCESS REFERENCE
-// in Alloy can't have a "/Variable" in the following so we need more syntax
+// DASH PLUS REFERENCE
+// in Alloy can't have a "/Variable" in the following as a regular
+// expression so we need more syntax
+// and this distinguishes it from other Alloy expressions
 // A/B/C[ParamValue1, ParamValue2]/Variable
-// result ParamValue2.ParamValue1.A/B/C/Variable (using BadJoins)
 // note PRIME is a special token in grammar and we want to support v'
 
 BracketExprB ::= BracketExprB:a LBRACKET:o Exprs:b RBRACKET SLASH Name:e 
     {: 
-        Expr r = ExprVar.make(o, a.toString() + '/' + e.label);
-        Collections.reverse(b);
-        for (Expr x:b) r = ExprBinary.Op.JOIN.make(o,null, x, r);
-        RESULT= ExprBinary.Op.JOIN.make(o, null, DashRef.processRef(), r);
+        // have to find the error here
+        // because if put Name:a in rule above, get shift/reduce conflict
+        // and DashRef expects a String
+        if (!ExprHelper.isExprVar(a)) DashErrors.notVarBeforeDashRef(o,a.toString());
+        else {
+                String r = a.toString() + '/' + e.label;
+                RESULT = DashRef.createVarDashRef(o, r, b);
+        }
     :}; 
 BracketExprB ::= BracketExprB:a LBRACKET:o Exprs:b RBRACKET SLASH Name:e PRIME
     {: 
-        Expr r = ExprVar.make(o, a.toString() + '/' + e.label + "'");
-        Collections.reverse(b);
-        for (Expr x:b) r = ExprBinary.Op.JOIN.make(o,null, x, r);
-        RESULT= ExprBinary.Op.JOIN.make(o, null, DashRef.processRef(),r);
+        if (!ExprHelper.isExprVar(a)) DashErrors.notVarBeforeDashRef(o,a.toString());
+        else {        
+                String r = a.toString() + '/' + e.label + "'";
+                RESULT = DashRef.createVarDashRef(o,r, b);
+        }
     :}; 
 
 //DASH end grammar ---------------------------------------------------------------------

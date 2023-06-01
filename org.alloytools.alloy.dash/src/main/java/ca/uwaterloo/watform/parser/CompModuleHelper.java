@@ -39,6 +39,7 @@ public class CompModuleHelper extends CompModule {
     }
 
     public String addOpenSimple(String name, List<String> args, String aliasName) {
+        //System.out.println("adding open: "+name);
         ExprVar alias = (aliasName == null) ? null : createVar(aliasName);
         List<ExprVar> argsExprList = new ArrayList<ExprVar>();
         if (args != null)  

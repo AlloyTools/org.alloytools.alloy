@@ -41,6 +41,7 @@ public class Common {
         return (Decl) new DeclExt(DashStrings.nextName, DashStrings.snapshotName);
     }
 
+
     // p0:P0
     public static Decl paramDecl(Integer n, String name) {
         return (Decl) new DeclExt(DashStrings.pName+n+"_"+name, name);
@@ -264,30 +265,30 @@ public class Common {
 
     //TODO better name!
     public static boolean isWeirdOne(String vfqn, DashModule d) {
+        //System.out.println("Vqn: " + vfqn);
         return d.getVarBufferParams(vfqn).size() == 0 && isExprArrow(d.getVarType(vfqn));
     }
     public static Expr translateExpr(Expr exp, DashModule d) {
         // special case for Variables.v1 if v1 has no params and has an 
         // arrow type  and isElectrum
         //System.out.println(exp);
-        if (DashRef.isDashRefProcessRef(exp)) {
-            // these remove $$PROCESSID$$
-            Expr var = DashRef.getDashRefProcessRefVar(exp);
+        if (DashRef.isDashRef(exp)) {
+            String vName = ((DashRef) exp).getName();
             // have to translate paramvalues
             // may be empty
             List<Expr> paramValuesList = 
-                DashRef.getDashRefProcessRefParamValues(exp).stream()
+                ((DashRef) exp).getParamValues().stream()
                     .map(i -> translateExpr(i,d))
                     .collect(Collectors.toList());
 
             //common subexpressions
-            Boolean hasPrime = DashStrings.hasPrime(getVarName((ExprVar) var));
-            Boolean isWeirdOne = isWeirdOne(DashStrings.removePrime(getVarName((ExprVar) var)),d);
-            Expr voutNotPrime = createVar(translateFQN(DashStrings.removePrime(getVarName((ExprVar) var))));
+            Boolean hasPrime = DashStrings.hasPrime(vName);
+            Boolean isWeirdOne = isWeirdOne(DashStrings.removePrime(vName),d);
+            Expr voutNotPrime = createVar(translateFQN(DashStrings.removePrime(vName)));
             Expr voutMayHavePrime;
             if (!hasPrime) voutMayHavePrime = voutNotPrime;
             else voutMayHavePrime = 
-                createVar(translateFQN(DashStrings.removePrime(getVarName((ExprVar) var)))+DashStrings.PRIME);
+                createVar(translateFQN(DashStrings.removePrime(vName))+DashStrings.PRIME);
 
             //System.out.println(paramValuesList);
             if (DashOptions.isElectrum) {

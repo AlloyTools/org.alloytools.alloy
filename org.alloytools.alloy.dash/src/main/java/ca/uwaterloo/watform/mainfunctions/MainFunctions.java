@@ -52,6 +52,7 @@ public class MainFunctions {
            // done in place
            d.resolveAllDash(rep);
         }
+        //d.debug();
         return d;
     }
     public static DashModule translate(DashModule d, A4Reporter rep) {

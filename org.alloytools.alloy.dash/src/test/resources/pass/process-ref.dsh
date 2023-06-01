@@ -1,5 +1,5 @@
 state Root {
 	trans t1 {
-		on Elevator[e0]/direction = Up
+		on Elevator[e0]/direction 
 	}
 }

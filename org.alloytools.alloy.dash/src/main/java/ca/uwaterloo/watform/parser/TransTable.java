@@ -24,6 +24,7 @@ import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
 //import ca.uwaterloo.watform.alloyasthelper.ExprToString;
 import ca.uwaterloo.watform.ast.*;
 import ca.uwaterloo.watform.dashtoalloy.Common;
+import static ca.uwaterloo.watform.parser.ResolveExpr.*;
 
 		// env events cannot be generated
 		// env vars cannot be primed anywhere
@@ -229,6 +230,185 @@ public class TransTable {
 		if (getAllTransNames().isEmpty()) DashErrors.noTrans();
 		for (String tfqn: table.keySet()) {
 			//String tfqn = DashFQN.fqn(sfqn,t.name);
+			String sfqn = DashFQN.chopPrefixFromFQN(tfqn);
+			// determining the src state
+			List<Expr> fList =
+				table.get(tfqn).fromList.stream()
+				.map(p -> (p.src))
+				.collect(Collectors.toList());
+
+			if (fList.size() > 1) DashErrors.tooMany("from", tfqn);
+			else if (fList.isEmpty()) 
+				// can be a loop on root
+				table.get(tfqn)
+					.setSrc(DashRef.createStateDashRef(sfqn, 
+								Common.paramVars(getParamsIdx(tfqn), getParams(tfqn))));
+			else 
+				table.get(tfqn)
+					.setSrc((DashRef) resolveExpr(st, et, vt, "state", false, false, true, sfqn, fList.get(0)));
+	
+			// determining the dest state
+			List<Expr> gList =
+				table.get(tfqn).gotoList.stream()
+				.map(p -> (p.dest))
+				.collect(Collectors.toList());
+
+			if (gList.size() > 1) DashErrors.tooMany("goto", tfqn);
+			else if (gList.isEmpty()) 
+				// can be a loop on root
+				table.get(tfqn)
+					.setDest(DashRef.createStateDashRef(sfqn, 
+								Common.paramVars(getParamsIdx(tfqn),getParams(tfqn))));
+			else 
+				table.get(tfqn)
+					.setDest((DashRef) resolveExpr(st, et, vt, "state", false, true, true, sfqn, gList.get(0)));
+
+			// determining the on (event)
+			List<Expr> onExpList =
+				table.get(tfqn).onList.stream()
+				.map(p -> (p.getExp()))
+				.collect(Collectors.toList());
+			if (onExpList.size() > 1) DashErrors.tooMany("on", tfqn);
+			else if (!onExpList.isEmpty()) {
+				table.get(tfqn)
+					.setOn((DashRef) resolveExpr(st, et, vt, "event", false, false, true, sfqn, onExpList.get(0)));
+			}
+
+			// determining the send
+			List<Expr> sendExpList =
+				table.get(tfqn).sendList.stream()
+				.map(p -> (p.getExp()))
+				.collect(Collectors.toList());
+			if (sendExpList.size() > 1) DashErrors.tooMany("send", tfqn);
+			else if (!sendExpList.isEmpty()) {
+				table.get(tfqn)
+					.setSend((DashRef) resolveExpr(st, et, vt, "event", false, true, true, sfqn, sendExpList.get(0)));
+			}
+
+			// determining the when (expr)
+			List<Expr> whenExpList =
+				table.get(tfqn).whenList.stream()
+				.map(p -> (p.getWhen()))
+				.collect(Collectors.toList());
+			if (whenExpList.size() > 1) DashErrors.tooMany("when", tfqn);
+			else if (!whenExpList.isEmpty()) {
+				table.get(tfqn)
+					.setWhen(resolveExpr(st, et, vt, "var", false, false, true, sfqn, whenExpList.get(0)));
+			}
+
+			// determining the do
+			List<Expr> doExpList =
+				table.get(tfqn).doList.stream()
+				.map(p -> (p.getDo()))
+				.collect(Collectors.toList());
+			if (doExpList.size() > 1) DashErrors.tooMany("on", tfqn);
+			else if (!doExpList.isEmpty()) {
+				table.get(tfqn)
+					.setDo(resolveExpr(st, et, vt, "var", true, true, true, sfqn, doExpList.get(0)));
+			}
+
+		}
+		isResolved = true;
+	}
+
+	/*
+	public void resolve(StateTable st, EventTable et, VarTable vt) {
+
+		//System.out.println(st);
+		//System.out.println(toString());
+		//System.out.println("Resolving trans table");
+		if (getAllTransNames().isEmpty()) DashErrors.noTrans();
+		for (String tfqn: table.keySet()) {
+			//String tfqn = DashFQN.fqn(sfqn,t.name);
+			String sfqn = DashFQN.chopPrefixFromFQN(tfqn);
+			// determining the src state
+			List<Expr> fList =
+				table.get(tfqn).fromList.stream()
+				.map(p -> (p.src))
+				.collect(Collectors.toList());
+
+			if (fList.size() > 1) DashErrors.tooMany("from", tfqn);
+			else if (fList.isEmpty()) 
+				// can be a loop on root
+				table.get(tfqn)
+					.setSrc(new DashRef(sfqn, Common.paramVars(getParamsIdx(tfqn), getParams(tfqn))));
+			else 
+				table.get(tfqn)
+					.setSrc(resolveExpr(st, et, vt, "state", false, false, true, sfqn, fList.get(0)));
+	
+			// determining the dest state
+			List<Expr> gList =
+				table.get(tfqn).gotoList.stream()
+				.map(p -> (p.dest))
+				.collect(Collectors.toList());
+
+			if (gList.size() > 1) DashErrors.tooMany("goto", tfqn);
+			else if (gList.isEmpty()) 
+				// can be a loop on root
+				table.get(tfqn)
+					.setDest(new DashRef(sfqn, 
+								Common.paramVars(getParamsIdx(tfqn),getParams(tfqn))));
+			else 
+				table.get(tfqn)
+					.setDest(resolveExpr(st, et, vt, "state", false, true, true, sfqn, gList.get(0)));
+
+			// determining the on (event)
+			List<Expr> onExpList =
+				table.get(tfqn).onList.stream()
+				.map(p -> (p.getExp()))
+				.collect(Collectors.toList());
+			if (onExpList.size() > 1) DashErrors.tooMany("on", tfqn);
+			else if (!onExpList.isEmpty()) {
+				table.get(tfqn)
+					.setOn(resolveExpr(st, et, vt, "event", false, false, true, sfqn, onExpList.get(0)));
+			}
+
+			// determining the send
+			List<Expr> sendExpList =
+				table.get(tfqn).sendList.stream()
+				.map(p -> (p.getExp()))
+				.collect(Collectors.toList());
+			if (sendExpList.size() > 1) DashErrors.tooMany("send", tfqn);
+			else if (!sendExpList.isEmpty()) {
+				table.get(tfqn)
+					.setSend(resolveExpr(st, et, vt, "event", false, true, true, sfqn, sendExpList.get(0)));
+			}
+
+			// determining the when (expr)
+			List<Expr> whenExpList =
+				table.get(tfqn).whenList.stream()
+				.map(p -> (p.getWhen()))
+				.collect(Collectors.toList());
+			if (whenExpList.size() > 1) DashErrors.tooMany("when", tfqn);
+			else if (!whenExpList.isEmpty()) {
+				table.get(tfqn)
+					.setWhen(resolveExpr(st, et, vt, "var", false, false, true, sfqn, whenExpList.get(0)));
+			}
+
+			// determining the do
+			List<Expr> doExpList =
+				table.get(tfqn).doList.stream()
+				.map(p -> (p.getDo()))
+				.collect(Collectors.toList());
+			if (doExpList.size() > 1) DashErrors.tooMany("on", tfqn);
+			else if (!doExpList.isEmpty()) {
+				table.get(tfqn)
+					.setDo(resolveExpr(st, et, vt, "var", true, true, true, sfqn, doExpList.get(0)));
+			}
+
+		}
+		isResolved = true;
+	}
+	*/
+	/*
+	public void resolve(StateTable st, EventTable et, VarTable vt) {
+
+		//System.out.println(st);
+		//System.out.println(toString());
+		//System.out.println("Resolving trans table");
+		if (getAllTransNames().isEmpty()) DashErrors.noTrans();
+		for (String tfqn: table.keySet()) {
+			//String tfqn = DashFQN.fqn(sfqn,t.name);
 			String parentFQN = DashFQN.chopPrefixFromFQN(tfqn);
 			// determining the src state
 			List<DashRef> fList =
@@ -344,7 +524,7 @@ public class TransTable {
 		}
 		isResolved = true;
 	}
-
+	*/
 
 
 

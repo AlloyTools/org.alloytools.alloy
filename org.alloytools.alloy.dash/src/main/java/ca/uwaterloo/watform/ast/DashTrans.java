@@ -36,7 +36,7 @@ public class DashTrans extends Dash {
 		}
 		return s;
 	}
-	public void resolve(TransTable tt, List<String> params, List<Integer> paramsIdx, List<String> ances) {
+	public void load(TransTable tt, List<String> params, List<Integer> paramsIdx, List<String> ances) {
 
 		if (DashFQN.isFQN(name)) DashErrors.transNameCantBeFQN(pos, name);
 		String tfqn = DashFQN.fqn(ances,name);

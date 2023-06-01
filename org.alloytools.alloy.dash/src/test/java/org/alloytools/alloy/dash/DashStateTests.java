@@ -68,38 +68,38 @@ public class DashStateTests {
    @Test 
    public void noSrcDest1() {
       DashModule d = test("noSrcDest1");
-      assertTrue(src(d,"Root/t1").equals("Root[]"));
-      assertTrue(dest(d,"Root/t1").equals("Root[]"));
+      assertTrue(src(d,"Root/t1").equals("Root"));
+      assertTrue(dest(d,"Root/t1").equals("Root"));
    }
    @Test 
    public void noSrc1() {
       DashModule d = test("noSrc1");
-      assertTrue(src(d,"Root/S1/t1").equals("Root/S1[]"));
-      assertTrue(dest(d,"Root/S1/t1").equals("Root/S2[]")); 
+      assertTrue(src(d,"Root/S1/t1").equals("Root/S1"));
+      assertTrue(dest(d,"Root/S1/t1").equals("Root/S2")); 
    }
    @Test 
    public void noSrc2() {
       DashModule d = test("noSrc2");
-      assertTrue(src(d,"Root/S1/t1").equals("Root/S1[]"));
-      assertTrue(dest(d,"Root/S1/t1").equals("Root/S2/S3/S4[]"));
+      assertTrue(src(d,"Root/S1/t1").equals("Root/S1"));
+      assertTrue(dest(d,"Root/S1/t1").equals("Root/S2/S3/S4"));
    }
 
    @Test 
    public void otherSrcDest1() {
       DashModule d = test("otherSrcDest1");
-      assertTrue(src(d,"Root/S1/t1").equals("Root/S1[]"));
-      assertTrue(dest(d,"Root/S1/t1").equals("Root/S2/S3/S4[]"));
-      assertTrue(src(d,"Root/S2/t2").equals("Root/S2/S3[]"));
-      assertTrue(dest(d,"Root/S2/t2").equals("Root/S2[]"));
+      assertTrue(src(d,"Root/S1/t1").equals("Root/S1"));
+      assertTrue(dest(d,"Root/S1/t1").equals("Root/S2/S3/S4"));
+      assertTrue(src(d,"Root/S2/t2").equals("Root/S2/S3"));
+      assertTrue(dest(d,"Root/S2/t2").equals("Root/S2"));
    }
 
    @Test 
    public void srcDestFQN1() {
       DashModule d = test("srcDestFQN1");
-      assertTrue(src(d,"Root/S1/t1").equals("Root/S1[]"));
-      assertTrue(dest(d,"Root/S1/t1").equals("Root/S1/S7[]"));
-      assertTrue(src(d,"Root/S2/S3/S4/t2").equals("Root/S2/S3/S4[]"));
-      assertTrue(dest(d,"Root/S2/S3/S4/t2").equals("Root/S1/S7[]"));
+      assertTrue(src(d,"Root/S1/t1").equals("Root/S1"));
+      assertTrue(dest(d,"Root/S1/t1").equals("Root/S1/S7"));
+      assertTrue(src(d,"Root/S2/S3/S4/t2").equals("Root/S2/S3/S4"));
+      assertTrue(dest(d,"Root/S2/S3/S4/t2").equals("Root/S1/S7"));
    }
   
    @Test 
@@ -187,7 +187,7 @@ public class DashStateTests {
       assertTrue(
          allPrefixDashRefs(d,"Root/A/S1/t1")
          .equals(ll(new String[]{
-            "Root[]",
+            "Root",
             "Root/A[(p0_APID = x => p0_APID else APID)]"
          })));     
    }
@@ -197,7 +197,7 @@ public class DashStateTests {
       assertTrue(
          allPrefixDashRefs(d, "Root/A/B/S1/t1")
          .equals(ll(new String[]{
-            "Root[]",
+            "Root",
             "Root/A[(p0_APID = x => p0_APID else APID)]",
             "Root/A/B[(p0_APID = x => p0_APID else APID), (AND[p0_APID = x, p1_BPID = y] => p1_BPID else BPID)]"
          })));     
@@ -208,7 +208,7 @@ public class DashStateTests {
       assertTrue(
          allPrefixDashRefs(d, "Root/A/B/S1/t1")
          .equals(ll(new String[]{
-            "Root[]",
+            "Root",
             "Root/A[p0_APID]",
             "Root/A/B[p0_APID, p1_BPID]"
          })));     
@@ -219,7 +219,7 @@ public class DashStateTests {
       assertTrue(
          allPrefixDashRefs(d, "Root/S1/t1")
          .equals(ll(new String[]{
-            "Root[]",
+            "Root",
          })));     
    }
 
@@ -238,8 +238,8 @@ public class DashStateTests {
       assertTrue(
          exited(d,"Root/S1/t1")
          .equals(ll(new String[]{
-            "Root/S1[]",
-            "Root/S2[]"
+            "Root/S1",
+            "Root/S2"
          })));
    }
    @Test 
@@ -248,8 +248,8 @@ public class DashStateTests {
       assertTrue(
          exited(d,"Root/S1/t1")
          .equals(ll(new String[]{
-            "Root/S1[]",
-            "Root/S2/S3/S4[]"
+            "Root/S1",
+            "Root/S2/S3/S4"
          })));
    }
    @Test 
@@ -258,7 +258,7 @@ public class DashStateTests {
       assertTrue(
          exited(d,"Root/C/t1")
          .equals(ll(new String[]{
-            "Root/C[]"
+            "Root/C"
          })));
    }
    @Test 
@@ -267,7 +267,7 @@ public class DashStateTests {
       assertTrue(
          exited(d,"Root/t1")
          .equals(ll(new String[]{
-            "Root[]"
+            "Root"
          })));
    }
    @Test 
@@ -276,13 +276,13 @@ public class DashStateTests {
       assertTrue(
          exited(d,"Root/S1/t1")
          .equals(ll(new String[]{
-            "Root/S1[]",
-            "Root/S2/S3/S4[]"
+            "Root/S1",
+            "Root/S2/S3/S4"
          })));
       assertTrue(
          exited(d,"Root/S2/t2")
          .equals(ll(new String[]{
-            "Root/S2/S3/S4[]"
+            "Root/S2/S3/S4"
          })));
    }
    @Test 
@@ -342,7 +342,7 @@ public class DashStateTests {
       assertTrue(
          entered(d,"Root/S1/t1")
          .equals(ll(new String[]{
-            "Root/S2[]"
+            "Root/S2"
          })));
    }
    @Test 
@@ -351,7 +351,7 @@ public class DashStateTests {
       assertTrue(
          entered(d,"Root/S1/t1")
          .equals(ll(new String[]{
-            "Root/S2/S3/S4[]"
+            "Root/S2/S3/S4"
          })));
    }
    @Test 
@@ -378,7 +378,7 @@ public class DashStateTests {
       assertTrue(
          entered(d,"Root/S1/t1")
          .equals(ll(new String[]{
-            "Root/S2/A[]"
+            "Root/S2/A"
          })));
    }
    @Test 
@@ -387,7 +387,7 @@ public class DashStateTests {
       assertTrue(
          entered(d,"Root/S1/t1")
          .equals(ll(new String[]{
-            "Root/S2/A/S3[]"
+            "Root/S2/A/S3"
          })));
    }
    @Test 
@@ -455,7 +455,7 @@ public class DashStateTests {
       assertTrue(
          enteredInScope(d,"Root/S1/t1")
          .equals(ll(new String[]{
-            "Root/S2[]"
+            "Root/S2"
          })));
    }
    @Test 
@@ -464,8 +464,8 @@ public class DashStateTests {
       assertTrue(
          enteredInScope(d,"Root/S1/t1")
          .equals(ll(new String[]{
-            "Root/B/S3[]",
-            "Root/A/S2[]",
+            "Root/B/S3",
+            "Root/A/S2",
          })));
    }
    @Test 
@@ -474,7 +474,7 @@ public class DashStateTests {
       assertTrue(
          enteredInScope(d,"Root/S1/t1")
          .equals(ll(new String[]{
-            "Root/S2/A[]"
+            "Root/S2/A"
          })));
    }
    @Test 
@@ -483,7 +483,7 @@ public class DashStateTests {
       assertTrue(
          enteredInScope(d,"Root/S1/t1")
          .equals(ll(new String[]{
-            "Root/S2/A/S3[]"
+            "Root/S2/A/S3"
          })));
    }
    @Test 
@@ -526,7 +526,7 @@ public class DashStateTests {
       assertTrue(
          dest(d, tfqn).equals("Root/C/S2[c1]"));
       assertTrue(
-         d.getScope(tfqn).toString().equals("Root[]"));
+         d.getScope(tfqn).toString().equals("Root"));
       
       assertTrue(
          exited(d,tfqn)
@@ -776,20 +776,20 @@ public class DashStateTests {
       assertTrue(
          src(d, tfqn).equals("Root/B/S1[p0_BID]"));
       assertTrue(
-         dest(d, tfqn).equals("Root/C[]"));
+         dest(d, tfqn).equals("Root/C"));
       assertTrue(
          d.getScope(tfqn).toString()
-         .equals("Root[]"));      
+         .equals("Root"));      
       assertTrue(
          exited(d,tfqn)
          .equals(ll(new String[]{
-            "Root/C[]", 
+            "Root/C", 
             "Root/B/S1[BID]"
          })));
       assertTrue(
          enteredInScope(d,tfqn)
          .equals(ll(new String[]{
-            "Root/C[]"
+            "Root/C"
          })));  
 
       assertTrue(
@@ -802,69 +802,69 @@ public class DashStateTests {
       DashModule d = test("overall7");
       String tfqn = "Root/S1/t1";
       assertTrue(
-         src(d, tfqn).equals("Root/S1[]"));
+         src(d, tfqn).equals("Root/S1"));
       assertTrue(
-         dest(d, tfqn).equals("Root/S1[]"));
+         dest(d, tfqn).equals("Root/S1"));
       assertTrue(
          d.getScope(tfqn).toString()
-         .equals("Root/S1[]"));      
+         .equals("Root/S1"));      
       assertTrue(
          exited(d,tfqn)
          .equals(ll(new String[]{
-            "Root/S1[]", 
+            "Root/S1", 
          })));
       assertTrue(
          enteredInScope(d,tfqn)
          .equals(ll(new String[]{
-            "Root/S1[]",
+            "Root/S1",
          }))); 
 
       tfqn = "Root/S1/t2";
       assertTrue(
-         src(d, tfqn).equals("Root/S1[]"));
+         src(d, tfqn).equals("Root/S1"));
       assertTrue(
-         dest(d, tfqn).equals("Root/B[]"));
+         dest(d, tfqn).equals("Root/B"));
       assertTrue(
          d.getScope(tfqn).toString()
-         .equals("Root[]"));      
+         .equals("Root"));      
       assertTrue(
          exited(d,tfqn)
          .equals(ll(new String[]{
-            "Root/A[]",
-            "Root/B[]",
+            "Root/A",
+            "Root/B",
             "Root/C[CID]",
-            "Root/S1[]", 
+            "Root/S1", 
          })));
       assertTrue(
          enteredInScope(d,tfqn)
          .equals(ll(new String[]{
-            "Root/A[]",
+            "Root/A",
             "Root/C[CID]",
-            "Root/B[]",
+            "Root/B",
          }))); 
 
       tfqn = "Root/S1/t3";
       assertTrue(
-         src(d, tfqn).equals("Root/S1[]"));
+         src(d, tfqn).equals("Root/S1"));
       assertTrue(
          dest(d, tfqn).equals("Root/C[c1]"));
       assertTrue(
          d.getScope(tfqn).toString()
-         .equals("Root[]"));      
+         .equals("Root"));      
       assertTrue(
          exited(d,tfqn)
          .equals(ll(new String[]{
-            "Root/A[]",
-            "Root/B[]",
+            "Root/A",
+            "Root/B",
             "Root/C[CID]",
-            "Root/S1[]", 
+            "Root/S1", 
          })));
       assertTrue(
          enteredInScope(d,tfqn)
          .equals(ll(new String[]{
             "Root/C[CID - c1]",
-            "Root/A[]",
-            "Root/B[]",
+            "Root/A",
+            "Root/B",
             "Root/C[c1]"
          }))); 
 
@@ -874,29 +874,29 @@ public class DashStateTests {
       DashModule d = test("overall8");
       String tfqn = "Root/t1";
       assertTrue(
-         src(d, tfqn).equals("Root/S3[]"));
+         src(d, tfqn).equals("Root/S3"));
       assertTrue(
          dest(d, tfqn).equals("Root/B/E/S2[e1]"));
       assertTrue(
          d.getScope(tfqn).toString()
-         .equals("Root[]"));      
+         .equals("Root"));      
       assertTrue(
          exited(d,tfqn)
          .equals(ll(new String[]{
             "Root/A/S1[AID]",
-            "Root/B/C[]",
-            "Root/B/D[]",
+            "Root/B/C",
+            "Root/B/D",
             "Root/B/E/S2[EID]",
             "Root/B/E/S4[EID]",
-            "Root/S3[]" 
+            "Root/S3" 
          })));
       assertTrue(
          enteredInScope(d,tfqn)
          .equals(ll(new String[]{
             "Root/A/S1[AID]",
             "Root/B/E/S4[EID - e1]",
-            "Root/B/C[]",
-            "Root/B/D[]",
+            "Root/B/C",
+            "Root/B/D",
             "Root/B/E/S2[e1]"
          }))); 
    }
@@ -934,9 +934,9 @@ public class DashStateTests {
       DashModule d = test("overall10");
       String tfqn = "Root/S1/t1";
       assertTrue(
-         src(d, tfqn).equals("Root/S1[]"));
+         src(d, tfqn).equals("Root/S1"));
       assertTrue(
-         dest(d, tfqn).equals("Root/S2[]")); 
+         dest(d, tfqn).equals("Root/S2")); 
    }
 
    @Test
@@ -944,9 +944,9 @@ public class DashStateTests {
       DashModule d = test("overall11");
       String tfqn = "Root/S1/t1";
       assertTrue(
-         src(d, tfqn).equals("Root/S1[]"));
+         src(d, tfqn).equals("Root/S1"));
       assertTrue(
-         dest(d, tfqn).equals("Root/S2[]")); 
+         dest(d, tfqn).equals("Root/S2")); 
    }
 
    @Test
@@ -954,9 +954,9 @@ public class DashStateTests {
       DashModule d = test("overall12");
       String tfqn = "Root/S1/t1";
       assertTrue(
-         src(d, tfqn).equals("Root/S1[]"));
+         src(d, tfqn).equals("Root/S1"));
       assertTrue(
-         dest(d, tfqn).equals("Root/S1/S7[]")); 
+         dest(d, tfqn).equals("Root/S1/S7")); 
    }
 
    @Test 

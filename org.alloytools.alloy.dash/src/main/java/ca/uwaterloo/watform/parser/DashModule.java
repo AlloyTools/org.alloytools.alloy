@@ -455,7 +455,7 @@ public class DashModule extends CompModuleHelper {
 				break;
 			}
 		}
-		return new DashRef (sc,scopeParams);
+		return DashRef.createStateDashRef (sc,scopeParams);
 	}
 	// returns the list of states with params
 	// that are exited when taking trans t
@@ -504,7 +504,7 @@ public class DashModule extends CompModuleHelper {
 							  createVar(stateTable.getParam(s.getName())),
 							  createNone());
 					prms.add(p);
-					r.add(new DashRef(s.getName(), prms));
+					r.add(DashRef.createStateDashRef(s.getName(), prms));
 				}
 			}
 			// if it has a parameter it will be included
@@ -565,7 +565,7 @@ public class DashModule extends CompModuleHelper {
 			root = roots.get(0);
 			// passed with empty set of params, empty set of ancestors
 			stateTable.setRoot(root.name);
-			root.resolve(stateTable,transTable, eventTable, varTable, new ArrayList<String>(),new ArrayList<Integer>(), new ArrayList<String>());
+			root.load(stateTable,transTable, eventTable, varTable, new ArrayList<String>());
 			// have to do states first so siblings of trans parent state
 			// are in place to search for src/dest
 			// root.resolveTransTable(stateTable,transTable);
@@ -573,10 +573,10 @@ public class DashModule extends CompModuleHelper {
 			// if no transitions?
 
 			// resolves inits, invariants
-			stateTable.resolve(getRootName(), varTable);
+			stateTable.resolve(getRootName(), eventTable, varTable);
 
 			transTable.resolve(stateTable, eventTable, varTable);
-			varTable.resolve();
+			varTable.resolve(stateTable, eventTable);
 			maxDepthParams = stateTable.getMaxDepthParams();
 
 			transAtThisParamDepth = transTable.transAtThisParamDepth(maxDepthParams);
