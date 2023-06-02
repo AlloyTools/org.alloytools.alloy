@@ -31,7 +31,7 @@ jobs:
           name: test-reports
           path: '*/target/*reports/tests/'
       - name: Publish with jDeploy
-        uses: actions/jdeploy@master
+        uses: shannah/jdeploy@master
         with:
           github_token: ${{ github.token }}
       
