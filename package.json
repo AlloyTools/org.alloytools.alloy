@@ -13,7 +13,19 @@
     "javafx": false,
     "bundles": ["mac-x64", "mac-arm64", "win", "linux"],
     "installers" : ["mac-x64", "mac-arm64", "win", "linux"],
-    "title": "Alloy, a formal specification tool"
+    "documentTypes" : [
+      {
+        "extension" : "als",
+        "mimetype" : "text/alloy",
+        "editor" : true
+      }, {
+        "extension" : "md",
+        "mimetype" : "text/markdown",
+        "editor" : true
+      }
+    ],
+    "urlSchemes": ["alloy"],
+    "title": "alloy"
   },
   "dependencies": {
     "command-exists-promise": "^2.0.2",
