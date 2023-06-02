@@ -76,11 +76,19 @@ public class AddInit {
         // so don't try to combine these steps
 
         Expr e;
+        List<Decl> decls;
         if (!body.isEmpty()) {
-            if (!prs.isEmpty())
-                e = createAll(
-                        paramDecls(DashUtilFcns.listOfInt(0,prs.size()-1), prs),
-                        createAndFromList(body));
+            if (!prs.isEmpty()) {
+                // all parameters are not used in init
+                decls = new ArrayList<Decl>();
+                e = createAndFromList(body);
+                for (int i=0; i < prs.size();i++) {
+                    if (usedIn(paramVar(i,prs.get(i)),e )) {
+                        decls.add(paramDecl(i,prs.get(i)));
+                    }
+                }
+                if (!decls.isEmpty()) e = createAll(decls,e);
+            }
             else e = createAndFromList(body);
             body = new ArrayList<Expr>();
             body.add(e);
@@ -90,9 +98,11 @@ public class AddInit {
         if (DashOptions.isElectrum) {
             d.alloyString += d.addPredSimple(DashStrings.initFactName, new ArrayList<Decl>(), body);
         } else {
+            // snapshot will always be needed as a parameter
+            // because it is used in conf (every model has at least one state)
             d.alloyString += d.addPredSimple(
                 DashStrings.initFactName, 
-                curParamsDecls(DashUtilFcns.listOfInt(0,prs.size()-1), prs),
+                curDecls(),
                 body);
         }
     }

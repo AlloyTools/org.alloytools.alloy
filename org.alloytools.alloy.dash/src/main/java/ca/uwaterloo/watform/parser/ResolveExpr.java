@@ -52,7 +52,7 @@ public class ResolveExpr{
 							boolean thisOk,
 							String sfqn,  // could be parent of event or trans 
 							Expr exp) {
-
+		//System.out.println("resolve: " + exp);
 		if (isExprVar(exp)  ||
 			isPrimedVar(exp) ||
 			DashRef.isDashRef(exp)) 

@@ -16,9 +16,7 @@ public class DashStrings {
 	public static String varName = "var";
 	public static String openName = "open";
 	public static String asName = "as";
-	public static String boolName = "boolean/Bool";
-	public static String trueName = "boolean/True";
-	public static String falseName = "boolean/False";
+
 	public static String noneName = "none";
 	public static String intName = "int";
 	public static String sigName = "sig";
@@ -29,7 +27,12 @@ public class DashStrings {
 
 	// standard modules
 	public static String utilBooleanName = "util/boolean";
-	
+	public static String boolName = "boolean/Bool";
+	public static String trueName = "boolean/True";
+	public static String falseName = "boolean/False";
+	public static String isTrue = "boolean/isTrue";
+	public static String isFalse = "boolean/isFalse";
+
 	//public static String utilOrderingName = "util/ordering";
 	public static String utilTracesName = "util/traces";
 	public static String tracesFirstName = "first";

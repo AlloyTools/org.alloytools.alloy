@@ -31,31 +31,39 @@ public class AddTestIfNextStable {
 
 	// only one per module
 	public static void addTestIfNextStable(DashModule d) {
-		List<Decl> decls = new ArrayList<Decl>();
-		List<Expr> args = new ArrayList<Expr>();
 		List<Expr> body = new ArrayList<Expr>();
+		List<Decl> decls = new ArrayList<Decl>();
 		List<String> allParams = d.getAllParamsInOrder();
 		if (!DashOptions.isElectrum) {
 			decls.addAll(curNextDecls());
-			args.addAll(curNextVars());
 		}
 		for (int i=0; i < allParams.size(); i++) {
 			decls.add(paramDecl(i,allParams.get(i)));
 		}
 		for (int i=0; i<= d.getMaxDepthParams(); i++) {
 			decls.add(scopeDecl(i));
-			args.add(scopeVar(i));
 			if (d.hasEventsAti(i)) {
 				decls.add(genEventDecl(i));
-				args.add(genEventVar(i));
 			}
 		}
+		List<Expr> args;
+		// this will include transition tfqn itself
 		for (String tfqn: d.getAllTransNames()) {
+			args = new ArrayList<Expr>();
+			if (!DashOptions.isElectrum) args.addAll(curNextVars());
+			for (int i=0; i<d.getTransParamsIdx(tfqn).size();i++) {
+				args.add(paramVar(d.getTransParamsIdx(tfqn).get(i), d.getTransParams(tfqn).get(i)));
+			}
+			for (int i=0; i<= d.getMaxDepthParams(); i++) {
+				args.add(scopeVar(i));
+				if (d.hasEventsAti(i)) {
+					args.add(genEventVar(i));
+				}
+			}
 			String tout = translateFQN(tfqn);
 			body.add(createNot(
 					createPredCall(tout + DashStrings.enabledAfterStepName, args)));
 		}
-
 		d.alloyString += d.addPredSimple(DashStrings.testIfNextStableName,decls,body);
 	}
 }

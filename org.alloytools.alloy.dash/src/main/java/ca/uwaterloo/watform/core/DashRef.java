@@ -178,7 +178,11 @@ public class DashRef extends Expr {
 		if (kind == DashRefKind.STATE) {
 			s += getName();
 		} else {
-			s += DashFQN.chopPrefixFromFQN(getName());
+			// might not yet have a prefix
+			if (DashFQN.isFQN(getName()))
+				s += DashFQN.chopPrefixFromFQN(getName());
+			else
+				s += "NoPrefixYet";
 		}
         
         if (!paramValues.isEmpty()) {
@@ -207,7 +211,10 @@ public class DashRef extends Expr {
 		if (kind == DashRefKind.STATE) {
 			out.append(getName());
 		} else {
-			out.append(DashFQN.chopPrefixFromFQN(getName()));
+			if (DashFQN.isFQN(getName()))
+				out.append(DashFQN.chopPrefixFromFQN(getName()));
+			else
+				out.append("NoPrefixYet");
 		}
         if (!paramValues.isEmpty()) {
         	out.append("[");

@@ -1,4 +1,4 @@
-module util/buffer[elem, BufIdx]
+module util/buffer[BufIdx, elem]
 
 open util/ordering[BufIdx] as ord
 

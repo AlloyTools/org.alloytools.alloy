@@ -31,7 +31,7 @@ public class AddTransPre {
     // --------------------------------------------------------------------------------------
     /* 
         pred pre_t1[s:Snapshot,pparam0:Param0, ...] {
-            some (src_staet_t1 & <prs for src_state>.s.conf)
+            some (src_state_t1 & <prs for src_state>.s.conf)
             orthogonal to any scopes uses
             guard_cond_t1 [s] 
             s.stable = True => 
@@ -48,6 +48,7 @@ public class AddTransPre {
     */
     public static void addTransPre(DashModule d, String tfqn) {
         List<Integer> prsIdx = d.getTransParamsIdx(tfqn); 
+        List<String> params = d.getTransParams(tfqn); 
         List<Expr> body = new ArrayList<Expr>();
         String tout = translateFQN(tfqn);
 
@@ -77,10 +78,15 @@ public class AddTransPre {
             // trig_events_t1
             DashRef ev = d.getTransOn(tfqn);
             int sz = ev.getParamValues().size();
-            Expr ifBranch = createIn(translateDashRefToArrow(ev),
-                createRangeRes(
-                    curEvents(sz), 
-                    allEnvironmentalEventsVar()));
+            Expr ifBranch;
+            if (d.isInternalEvent(ev.getName())) {
+                ifBranch = createFalse();
+            } else {
+                ifBranch = createIn(translateDashRefToArrow(ev),
+                        createRangeRes(
+                        curEvents(sz), 
+                        allEnvironmentalEventsVar()));
+            }
             Expr elseBranch = createIn(translateDashRefToArrow(ev), curEvents(sz));
             body.add(createITE(
                 curStableTrue(),
@@ -100,7 +106,7 @@ public class AddTransPre {
         */
 
         // not a higher priority transition enabled
-        d.alloyString += d.addPredSimple(tout+DashStrings.preName, curParamsDecls(prsIdx,d.getAllParamsInOrder()), body); 
+        d.alloyString += d.addPredSimple(tout+DashStrings.preName, curParamsDecls(prsIdx,params), body); 
         d.alloyString += "\n";
     }
 }

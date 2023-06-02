@@ -3,6 +3,7 @@ package ca.uwaterloo.watform.alloyasthelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import edu.mit.csail.sdg.alloy4.Pos;
 
@@ -12,11 +13,15 @@ import edu.mit.csail.sdg.ast.ExprBadJoin;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprITE;
 import edu.mit.csail.sdg.ast.ExprList;
+import edu.mit.csail.sdg.ast.ExprLet;
 import edu.mit.csail.sdg.ast.ExprQt;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.ExprHasName;
 import edu.mit.csail.sdg.ast.ExprBinary;
+import edu.mit.csail.sdg.ast.ExprCall;
+import edu.mit.csail.sdg.ast.ExprChoice;
+import edu.mit.csail.sdg.ast.ExprConstant;
 
 import ca.uwaterloo.watform.core.DashStrings;
 import ca.uwaterloo.watform.core.DashErrors;
@@ -116,6 +121,16 @@ public class ExprHelper  {
     public static ExprVar createTrue() {
         return ExprVar.make(Pos.UNKNOWN,  DashStrings.trueName);
     } 
+    public static Expr createIsTrue(Expr e) {
+        List<Expr> elist = new ArrayList<Expr>();
+        elist.add(e);
+        return createPredCall(DashStrings.isTrue,elist);
+    }
+    public static Expr createIsFalse(Expr e) {
+        List<Expr> elist = new ArrayList<Expr>();
+        elist.add(e);
+        return createPredCall(DashStrings.isFalse,elist);
+    }
     public static ExprVar createFalse() {
         return ExprVar.make(Pos.UNKNOWN,  DashStrings.falseName);
     } 
@@ -378,5 +393,45 @@ public class ExprHelper  {
     public static String ppDecl(Decl d) {
         ExprToString eToString = new ExprToString(false);
         return eToString.declToString(d);
+    }
+
+    public static boolean usedIn(Expr v, Expr exp) {
+
+        assert(isExprVar(v));
+        if (isExprVar(exp)) {
+            return (getVarName((ExprVar) exp).equals(getVarName((ExprVar) v)));
+        }
+        else if (isExprBinary(exp) || isExprBadJoin(exp)) {
+            return (usedIn(v,getLeft(exp)) || usedIn(v,getRight(exp)));
+        } else if (exp instanceof ExprCall) {
+            for (Expr e: ((ExprCall) exp).args) 
+                if (usedIn(v,e)) return true;
+            return false;
+        } else if (exp instanceof ExprChoice){
+            for (Expr e: ((ExprChoice) exp).choices)
+                if (usedIn(v,e)) return true;
+            return false;
+        } else if (exp instanceof ExprITE){
+            return (usedIn(v,getCond(exp)) || usedIn(v,getLeft(exp)) || usedIn(v, getRight(exp)));
+        } else if (exp instanceof ExprList){
+            for (Expr e: ((ExprList) exp).args) 
+                if (usedIn(v,e)) return true;
+            return false;
+        } else if (exp instanceof ExprUnary){
+            return usedIn(v,((ExprUnary) exp).sub);
+        } else if (exp instanceof ExprLet){
+            return usedIn(v,(((ExprLet) exp).expr)) || usedIn(v,((ExprLet) exp).sub);
+        } else if (exp instanceof ExprQt){
+            List<Expr> ll = ((ExprQt) exp).decls.stream()
+                .map(i -> i.expr)
+                .collect(Collectors.toList());
+            for (Expr e: ll) if (usedIn(v,e)) return true;
+            return false;
+        } else if (exp instanceof ExprConstant){
+            return false;
+        } else {
+            DashErrors.UnsupportedExpr("usedIn", "");
+            return false;
+        }        
     }
 }

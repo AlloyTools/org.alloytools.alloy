@@ -53,6 +53,13 @@ public class Common {
     //}
 
     // [s:Snapshot, s':Snapshot] 
+    public static List<Decl> curDecls() {
+        List<Decl> o = new ArrayList<Decl>();
+        o.add(curDecl());
+        return o;
+    }
+
+    // [s:Snapshot, s':Snapshot] 
     public static List<Decl> curNextDecls() {
         List<Decl> o = new ArrayList<Decl>();
         if (!DashOptions.isElectrum) {
@@ -209,19 +216,23 @@ public class Common {
 
     // s.stable == boolean/True
     public static Expr curStableTrue() {
-        return createEquals(curJoinExpr(stable()),createTrue());
+        return createIsTrue(curJoinExpr(stable()));
+        //return createEquals(curJoinExpr(stable()),createTrue());
     }
    // s.stable == boolean/False
     public static Expr curStableFalse() {
-        return createEquals(curJoinExpr(stable()),createFalse());
+        return createIsFalse(curJoinExpr(stable()));
+        //return createEquals(curJoinExpr(stable()),createFalse());
     }
     // s'.stable == boolean/True
     public static Expr nextStableTrue() {
-        return createEquals(nextJoinExpr(stable()),createTrue());
+        return createIsTrue(nextJoinExpr(stable()));
+        //return createEquals(nextJoinExpr(stable()),createTrue());
     }
    // s'.stable == boolean/False
     public static Expr nextStableFalse() {
-        return createEquals(nextJoinExpr(stable()),createFalse());
+        return createIsFalse(nextJoinExpr(stable()));
+        //return createEquals(nextJoinExpr(stable()),createFalse());
     }
 
     // s.name
@@ -268,17 +279,33 @@ public class Common {
         //System.out.println("Vqn: " + vfqn);
         return d.getVarBufferParams(vfqn).size() == 0 && isExprArrow(d.getVarType(vfqn));
     }
+
+    // common case
     public static Expr translateExpr(Expr exp, DashModule d) {
+        return translateExpr(exp,d,false);
+    }
+
+    // onlyGetName = true is ONLY used for the case when
+    // translating type expressions of signatures
+    // there we only require the full name with underscores
+    public static Expr translateExpr(Expr exp, DashModule d, boolean onlyGetName ) {
         // special case for Variables.v1 if v1 has no params and has an 
         // arrow type  and isElectrum
         //System.out.println(exp);
         if (DashRef.isDashRef(exp)) {
+            //System.out.println(exp);
             String vName = ((DashRef) exp).getName();
+            
+            // used for types in snapshot signature
+            if (onlyGetName) {
+                //System.out.println("here: " + createVar(vName));
+                return createVar(translateFQN(vName));
+            }
             // have to translate paramvalues
             // may be empty
             List<Expr> paramValuesList = 
                 ((DashRef) exp).getParamValues().stream()
-                    .map(i -> translateExpr(i,d))
+                    .map(i -> translateExpr(i,d, onlyGetName))
                     .collect(Collectors.toList());
 
             //common subexpressions
@@ -312,15 +339,15 @@ public class Common {
             return ((ExprBinary) exp).op.make(
                 exp.pos,
                 exp.closingBracket,
-                translateExpr(getLeft(exp),d),
-                translateExpr(getRight(exp),d));
+                translateExpr(getLeft(exp),d, onlyGetName),
+                translateExpr(getRight(exp),d, onlyGetName));
 
         } else if (isExprBadJoin(exp)) {
             return ExprBadJoin.make(
                 exp.pos,
                 exp.closingBracket,
-                translateExpr(getLeft(exp),d),
-                translateExpr(getRight(exp),d));
+                translateExpr(getLeft(exp),d, onlyGetName),
+                translateExpr(getRight(exp),d, onlyGetName));
 
         } else if (exp instanceof ExprCall) {
             return ExprCall.make(
@@ -328,7 +355,7 @@ public class Common {
                 exp.closingBracket,
                 ((ExprCall) exp).fun, 
                 ((ExprCall) exp).args.stream()
-                    .map(i -> translateExpr(i,d))
+                    .map(i -> translateExpr(i,d, onlyGetName))
                     .collect(Collectors.toList()), 
                 ((ExprCall) exp).extraWeight);
 
@@ -336,7 +363,7 @@ public class Common {
             //TODO: check into this cast
             // not sure why is it necessary
             ConstList<Expr> x = (ConstList<Expr>) ((ExprChoice) exp).choices.stream()
-                    .map(i -> translateExpr(i,d))
+                    .map(i -> translateExpr(i,d, onlyGetName))
                     .collect(Collectors.toList());
             return ExprChoice.make(
                 false,
@@ -347,9 +374,9 @@ public class Common {
         } else if (exp instanceof ExprITE){
             return ExprITE.make(
                 exp.pos,
-                translateExpr(getCond(exp),d),
-                translateExpr(getLeft(exp),d),
-                translateExpr(getRight(exp),d));
+                translateExpr(getCond(exp),d, onlyGetName),
+                translateExpr(getLeft(exp),d, onlyGetName),
+                translateExpr(getRight(exp),d, onlyGetName));
 
         } else if (exp instanceof ExprList){
             return ExprList.make(
@@ -357,21 +384,21 @@ public class Common {
                 exp.closingBracket,
                 ((ExprList) exp).op,
                 ((ExprList) exp).args.stream()
-                    .map(i -> translateExpr(i,d))
+                    .map(i -> translateExpr(i,d, onlyGetName))
                     .collect(Collectors.toList())); 
 
         } else if (exp instanceof ExprUnary){
             return ((ExprUnary) exp).op.make(
                 exp.pos,
-                translateExpr(((ExprUnary) exp).sub,d));
+                translateExpr(((ExprUnary) exp).sub,d, onlyGetName));
 
         } else if (exp instanceof ExprLet){
             //TODO rule out var name
             return ExprLet.make(
                 exp.pos, 
                 ((ExprLet) exp).var, 
-                translateExpr(((ExprLet) exp).expr,d),
-                translateExpr(((ExprLet) exp).sub,d));
+                translateExpr(((ExprLet) exp).expr,d, onlyGetName),
+                translateExpr(((ExprLet) exp).sub,d, onlyGetName));
 
         } else if (exp instanceof ExprQt){
 
@@ -383,13 +410,13 @@ public class Common {
                     i.disjoint2,
                     i.isVar,
                     i.names,
-                    translateExpr(i.expr, d)))
+                    translateExpr(i.expr, d, onlyGetName)))
                 .collect(Collectors.toList());
             return ((ExprQt) exp).op.make(
                 exp.pos, 
                 exp.closingBracket,  
                 decls, 
-                translateExpr(((ExprQt) exp).sub,d));
+                translateExpr(((ExprQt) exp).sub,d, onlyGetName));
 
         } else if (exp instanceof ExprConstant){
             return exp;
@@ -412,6 +439,8 @@ public class Common {
             return createArrowExprList(Collections.nCopies(i+1,createNone()));
         }
     }
+
+
     /*
     public static Expr predJoinCurParams(String name, List<String> prs) {
         //p2.p1.p0.s.name

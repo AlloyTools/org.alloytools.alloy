@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -26,12 +27,14 @@ public class VarTable {
 
 	// stores Var, Buffer Decls in a HashMap based on the event FQN
 
-	private HashMap<String,VarElement> varTable;
-	private HashMap<String,BufferElement> bufferTable;
+	// LinkedHashMap so order of keySet is consistent
+	// Alloy requires declaration before use for variables
+	private LinkedHashMap<String,VarElement> varTable;
+	private LinkedHashMap<String,BufferElement> bufferTable;
 
 	public VarTable() {
-		this.varTable = new HashMap<String,VarElement>();
-		this.bufferTable = new HashMap<String,BufferElement>();
+		this.varTable = new LinkedHashMap<String,VarElement>();
+		this.bufferTable = new LinkedHashMap<String,BufferElement>();
 	}
 
 	public class VarElement {

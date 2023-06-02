@@ -47,7 +47,7 @@ public class AddTransIsEnabledAfterStep {
         guard_cond_t1[s'] 
         (s.stable = True) =>
             o1: forall i. not(t1_nonOrthScopei in scopesi) 
-            ev1: t1_on  in (s.eventsi & EnvEvents) + genEventsi // if t1_on is internal this is false
+            ev1: t1_on  in (s.eventsi :> EnvEvents) + genEventsi // if t1_on is internal this is false
         else {
             o2: forall i. not(t1_nonOrthScopei in scopesi + s'.scopesUsedi) 
             ev2: t1_on  in s.eventsi  + genEventsi
@@ -118,14 +118,14 @@ public class AddTransIsEnabledAfterStep {
         DashRef ev = d.getTransOn(tfqn);
         Expr ev1, ev2;
         if (ev != null) {
-            //ev1: t1_on  in (s.eventsi & EnvEvents) + genEventsi // if t1_on is internal this is false
+            //ev1: t1_on  in (s.eventsi :> EnvEvents) + genEventsi // if t1_on is internal this is false
             if (d.isInternalEvent(ev.getName())) {
                 ev1 = createFalse();
             } else {
                 ev1 = createIn(
                             translateDashRefToArrow(ev),
                             createUnion(
-                                createIntersect(
+                                createRangeRes(
                                     curEvents(ev.getParamValues().size()),
                                     allEnvironmentalEventsVar()),
                                 genEventVar(ev.getParamValues().size())));

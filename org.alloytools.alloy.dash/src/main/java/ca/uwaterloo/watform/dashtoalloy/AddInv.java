@@ -51,17 +51,27 @@ public class AddInv {
             // so don't try to combine these steps
 
             Expr e;
-            if (!prs.isEmpty())
-                e = createAll(
-                    // might need to add "p" to the front of these
-                    paramDecls(DashUtilFcns.listOfInt(0,prs.size()-1), prs),
-                    createAndFromList(body));
-            else e = createAndFromList(body);
             List<Decl> decls = new ArrayList<Decl>();
-            decls.add(curDecl());
+            if (!body.isEmpty()) {
+                if (!prs.isEmpty()) {
+                    // all parameters are not used in inv
+                    e = createAndFromList(body);
+                    for (int i=0; i < prs.size();i++) {
+                        if (usedIn(paramVar(i,prs.get(i)),e )) {
+                            decls.add(paramDecl(i,prs.get(i)));
+                        }
+                    }
+                    if (!decls.isEmpty()) e = createAll(decls,e);
+                }
+                else e = createAndFromList(body);
+                body = new ArrayList<Expr>();
+                body.add(e);
+            } else e = createAndFromList(body);
+            if (usedIn(curVar(),e)) decls.add(curDecl());
             if (!DashOptions.isElectrum) {
                 body = new ArrayList<Expr>();
-                body.add(createAll(decls,e));
+                if (!decls.isEmpty()) body.add(createAll(decls,e));
+                else body.add(e);
             }
             d.alloyString += d.addFactSimple(DashStrings.invName, body);
         }
