@@ -24,22 +24,14 @@ jobs:
       - name: Build
         shell: bash
         run: ./gradlew --parallel release
-      - name: Macos
-        shell: bash
-        run: cd org.alloytools.alloy.dist;./macos
       - name: save-tests
         if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
           name: test-reports
           path: '*/target/*reports/tests/'
-      - name: Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+      - name: Publish with jDeploy
+        uses: actions/jdeploy@master
         with:
-          prerelease: false
-          draft: false
-          files: |
-             org.alloytools.alloy.dist/target/*.jar
-             org.alloytools.alloy.dist/target/*.dmg
-             */target/reports
+          github_token: ${{ github.token }}
+      
