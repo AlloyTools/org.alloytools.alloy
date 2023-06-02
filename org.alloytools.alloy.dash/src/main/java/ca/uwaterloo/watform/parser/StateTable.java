@@ -65,14 +65,7 @@ public class StateTable {
 		// after resolve
 		private List<Expr> invs;
 		private List<Expr> inits;
-		/*
-		private ArrayList<String> transWithThisSrc;
-		private ArrayList<String> transWithThisScope;
-		// all trans with this scope or descendant scope
-		private ArrayList<String> allTransWithinState; 
-		private ArrayList<String> basicStatesEntered; // following defaults
-		private ArrayList<String> basicStatesExited;
-	    */
+
 
 		public StateElement(
 			DashStrings.StateKind k,
@@ -120,52 +113,7 @@ public class StateTable {
 			// add more
 			return s;
 		}
-		/*	
-		this.substates = new ArrayList<DashState>();
-		this.dynSymbols = new ArrayList<DashDecl>();
-		this.events = new ArrayList<DashEvent>();
-		this.transitions = new ArrayList<DashTrans>();
-		this.init = new ArrayList<Expr>();
-		this.invariants = new ArrayList<Expr>();
-	
-		for (Object i: items) {
-			if (item instanceof DashState) {
-				this.substates.add(i);
-			} else if (item instanceof DashDecl) {
-				this.dynSymbols.add(i);
-			} else if (item instanceof DashEvent) {
-				this.events.add(i);
-			} else if (item instanceof DashTrans) {
-				this.transitions.add(i);
-			} else if (item instanceof DashInit) {
-				this.inits.add(i);
-			} else if (item instanceof DashInv) {
-				this.invariants.add(i);
-			} else {
-				// error
-			}
-		}
-		*/	
-		/*
-		public Boolean allAttributesEmpty() {
-			return (kind == null && 
-				param == null &&
-				params == null &&
-				def == null &&
-				parent == null &&
-			    immChildren.isEmpty() ) ;
-		}
-		*/
-		/*
-		public Boolean attributesSame(DashStrings.StateKind k, String prm, List<String> prms, DashStrings.DefKind d, String p, List<String> iChildren) {
-			return (kind == k && 
-				param.equals(prm) && 
-				params.equals(prms) && 
-				def.equals(d) && 
-				parent.equals(p) && 
-				immChildren.equals(iChildren));
-		}
-		*/
+
 
 	}
 
@@ -351,17 +299,7 @@ public class StateTable {
 		return concAnces; // might be null
 	}
 	
-	/*
-	public List<String> getAllNonConcStatesWithinThisState(String concAnces) {		
-		if (concAnces!=null) return getAllNonConcDesc(concAnces);
-		else {
-			// went back to root
-			List <String> x = getAllNonConcDesc(root);
-			//System.out.println("getAllNonConcStatesWithinThisState: "+x);
-			return x;
-		}
-	}
-	*/
+
 	public List<String> getAllNonParamDesc(String s) {
 		// get all the descendants not WITHIN parameterized states
 		// s is included
@@ -422,111 +360,8 @@ public class StateTable {
 		}
 		isResolved = true;
 	}
-	/*
-	public void resolve(String root, VarTable vt) {
-		// resolve inits and invariants
-		for (String sfqn: table.keySet()) {
-			inits.addAll( 
-				table.get(sfqn).origInits.stream()
-					.map(i -> vt.resolveExpr("init", i.getInit(), 
-						getRegion(sfqn), 
-						sfqn, 
-						getParamsIdx(sfqn),
-						getParams(sfqn)))
-					.collect(Collectors.toList()));
-			invs.addAll(
-				table.get(sfqn).origInvariants.stream()
-					.map(i -> vt.resolveExpr("inv", i.getInv(), 
-						getRegion(sfqn), 
-						sfqn, 
-						getParamsIdx(sfqn),
-						getParams(sfqn)))
-					.collect(Collectors.toList()));
-			
-			// have to resolve variables here because need
-			// other parameters to resolveExpr
-			for (String vfqn: vt.getVarsOfState(sfqn)) {
-				vt.setVarType(vfqn,
-					vt.resolveExpr(
-						"var", 
-						vt.getVarType(vfqn),
-						getRegion(sfqn), 
-						sfqn, 
-						getParamsIdx(sfqn),
-						getParams(sfqn)));
-			}
-			
-		}
-		isResolved = true;
-	}
-	*/
 
-	/*
-	 * this fcn figures out the src/dest of a transition
-	 * from its context
-	 * if it has no src/dest, the parent state is used
-	 * if it is already FQN, it is returned directly
-	 * Otherwise, it looks at all uniquely named states up to an ancestor conc state
-	 * Requires state table to have been built already
-	 */
- 
- 	// tfqn is needed for error messages
-	/*
-	public DashRef resolveSrcDest(String xType, DashRef x, String tfqn, List<Integer> tparamsIdx, List<String> tparams, VarTable vt) {
 
-		//System.out.println("Looking for: " + x);
-		String sfqn = DashFQN.fqn(x.getName());
-		String parentFQN = DashFQN.chopPrefixFromFQN(tfqn);
-		// param values might be empty
-		List<Expr> paramValues = x.getParamValues().stream()
-			.map(i -> vt.resolveExpr("from", i, getRegion(parentFQN), tfqn, tparamsIdx, tparams))
-			.collect(Collectors.toList());
-
-		List<String> matches = new ArrayList<String>();
-		if (paramValues.isEmpty()) {
-			// if no param values must be within the region of the same params (could be prefix of params)
-			for (String s:getRegion(parentFQN)) 
-					if (DashFQN.suffix(s,sfqn)) matches.add(s);
-		} else {
-			// if it has params values, could be suffix of any event
-			// and later we check it has the right number of params
-			for (String s:getAllStateNames()) 
-				if (DashFQN.suffix(s,sfqn)) matches.add(s);
-		}
-
-		if (matches.size() > 1) {
-			DashErrors.ambiguousSrcDest(xType, tfqn);
-			return null; 
-		} else if (matches.isEmpty()) {
-			DashErrors.unknownSrcDest(x.getName(),xType,tfqn);
-			return null;
-		} else {
-			String m = matches.get(0);
-			if (paramValues.isEmpty()) {
-				// must have same param values as trans b/c in same conc region
-				if (getParams(m).size() > tparamsIdx.size()) {
-					// getRegion did not return things that all
-					// have the same parameter values
-					DashErrors.regionMatchesWrongParamNumber();
-					return null;
-				} else {
-					// but could be a subset of transition param values
-					List<Expr> prmValues = 
-						Common.paramVars(
-							tparamsIdx.subList(0, getParams(m).size()), 
-							tparams.subList(0, getParams(m).size()) );
-					return new DashRef(m, prmValues);							
-				}
-			} else if (getParams(m).size() != paramValues.size()) { 
-				// came with parameters so must be right number
-				DashErrors.fqnSrcDestMustHaveRightNumberParams(xType, tfqn); 
-				return null;
-			} else {
-				return new DashRef(m,paramValues); 
-			}
-		}
-	}
-	*/
 	public List<Expr> getInits() {
 		return inits;
 	}
@@ -686,14 +521,5 @@ public class StateTable {
 		return r;
 	}
 
-	/* seems like this goes in DashToAlloy
-	public Expr createStateArrow(String s) {
-		Expr e = createVar(s);
-		for (i:s.params.reverse()) {
-			e = createArrow(createVar(i),e);
-		}
-		return e;
-	}
-	*/
 
 }

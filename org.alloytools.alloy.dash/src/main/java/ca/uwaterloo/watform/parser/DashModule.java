@@ -1,6 +1,6 @@
 package ca.uwaterloo.watform.parser;
 
-// tmp
+
 import java.util.*;
 import java.io.FileReader;
 import java.io.BufferedReader;
@@ -596,22 +596,7 @@ public class DashModule extends CompModuleHelper {
 		// if no errors 
 		status = Status.TRANSLATED_TO_ALLOY;
 	}
-	/*
-	public void resolveAllAlloy(A4Reporter rep) {
-    	// this method in CompModule is static and takes a CompModule as
-    	// input and returns one as output even though it makes all the 
-    	// changes in place on the input CompModule and then just
-    	// returns it as the output
-    	// so here we cast DashModule to CompModule and ignore the
-    	// output CompModule
-    	//assert(status == Status.TRANSLATED_TO_ALLOY);
-    	//System.out.println("Resolving Alloy");
-    	// this quits if it throws an error
-    	resolveAll(rep == null ? A4Reporter.NOP : rep, (CompModule) this);
-    	// if no errors
-    	//status = Status.RESOLVED_ALLOY;
-    }
-	*/
+
     // for testing
     public List<String> getDefaults(String s) {
     	return stateTable.getDefaults(s);
@@ -619,11 +604,6 @@ public class DashModule extends CompModuleHelper {
 
 
 
-    /* leftover
-	public String getRoot() {
-		return root.name(); // as root it is already FQN
-	}
-	*/
 	public List<String> getAllInternalEventNames() {
 		//assert(hasInternalEvents());
 		return eventTable.getAllInternalEvents();
@@ -634,63 +614,5 @@ public class DashModule extends CompModuleHelper {
 	}
 	
 
-	/*
-	public List<String> getTransTriggerEvents(String t){
-		return transTable.get(t).trigger();
-	}
-	public List<String> getTransGenEvents(String t) {
-		return transTable.get(t).genEvents();
-	}
-	public List<String> getEventParams(String e) {
-		return eventTable.get(e).getParams();
-	}
 
-	public int getNumParams() {
-		return params.size();
-	}
-	public List<String> getBufferIndices() {
-		List<String> iList;
-		for (i = 0; i <= r.getBufferMax(); i++) {
-			iList.add(DashStrings.bufferIndexName + i)
-		return iList;
-	}
-
-
-	public List<DashDynVars> getDynSymbols() {
-		return symbolTable.values();
-	}
-	public List<DashDynVars> getBuffers() {
-
-	}
-	public List<DashExpr> getInvariants() {
-		/????
-	}
-	public List<String> getTransitionsAtLevel(int i) {
-		ArrayList<String> o = transTable.keys().stream().filter(t -> transTable.get(t).params.size() == i).collect(Collectors.toList());
-		return o;		
-	}
-	*/
-
-	/*
-	public ArrayList<String> getBasicStatesEnteredAtLevel(i){
-		ArrayList<String> bs = stateTable.get(root).basicStatesEntered;
-		ArrayList<String> o = bs.stream().filter(s -> s.params.size() == i).collect(Collectors.toList());
-		return o;
-	}
-	public List<String> createStateArrow(String s) {
-		return createArrow(stateTable.get(s).params.add(s));
-	}
-
-
-	public boolean hasBuffers() {
-		return (bufferMax != -1);
-	}
-	public int getBufferMax() {
-		return bufferMax;
-	}
-
-
-
-
-	*/
 }

@@ -123,7 +123,10 @@ public class DashErrors {
 	public static void tooMany(String xType, String tfqn) {
 		throw new ErrorSyntax(tooManyMsg + xType + " in " + tfqn);
 	}
-
+	public static String cantSendAnEnvEventMsg = " can't send an environmental event: ";
+	public static void cantSendAnEnvEvent(Pos p, String expString) {
+		throw new ErrorSyntax(p + cantSendAnEnvEventMsg + expString);
+	}
 	/*
 	public static String ambiguousEventMsg = "Event name not unique within this conc/Root region: ";
 	public static void ambiguousEvent(String xType, String v, String tfqn) {

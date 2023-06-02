@@ -99,12 +99,8 @@ public class VarTable {
 			String sfqn = DashFQN.chopPrefixFromFQN(vfqn);
 			setVarType(vfqn,ResolveExpr.resolveExpr(st, et, this, "var", false, false, true, sfqn,getVarType(vfqn) ));
 		}
-		/* TODO: buffer types don't need resolving???? buf[element]
-		for (String bfqn: bufferTable.keySet()) {
-			String sfqn = DashFQN.chopPrefixFromFQN(bfqn);
-			vt.setVarType(vfqn,resolveExpr(null, null, this, "var", false, false, true, sfqn,vt.getVarType(bfqn) ));
-		}
-		*/
+		/* buffer types don't need resolving because just buf[element] */
+
 
 	}
 	
@@ -218,147 +214,9 @@ public class VarTable {
 	}
 
 
-	/*
-		results in an Expr for the action that has all references to variables as DashRefExpr's
-		fqn is a parameter to determine transition parameters and for error messages
-		used for when and do parts of a transitions
-
-	*/
 
 
 
-	/*
-
-	// fqn could be trans or state
-	private Expr dashRefVar(StateTable st, TransTable tt, String xType, Expr exp, List<String> region, String fqn, List<Integer> paramsIdx, List<String> params) {
-
-		// Join: b1.a1.var
-
-		// DashRefProcessRef: A/B/C[a1,b1]/var which became $$PROCESSREF$$. b1.a1.A/B/C/var in parsing
-		// a DashRefProcessRef could be either a value for an exp
-		// or a tuple for an event
-
-		// BadJoin: var[a1,b1] which became b1.a1.var in parsing 
-
-		// don't include isDashRefArrow here because that is only possible for 
-		// events (which are tuples) not actions
-
-		// turns PRIME(v) into v' 
-
-		String v;
-		List<Integer> paramsIdx 
-		List<Expr> paramValues;
-		if (isExprVar(exp)) {
-			v = getVarName((ExprVar) exp);	
-			if (v.startsWith(thisName)) {
-				// thisSname gets replaced with p0_AID as a normal variable
-				// not a processref
-				String suffix = v.substring(thisName.length(),v.length());
-				List<String> match = new ArrayList<String>();
-				for (String x:region) 
-					if (x.endsWith(suffix)) {
-						// x must exist because in region
-						Integer x = DashUtilFcns.lastElement(st.getParamsIdx(x));
-						String p = DashUtilFcns.lastElement(st.getParams(x));
-						match.add(Common.paramVar(x,p));
-					}
-				if (match.size() == 1)
-					return match.get(0);
-				else if (match.size() > 1)
-					DashErrors.ambiguousUseOfThis(exp.toString());
-				// else we carry on with it as a regular var name 
-			}
-			paramValues = new ArrayList<Expr>();
-		} else if (isPrimedVar(exp)) {
-			v = getVarName((ExprVar) getSub(exp))+PRIME;	
-			paramValues = new ArrayList<Expr>();			
-		} else {
-			// name might not be fully resolved
-			v = DashRef.nameOfDashRefExpr(exp);
-			// have to recurse through param values
-			paramValues = DashRef.paramValuesOfDashRefExpr(exp).stream()
-						.map(i -> resolveExpr(st, xType, i, region, fqn, paramsIdx, params))
-						.collect(Collectors.toList());
-		}
-		String vfqn = DashFQN.fqn(v);
-		Boolean isPrimed = false;
-		if (hasPrime(v)) {
-			isPrimed = true;
-			vfqn = removePrime(vfqn); // vfqn.substring(0,vfqn.length()-1);
-
-		}
-		
-		// only place primes can be is in "do" expressions
-		if (!xType.equals("do") && isPrimed) {
-			DashErrors.noPrimedVarsIn(xType, v, fqn);
-			return null;
-		}
-		List<String> matches = new ArrayList<String>();
-		if (paramValues.isEmpty()) {
-			// if no param values must be within the region of the same params (could be prefix of params)
-			for (String s:region) 
-				// buffers and vars
-				for (String x:getNamesOfState(s)) {
-					if (DashFQN.suffix(x,vfqn)) matches.add(x);
-				}
-		} else {
-			// if it has params values, could be suffix of any var
-			// and later we check it has the right number of params
-			// vars and buffers
-			for (String x:getAllNames()) {
-				if (DashFQN.suffix(x,vfqn)) matches.add(x);
-			}		
-		}
-		//System.out.println("vfqn: " + vfqn);
-		//System.out.println("matches: "+ matches);
-		//System.out.println("region: " + region);
-
-		if (matches.size() > 1) {
-			DashErrors.ambiguousVar(xType, v, fqn);
-			return null; 
-		} else if (matches.isEmpty()) {
-			// its some var other than a dynamic variable
-			return exp;
-		} else {
-			String m = matches.get(0);	
-			if (paramValues.isEmpty()) {
-				// must have same param values as trans b/c in same conc region
-				if (getParams(m).size() > paramsIdx.size()) {
-					// getRegion did not return things that all
-					// have the same parameter values
-					DashErrors.regionMatchesWrongParamNumber();
-					return null;
-				} else {
-					// could be a subset of transition param values					
-					List<Expr> prmValues = 
-						Common.paramVars(
-							paramsIdx.subList(0, getParams(m).size()),
-							params.subList(0,getParams(m).size()));
-					if (isPrimed)  m = m + PRIME;
-					//System.out.println("here1" + m);
-					return DashRef.DashRefExpr(m, prmValues);							
-				}
-			} else if (getParams(m).size() != paramValues.size()) { 
-				// came with parameters so must be right number
-				DashErrors.fqnVarWrongNumberParameters(xType, v, fqn); 
-				return null;
-			} else {
-				if (isPrimed && !isInternal(m)) { 
-					DashErrors.cantPrimeAnExternal(v, fqn);
-					return null;
-				}
-				if (isPrimed) m = m+PRIME;
-				//System.out.println("here2" + m);
-				return DashRef.DashRefExpr(
-					m, 
-					// have to recursive through expressions in parameters
-					paramValues.stream()
-						.map(i -> resolveExpr(st, xType, i, region, fqn, paramsIdx,params))
-						.collect(Collectors.toList()));
-			}
-		}
-	}
-	*/
 
 	// must be done after resolve
 	// might be primed or unprimed

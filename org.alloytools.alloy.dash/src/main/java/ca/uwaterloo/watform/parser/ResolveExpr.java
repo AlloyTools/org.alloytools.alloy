@@ -1,3 +1,22 @@
+/*
+	This function takes an Expr and sorts out any Dash names used in it to:
+	1) make the names fully qualified
+	2) figure out all the parameter values
+	3) figures out what "thisState" means
+	4) turns PRIME(v) into v' 
+
+	It is called from stateTable resolving for inits and invariants and that 
+	It is called from varTable for resolving type of dynamic variables (where it resolves
+	   only the name, not the parameters)
+	It is called from transTable to resolve all parts of transitions.
+
+	Variation points for these uses is in where to search for 
+	a name (stateTable, EventTable, varTable)
+	
+	Incoming Expr may also be a DashRef (from parsing for src/dest/on/send).
+	
+	Errors are given using "pos".
+*/
 package ca.uwaterloo.watform.parser;
 
 import java.util.List;
@@ -164,18 +183,6 @@ public class ResolveExpr{
 							String sfqn,  // could be parent of event or trans 
 							Expr exp) {
 
-		// Join: b1.a1.var
-
-		// DashRefProcessRef: A/B/C[a1,b1]/var which became $$PROCESSREF$$. b1.a1.A/B/C/var in parsing
-		// a DashRefProcessRef could be either a value for an exp
-		// or a tuple for an event
-
-		// BadJoin: var[a1,b1] which became b1.a1.var in parsing 
-
-		// don't include isDashRefArrow here because that is only possible for 
-		// events (which are tuples) not actions
-
-		// turns PRIME(v) into v' 
 
 		assert(isExprVar(exp) || isPrimedVar(exp) || DashRef.isDashRef(exp));
 		assert(kind.equals("state") || kind.equals("event") || kind.equals("var"));

@@ -3,6 +3,7 @@ package ca.uwaterloo.watform.parser;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -22,7 +23,7 @@ public class EventTable {
 
 	// stores Event Decls in a HashMap based on the event FQN
 
-	private HashMap<String,EventElement> table;
+	private LinkedHashMap<String,EventElement> table;
 
 
 	public class EventElement {
@@ -49,7 +50,7 @@ public class EventTable {
 	}
 
 	public EventTable() {
-		this.table = new HashMap<String,EventElement>();
+		this.table = new LinkedHashMap<String,EventElement>();
 
 	}
 	public String toString() {
@@ -130,89 +131,5 @@ public class EventTable {
 			.filter(i -> DashFQN.chopPrefixFromFQN(i).equals(sfqn))
 			.collect(Collectors.toList());	
 	}
-	/*
-	public DashRef resolveEvent(String xType, Expr exp, List<String> region, String tfqn, List<Integer> tparamsIdx, List<String> tparams, VarTable vt) {
 
-
-		// don't include isDashRefJoin here because that is only possible for actions not events
-		// which are tuples
-		// but a DashRefProcessRef could be either a value for an action
-		// or a tuple for an event
-		// Arrow: b1 -> a1 -> ev
-		// ProcessRef: A/B/C[a1,b1]/ev which became $$PROCESSREF$$. b1.a1.A/B/C/ev in parsing
-		// BadJoin: ev[a1,b1] which became b1.a1.ev in parsing 
-		if (ExprHelper.isExprVar(exp) ||
-			//DashRef.isDashRefArrow(exp) || 
-			DashRef.isDashRef(exp))// || 
-			//DashRef.isDashRefBadJoin(exp)) 
-		{
-			String e;
-			List<Expr> paramValues;
-			if (ExprHelper.isExprVar(exp)) {
-				e = ExprHelper.getVarName((ExprVar) exp);	
-				paramValues = new ArrayList<Expr>();
-			} else {
-				e = exp.getName();
-				paramValues = 
-					// have to recursive through expressions in parameters
-					exp.getParamValues().stream()
-						.map(i -> vt.resolveExpr(xType, i, region, tfqn, tparamsIdx, tparams))
-						.collect(Collectors.toList());
-			}
-			String efqn = DashFQN.fqn(e);
-
-			//System.out.println(efqn);
-			List<String> matches = new ArrayList<String>();
-			if (paramValues.isEmpty()) {
-				// if no param values must be within the region of the same params (could be prefix of params)
-				for (String s:region) 
-					for (String x:allEventsOfState(s)) {
-						if (DashFQN.suffix(x,efqn)) matches.add(x);
-					}
-			} else {
-				// if it has params values, could be suffix of any event
-				// and later we check it has the right number of params
-				for (String x:getAllEventNames()) {
-					if (DashFQN.suffix(x,efqn)) matches.add(x);
-				}		
-			}
-
-			if (matches.size() > 1) {
-				DashErrors.ambiguousEvent(xType, e, tfqn);
-				return null; 
-			} else if (matches.isEmpty()) {
-				DashErrors.unknownEvent(xType, e,tfqn);
-				return null;
-			} else {
-				String m = matches.get(0);	
-				if (paramValues.isEmpty()) {
-					// must have same param values as trans b/c in same conc region
-					if (getParams(m).size() > tparamsIdx.size()) {
-						// getRegion did not return things that all
-						// have the same parameter values
-						DashErrors.regionMatchesWrongParamNumber();
-						return null;
-					} else {
-						// but could be a subset of transition param values
-						List<Expr> prmValues = 
-							Common.paramVars(
-								tparamsIdx.subList(0, getParamsIdx(m).size()),
-								tparams.subList(0,getParams(m).size()) );
-						return new DashRef(m, prmValues);							
-					}
-				} else if (getParams(m).size() != paramValues.size()) { 
-					// came with parameters so must be right number
-					DashErrors.fqnEventMissingParameters(xType, e, tfqn); 
-					return null;
-				} else {
-					return new DashRef(m,paramValues); 
-				}
-			}
-		} else {
-			DashErrors.expNotEvent(xType, tfqn);
-			return null;
-		}
-		
-	}
-	*/
 }
