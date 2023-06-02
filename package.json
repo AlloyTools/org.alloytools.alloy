@@ -11,7 +11,7 @@
     "javaVersion": "17",
     "jar": "org.alloytools.alloy/org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar",
     "javafx": false,
-    "bundles": ["mac-x64", "mac-arm64", "win", "linux",
+    "bundles": ["mac-x64", "mac-arm64", "win", "linux"],
     "installers" : ["mac-x64", "mac-arm64", "win", "linux"],
     "title": "Alloy, a formal specification tool"
   },
