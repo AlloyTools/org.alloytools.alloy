@@ -1,5 +1,6 @@
 {
-  "bin": {"org-alloytools-alloy-dist": "jdeploy-bundle/jdeploy.js"},
+  "name": "org-alloytools-alloy",
+  "bin": {"alloy": "jdeploy-bundle/jdeploy.js"},
   "author": "alloytools@aQute.biz",
   "description": "Alloy, a formal specification tool",
   "main": "index.js",
@@ -25,7 +26,7 @@
       }
     ],
     "urlSchemes": ["alloy"],
-    "title": "alloy"
+    "title": "Alloy"
   },
   "dependencies": {
     "command-exists-promise": "^2.0.2",
@@ -35,7 +36,6 @@
     "shelljs": "^0.8.4"
   },
   "license": "ASL 2.0",
-  "name": "org-alloytools-alloy",
   "files": ["jdeploy-bundle"],
   "scripts": {"test": "echo \"Error: no test specified\" && exit 1"}
 }
