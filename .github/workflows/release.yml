@@ -52,6 +52,7 @@ jobs:
           path: ./tmp
       - name: Push download.html to web server (change _ in name after release)
         run: |
+          cp output/icon.png tmp/icon.png
           cp output/download.html tmp/download_.html
           cd tmp
           git config user.name "alloytools"
