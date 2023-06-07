@@ -39,8 +39,23 @@ jobs:
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          automatic_release_tag: "v6.1.0"
           prerelease: true
           title: "Alloytools Alloy"
           files: |
             output/
+      - name: Checkout target repository
+        uses: actions/checkout@v2
+        with:
+          repository: Alloytools/alloytools.github.io
+          token: ${{ secrets.WEB_TOKEN }}
+          path: ./tmp
+      - name: Push download.html to web server (change _ in name after release)
+        run: |
+          cp output/download.html tmp/download_.html
+          cd tmp
+          git config user.name "alloytools"
+          git config user.email "master@alloytools.org"
+          git add .
+          git commit -m "Update download.html"
+          git push
