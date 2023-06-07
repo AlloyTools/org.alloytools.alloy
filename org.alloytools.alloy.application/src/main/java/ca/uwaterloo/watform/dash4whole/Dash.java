@@ -156,10 +156,8 @@ public class Dash {
 
             if (filename.endsWith(".als")) {
                 try {
-                    CompModule c = MainFunctions.parseAlloyFile(filename, rep);
+                    CompModule c = MainFunctions.parseAlloyFileAndResolveAll(filename, rep);
                     System.out.println("Parsed Alloy file");
-                    if (c == null) DashErrors.emptyFile(filename);
-                    c = MainFunctions.resolveAlloy(c,rep);
                     // will raise an exception if problems
                     System.out.println("Resolved Alloy file");
                     executeCommands(c,cmdnum,rep);

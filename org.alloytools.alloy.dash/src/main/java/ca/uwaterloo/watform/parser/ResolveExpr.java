@@ -186,6 +186,9 @@ public class ResolveExpr{
 
 		assert(isExprVar(exp) || isPrimedVar(exp) || DashRef.isDashRef(exp));
 		assert(kind.equals("state") || kind.equals("event") || kind.equals("var"));
+
+		//System.out.println("in: " + exp);
+
 		String v;
 		List<Integer> paramsIdx = st.getParamsIdx(sfqn); 
 		List<String> params = st.getParams(sfqn);
@@ -300,7 +303,9 @@ public class ResolveExpr{
 			else if (kind.equals("event")) { return DashRef.createEventDashRef(pos, m, paramValues); }
 			else {
 				//System.out.println(DashRef.createVarDashRef(pos, m, paramValues));
-				return DashRef.createVarDashRef(pos, m, paramValues);
+				Expr out = DashRef.createVarDashRef(pos, m, paramValues);
+				//System.out.println("out: " + out);
+				return out;
 			}
 		}
 	}

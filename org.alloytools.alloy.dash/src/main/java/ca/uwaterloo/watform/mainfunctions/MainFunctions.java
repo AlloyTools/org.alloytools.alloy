@@ -70,13 +70,15 @@ public class MainFunctions {
         if (c == null) {
             DashErrors.emptyModule();
         } else {
+            System.out.println("here1");
             o = CompModule.resolveAll(rep,c);
+            System.out.println("here2");
         }
         return o;
     }
 
     // make our CLI also work for .als files
-    public static CompModule parseAlloyFile(String filename, A4Reporter rep) {
+    public static CompModule parseAlloyFileAndResolveAll(String filename, A4Reporter rep) {
         CompModule c = CompUtil.parseEverything_fromFile(rep, null, filename);
         if (c == null) {
             DashErrors.emptyFile(filename);

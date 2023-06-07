@@ -541,6 +541,8 @@ public class DashModule extends CompModuleHelper {
 		if (tfqn != null) {
 			System.out.println("src " + getTransSrc(tfqn));
 			System.out.println("dest " + getTransDest(tfqn));
+			System.out.println("pre " + getTransWhen(tfqn));
+			System.out.println("post " + getTransDo(tfqn));
 			System.out.println("getScope " + getScope(tfqn));
 			System.out.println("getClosestParamAnces: "+getClosestParamAnces(getTransSrc(tfqn).getName()));
 			//System.out.println("getAllNonParamDesc: " +getAllNonParamDesc(getClosestConcAnces(getTransSrc(tfqn).getName())));
