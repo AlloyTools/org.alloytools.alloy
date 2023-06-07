@@ -31,7 +31,7 @@ jobs:
           name: test-reports
           path: '*/target/*reports/tests/'
       - name: Run Conveyor     
-        uses: hydraulic-software/conveyor/actions/build@v1
+        uses: hydraulic-software/conveyor/actions/build@v9.2
         with:
           command: -f org.alloytools.alloy.dist/conveyor/conveyor.conf make site
           signing_key: ${{ secrets.CONVEYOR_ROOT_KEY }}          
