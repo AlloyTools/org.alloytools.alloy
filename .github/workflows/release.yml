@@ -30,8 +30,17 @@ jobs:
         with:
           name: test-reports
           path: '*/target/*reports/tests/'
-      - name: Publish with jDeploy
-        uses: shannah/jdeploy@master
+      - name: Run Conveyor     
+        uses: hydraulic-software/conveyor/actions/build@v1
         with:
-          github_token: ${{ github.token }}
-      
+          command: -f org.alloytools.alloy.dist/conveyor/conveyor.conf make site
+          signing_key: ${{ secrets.CONVEYOR_ROOT_KEY }}          
+          agree_to_license: 1            
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Alloytools Alloy"
+          files: |
+            output/

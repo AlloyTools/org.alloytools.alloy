@@ -1,6 +1,7 @@
 .DS_Store
 .gradle/
 generated/
+output/
 bin/
 bin_test/
 gen/

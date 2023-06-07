@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
@@ -145,7 +146,7 @@ public class AlloyDispatcher extends ReporterAdapter {
             if (arguments.isEmpty()) {
                 selected = mains.entrySet().stream().filter(e -> e.getValue().deflt).map(e -> e.getValue()).findAny().orElse(null);
                 if (selected == null) {
-                    error("invalid JAR, could not find a main that is the default and no command was given. Main classes found %s", mains);
+                    error("invalid JAR, could not find a main that is the default and no command was given. Main classes found %s", mains.keySet());
                     return;
                 }
             } else {
@@ -300,7 +301,7 @@ public class AlloyDispatcher extends ReporterAdapter {
 
     private void globalCommands(AlloyContext context, Map<String,MainDef> result) {
         ParameterMap header = getHeader("Provide-Capability");
-
+        System.out.println("Header " + header);
         header.entrySet().stream().filter(e -> e.getKey().startsWith(AlloyMain.NAMESPACE)).forEach(e -> {
             try {
                 Attributes attrs = e.getValue();
@@ -386,12 +387,20 @@ public class AlloyDispatcher extends ReporterAdapter {
             return manifest;
 
         try {
-            URL resource = AlloyDispatcher.class.getResource("/META-INF/MANIFEST.MF");
-            if (resource == null)
-                return Optional.empty();
 
-            Manifest manifest = new Manifest(resource.openStream());
-            return this.manifest = Optional.of(manifest);
+            Enumeration<URL> resource = AlloyDispatcher.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+            while (resource.hasMoreElements()) {
+                URL url = resource.nextElement();
+                System.out.println(url);
+                Manifest manifest = new Manifest(url.openStream());
+                String value = manifest.getMainAttributes().getValue("Bundle-Version");
+                if (value != null) {
+                    return this.manifest = Optional.of(manifest);
+                }
+            }
+            log.error("No Manifest in JAR: ");
+            return Optional.empty();
+
         } catch (IOException e) {
             log.error("No Manifest found {}", e, e);
             return Optional.empty();
@@ -414,5 +423,10 @@ public class AlloyDispatcher extends ReporterAdapter {
                     System.err.println("invalid slf4j target definition " + target + ", expect " + TARGET_P);
                 }
             }
+    }
+
+    @Override
+    public String toString() {
+        return "AlloyDispatcher [context=" + context + ", manifest=" + manifest + "]";
     }
 }

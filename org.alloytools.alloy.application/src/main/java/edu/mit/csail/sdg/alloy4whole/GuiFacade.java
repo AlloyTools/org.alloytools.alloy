@@ -10,7 +10,7 @@ import aQute.lib.getopt.Options;
 @AlloyMain(
            name = "gui",
            isDefault = true )
-public class CLIFacade {
+public class GuiFacade {
 
     interface GuiOptions extends Options {
 
