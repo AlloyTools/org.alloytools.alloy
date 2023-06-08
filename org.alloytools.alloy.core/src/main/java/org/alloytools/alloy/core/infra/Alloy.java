@@ -8,8 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Enumeration;
 
-import org.alloytools.nativecode.util.NativeCode;
-
 import aQute.lib.io.IO;
 
 /**
