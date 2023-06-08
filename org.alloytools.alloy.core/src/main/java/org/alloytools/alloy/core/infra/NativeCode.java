@@ -1,14 +1,14 @@
 package org.alloytools.alloy.core.infra;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
+
+import aQute.lib.io.IO;
 
 /**
  * @author AlloyTools
@@ -39,7 +39,7 @@ public class NativeCode {
         }
     }
 
-    static Map<String,Path>  cached      = new ConcurrentHashMap<>();
+    static Map<String,File>  cached      = new HashMap<>();
 
     public static Platform   AMD64_LINUX = new Platform("linux", "amd64", "amd64-linux");
     public static Platform   X86_LINUX   = new Platform("linux", ".*86.*", "x86-linux");
@@ -52,7 +52,7 @@ public class NativeCode {
 
     public static Platform   platform    = findPlatform();
 
-    public static String findexecutable(Path cache, String name) throws RuntimeException {
+    public static synchronized File findexecutable(File cache, String name) throws RuntimeException {
         try {
             if (platform.dir == null) {
                 System.out.println("cannot determine platform");
@@ -60,9 +60,8 @@ public class NativeCode {
             }
 
             Platform p = platform;
-            String libraryName = name;
 
-            String file = platform.dir + "/" + libraryName;
+            String file = platform.dir + "/" + name;
             Enumeration<URL> enumeration = NativeCode.class.getClassLoader().getResources(file);
             if (!enumeration.hasMoreElements()) {
                 System.out.println("No binary resource for " + file);
@@ -70,71 +69,23 @@ public class NativeCode {
             }
             URL resource = enumeration.nextElement();
 
-            Path to = cached.computeIfAbsent(name, (k) -> {
+            File to = cached.computeIfAbsent(name, (k) -> {
+
                 try {
-                    if (cache == null) {
-                        Path tox = Files.createTempFile(name, libraryName);
-                        tox.toFile().deleteOnExit();
-                        Files.copy(resource.openStream(), tox, StandardCopyOption.REPLACE_EXISTING);
-                        return tox;
-                    } else {
-                        cache.toFile().mkdirs();
-                        return cache.resolve(libraryName);
-                    }
+                    File tox = new File(cache, name);
+                    tox.deleteOnExit();
+                    IO.copy(resource, tox);
+                    return tox;
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             });
 
-            to.toFile().setExecutable(true);
-            if (!to.toFile().canExecute()) {
-                System.out.println("binary " + to + " for " + platform.dir + " cannot be set to executable");
-
-            }
-            return to.toFile().getAbsolutePath();
+            to.setExecutable(true);
+            return to;
 
         } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-    }
-
-    @SuppressWarnings("unused" )
-    public static boolean loadlibrary(Path cache, String name) throws RuntimeException {
-        try {
-            if (platform.dir == null)
-                return false;
-
-            Platform p = platform;
-            String libraryName = System.mapLibraryName(name);
-
-            String file = platform.dir + "/" + libraryName;
-            Enumeration<URL> enumeration = NativeCode.class.getClassLoader().getResources(file);
-            if (!enumeration.hasMoreElements()) {
-                return false;
-            }
-
-            URL resource = enumeration.nextElement();
-
-            Path to = cached.computeIfAbsent(name, (k) -> {
-                try {
-                    if (cache == null) {
-                        Path tox = Files.createTempFile(name, libraryName);
-                        tox.toFile().deleteOnExit();
-                        return tox;
-                    } else {
-                        cache.toFile().mkdirs();
-                        return cache.resolve(libraryName);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
-            Files.copy(resource.openStream(), to, StandardCopyOption.REPLACE_EXISTING);
-            System.load(to.toFile().getAbsolutePath());
-            return true;
-        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

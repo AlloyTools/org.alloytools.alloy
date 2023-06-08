@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Enumeration;
 
 import aQute.lib.io.IO;
@@ -23,7 +22,7 @@ import aQute.lib.io.IO;
 public class Alloy {
 
     static ClassLoader old = Alloy.class.getClassLoader();
-    static Path        cache;
+    static File        cache;
 
     static class AlloyClassLoader extends ClassLoader {
 
@@ -44,9 +43,8 @@ public class Alloy {
         @Override
         protected String findLibrary(String libname) {
             String mappedName = System.mapLibraryName(libname);
-            String findexecutable = NativeCode.findexecutable(cache, mappedName);
-            if (findexecutable != null) {
-                File f = new File(findexecutable);
+            File f = NativeCode.findexecutable(cache, mappedName);
+            if (f != null) {
                 if (!f.isFile()) {
                     System.out.printf("loaded library %s %s platform=%s arch=%s is not a file\n", libname, f, System.getProperty("os.name"), System.getProperty("os.arch"));
                     return null;
@@ -54,7 +52,7 @@ public class Alloy {
                 if (!f.canExecute()) {
                     System.out.printf("loaded library %s %s platform=%s arch=%s is not executable\n", libname, f, System.getProperty("os.name"), System.getProperty("os.arch"));
                 }
-                return findexecutable;
+                return f.getAbsolutePath();
             }
 
             System.out.printf("load library failed %s platform=%s arch=%s\n", libname, System.getProperty("os.name"), System.getProperty("os.arch"));
@@ -78,7 +76,7 @@ public class Alloy {
     }
 
     public static void main(String args[]) throws Exception {
-        cache = Files.createTempDirectory("alloy-");
+        cache = Files.createTempDirectory("alloy-").toFile();
         AlloyClassLoader l1 = new AlloyClassLoader();
 
         Class< ? > dispatcher = l1.loadClass("org.alloytools.alloy.core.infra.AlloyDispatcher");
