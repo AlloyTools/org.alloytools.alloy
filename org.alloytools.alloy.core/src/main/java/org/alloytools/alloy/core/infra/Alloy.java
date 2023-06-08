@@ -4,7 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Enumeration;
+
+import org.alloytools.nativecode.util.NativeCode;
 
 import aQute.lib.io.IO;
 
@@ -21,6 +25,7 @@ import aQute.lib.io.IO;
 public class Alloy {
 
     static ClassLoader old = Alloy.class.getClassLoader();
+    static Path        cache;
 
     static class AlloyClassLoader extends ClassLoader {
 
@@ -40,9 +45,23 @@ public class Alloy {
 
         @Override
         protected String findLibrary(String libname) {
-            String mapped = System.mapLibraryName(libname);
-            String path = System.getProperty("alloy.binary") + File.separator + mapped;
-            return path;
+            String mappedName = System.mapLibraryName(libname);
+            String findexecutable = NativeCode.findexecutable(cache, mappedName);
+            if (findexecutable != null) {
+                File f = new File(findexecutable);
+                if (!f.isFile()) {
+                    System.out.printf("loaded library %s %s platform=%s arch=%s is not a file\n", libname, System.getProperty("os.name"), System.getProperty("os.arch"));
+                    return null;
+                }
+                if (!f.canExecute()) {
+                    System.out.printf("loaded library %s %s platform=%s arch=%s is not executable\n", libname, System.getProperty("os.name"), System.getProperty("os.arch"));
+                    return null;
+                }
+                return findexecutable;
+            }
+
+            System.out.printf("load library failed %s platform=%s arch=%s\n", libname, System.getProperty("os.name"), System.getProperty("os.arch"));
+            return null;
         }
 
         @Override
@@ -62,6 +81,7 @@ public class Alloy {
     }
 
     public static void main(String args[]) throws Exception {
+        cache = Files.createTempDirectory("alloy-");
         AlloyClassLoader l1 = new AlloyClassLoader();
 
         Class< ? > dispatcher = l1.loadClass("org.alloytools.alloy.core.infra.AlloyDispatcher");

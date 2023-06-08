@@ -48,11 +48,11 @@ import edu.mit.csail.sdg.translator.A4Options.SatSolver;
  */
 public class AlloyDispatcher extends ReporterAdapter {
 
-    final static Logger log = LoggerFactory.getLogger(AlloyDispatcher.class);
-    PrintStream         out = System.out;
-    PrintStream         err = System.err;
-    AlloyContext        context;
-    Optional<Manifest>  manifest;
+    Logger             log;
+    PrintStream        out = System.out;
+    PrintStream        err = System.err;
+    AlloyContext       context;
+    Optional<Manifest> manifest;
 
 
 
@@ -120,7 +120,7 @@ public class AlloyDispatcher extends ReporterAdapter {
                 System.err.println(help);
             }
         } catch (Exception e) {
-            dispatcher.exception(e, "invocation failed %s", e.getMessage());
+            dispatcher.exception(e, "%s", e.getMessage());
         }
         dispatcher.report(System.out);
     }
@@ -130,7 +130,8 @@ public class AlloyDispatcher extends ReporterAdapter {
             System.setProperty("debug", "yes");
 
         setslf4j(options.defaultLevel(Levels.error), options.log());
-
+        log = LoggerFactory.getLogger("alloy");
+        log.info("starting");
         CommandLine cl = options._command();
         AlloyContext context = getContext(options);
         Map<String,MainDef> mains = getMains(context, cl);
