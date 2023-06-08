@@ -44,7 +44,7 @@ public class NativeCode {
     public static Platform   AMD64_LINUX = new Platform("linux", "amd64", "amd64-linux");
     public static Platform   X86_LINUX   = new Platform("linux", ".*86.*", "x86-linux");
     public static Platform   X86_MAC     = new Platform("mac\\s*os.*", "ppc|power|powerpc.*|x86.*", "x86-mac");
-    public static Platform   X86_WINDOWS = new Platform("win.*", "x86.*", "x86-windows");
+    public static Platform   X86_WINDOWS = new Platform("win.*", "x86.*|amd64", "x86-windows");
     public static Platform   ARM_MAC     = new Platform("mac\\s*os.*", "aarch64", "arm-mac");
     public static Platform[] platforms   = {
                                             AMD64_LINUX, X86_LINUX, X86_MAC, X86_WINDOWS, ARM_MAC
