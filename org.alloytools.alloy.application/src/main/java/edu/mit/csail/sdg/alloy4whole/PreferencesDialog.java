@@ -380,27 +380,7 @@ public class PreferencesDialog extends JFrame {
             System.loadLibrary(library);
             return true;
         } catch (UnsatisfiedLinkError ex) {
-        }
-        try {
-            System.loadLibrary(library + "x1");
-            return true;
-        } catch (UnsatisfiedLinkError ex) {}
-        try {
-            System.loadLibrary(library + "x2");
-            return true;
-        } catch (UnsatisfiedLinkError ex) {}
-        try {
-            System.loadLibrary(library + "x3");
-            return true;
-        } catch (UnsatisfiedLinkError ex) {}
-        try {
-            System.loadLibrary(library + "x4");
-            return true;
-        } catch (UnsatisfiedLinkError ex) {}
-        try {
-            System.loadLibrary(library + "x5");
-            return true;
-        } catch (UnsatisfiedLinkError ex) {
+            ex.printStackTrace();
             return false;
         }
     }
