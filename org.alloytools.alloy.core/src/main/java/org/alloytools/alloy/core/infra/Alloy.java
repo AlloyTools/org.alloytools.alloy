@@ -52,6 +52,7 @@ public class Alloy {
                 if (!f.canExecute()) {
                     System.out.printf("loaded library %s %s platform=%s arch=%s is not executable\n", libname, f, System.getProperty("os.name"), System.getProperty("os.arch"));
                 }
+                System.out.println("binary " + f);
                 return f.getAbsolutePath();
             }
 
