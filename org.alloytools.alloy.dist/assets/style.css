@@ -1,0 +1,218 @@
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            font-size: 1em;
+            background-color: white;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+
+        .download-button > svg  {
+            display: none;
+        }
+
+        .container {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        #logo {
+            padding: 2em;
+            padding-top: 2.5em;
+            text-align: center;
+        }
+
+        @media only screen and (min-device-width: 768px) {
+            .download-button {
+                align-items: center;
+                background-color: #01e675;
+                border-radius: 80px;
+                color: #fff !important;
+                cursor: pointer;
+                display: inline-flex;
+                font-weight: 500;
+                justify-content: center;
+                letter-spacing: 0.071em;
+                padding: 25px 45px;
+                text-decoration: none;
+                text-transform: uppercase;
+                white-space: nowrap;
+                width: 23em;
+            }
+
+            .pane {
+                align-items: center;
+                background-color: #fff;
+                border-radius: 4px;
+                box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2),0px 1px 1px 0px rgba(0, 0, 0, 0.14),0px 1px 3px 0px rgba(0,0,0,.3);
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                padding: 2em;
+                margin: 1em;
+            }
+
+            #version {
+                color: darkgrey;
+            }
+
+            .alternative-downloads, .alternative-downloads a {
+                padding-top: 2em;
+            }
+
+            .alternative-downloads a {
+                padding-right: 1em;
+            }
+
+            #no-go {
+                display: none;
+            }
+        }
+
+        @media only screen and (max-device-width: 768px) {
+            /** Mobile. */
+            .container {
+                font-size: xx-large;
+            }
+
+            #panes, #conveyor-logo {
+                display: none;
+            }
+        }
+
+        .smaller-fonts, .smaller-fonts a {
+            font-size: medium;
+            color: #666666;
+        }
+
+        #no-go {
+            padding: 2em;
+            margin-top: 2em;
+            background-color: #f3f3f3;
+        }
+
+        #version {
+            margin-bottom: 2em;
+        }
+
+        .terminal {
+            background-color: black;
+            border-radius: 10px;
+            white-space: pre-line;
+            text-align: left;
+            padding: 1em;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .terminal a {
+            color: white;
+        }
+
+        .terminal-icon-container {
+            flex-grow: 1;
+        }
+
+        .terminal-icon-container > .tooltip {
+            float: right;
+            display: flex;
+            align-items: center;
+        }
+
+        /* This class lets us simulate a <br> inside a flexbox. */
+        .flex-line-break {
+            flex-basis: 100%;
+            height: 0;
+        }
+
+        .note {
+            line-height: 200%;
+            text-align: left;
+            display: block;
+            color: #3d3d3d;
+        }
+
+        .note > * {
+            vertical-align: middle;
+        }
+
+        .note a {
+            color: #395ee7;
+        }
+
+        .help-pane {
+            text-align: left;
+        }
+
+        .cli-instructions {
+            padding-top: 1em;
+        }
+
+        .copy-button {
+            padding-left: 40px;
+            cursor: pointer;
+        }
+
+        /** See here: https://blog.logrocket.com/creating-beautiful-tooltips-with-only-css/ - thanks LogRocket! */
+
+        .tooltip {
+            position: relative; /* making the .tooltip span a container for the tooltip text */
+            border-bottom: 1px dashed #000; /* little indicater to indicate it's hoverable */
+        }
+
+        .tooltip:before {
+            content: attr(data-text); /* here's the magic */
+            position: absolute;
+            font-family: sans-serif;
+            font-size: smaller;
+
+            top: 50%;
+            transform: translateY(-70%);
+
+            left: 100%;
+            margin-left: 15px; /* and add a small left margin */
+
+            /* basic styles */
+            width: fit-content;
+            white-space: nowrap;
+            padding: 10px;
+            border-radius: 10px;
+            background: #555;
+            color: #fff;
+            text-align: center;
+
+            opacity: 0;
+            transition: .3s opacity;
+        }
+
+        .tooltip:after {
+            content: "";
+            position: absolute;
+
+            left: 100%;
+            margin-left: -5px;
+
+            top: 50%;
+            transform: translateY(-70%);
+
+            /* the arrow */
+            border: 10px solid #000;
+            border-color: transparent #555 transparent transparent;
+
+            opacity: 0;
+            transition: .3s;
+        }
+
+        .tooltip:hover:before, .tooltip:hover:after {
+            display: block;
+        }
