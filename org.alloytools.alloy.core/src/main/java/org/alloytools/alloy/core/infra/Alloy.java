@@ -48,12 +48,11 @@ public class Alloy {
             if (findexecutable != null) {
                 File f = new File(findexecutable);
                 if (!f.isFile()) {
-                    System.out.printf("loaded library %s %s platform=%s arch=%s is not a file\n", libname, System.getProperty("os.name"), System.getProperty("os.arch"));
+                    System.out.printf("loaded library %s %s platform=%s arch=%s is not a file\n", libname, f, System.getProperty("os.name"), System.getProperty("os.arch"));
                     return null;
                 }
                 if (!f.canExecute()) {
-                    System.out.printf("loaded library %s %s platform=%s arch=%s is not executable\n", libname, System.getProperty("os.name"), System.getProperty("os.arch"));
-                    return null;
+                    System.out.printf("loaded library %s %s platform=%s arch=%s is not executable\n", libname, f, System.getProperty("os.name"), System.getProperty("os.arch"));
                 }
                 return findexecutable;
             }
