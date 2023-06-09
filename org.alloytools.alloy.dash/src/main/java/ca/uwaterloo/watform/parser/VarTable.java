@@ -22,6 +22,7 @@ import ca.uwaterloo.watform.dashtoalloy.Common;
 
 import ca.uwaterloo.watform.parser.StateTable;
 import ca.uwaterloo.watform.parser.EventTable;
+import ca.uwaterloo.watform.parser.PredTable;
 
 public class VarTable {
 
@@ -93,11 +94,11 @@ public class VarTable {
 		else { varTable.put(vfqn, new VarElement(k,prms, prmsIdx, t)); return true; }
 	}
 
-	public void resolve(StateTable st, EventTable et) {
+	public void resolve(StateTable st, EventTable et, PredTable pt) {
 
 		for (String vfqn: varTable.keySet()) {
 			String sfqn = DashFQN.chopPrefixFromFQN(vfqn);
-			setVarType(vfqn,ResolveExpr.resolveExpr(st, et, this, "var", false, false, true, sfqn,getVarType(vfqn) ));
+			setVarType(vfqn,ResolveExpr.resolveExpr(st, et, this, pt, "var", false, false, true, sfqn,getVarType(vfqn) ));
 		}
 		/* buffer types don't need resolving because just buf[element] */
 

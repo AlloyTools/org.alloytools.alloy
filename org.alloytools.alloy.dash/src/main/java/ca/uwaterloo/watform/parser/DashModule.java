@@ -52,7 +52,7 @@ public class DashModule extends CompModuleHelper {
 	private TransTable transTable = new TransTable();
 	private EventTable eventTable = new EventTable();
 	private VarTable varTable = new VarTable();
-
+	private PredTable predTable = new PredTable();
 
 
 	// once created and parsed, the following are
@@ -286,6 +286,12 @@ public class DashModule extends CompModuleHelper {
 	}
 	public boolean hasEventsAti(int i) {
 		return eventTable.hasEventsAti(i);
+	}
+	public boolean hasInternalEventsAti(int i) {
+		return eventTable.hasInternalEventsAti(i);
+	}
+	public boolean hasEnvironmentalEventsAti(int i) {
+		return eventTable.hasEnvironmentalEventsAti(i);
 	}
 	public boolean hasConcurrency() {
 		return stateTable.hasConcurrency(root.name);
@@ -567,7 +573,7 @@ public class DashModule extends CompModuleHelper {
 			root = roots.get(0);
 			// passed with empty set of params, empty set of ancestors
 			stateTable.setRoot(root.name);
-			root.load(stateTable,transTable, eventTable, varTable, new ArrayList<String>());
+			root.load(stateTable,transTable, eventTable, varTable, predTable, new ArrayList<String>());
 			// have to do states first so siblings of trans parent state
 			// are in place to search for src/dest
 			// root.resolveTransTable(stateTable,transTable);
@@ -575,10 +581,20 @@ public class DashModule extends CompModuleHelper {
 			// if no transitions?
 
 			// resolves inits, invariants
-			stateTable.resolve(getRootName(), eventTable, varTable);
+			stateTable.resolve(getRootName(), eventTable, varTable, predTable);
 
-			transTable.resolve(stateTable, eventTable, varTable);
-			varTable.resolve(stateTable, eventTable);
+			transTable.resolve(stateTable, eventTable, varTable, predTable);
+			varTable.resolve(stateTable, eventTable, predTable);
+
+			// varTable and predTable names cannot overlap
+
+			if (!Collections.disjoint(varTable.getAllVarNames() , predTable.getAllNames())) {
+				List<String> x = varTable.getAllVarNames();
+				x.retainAll(predTable.getAllNames());
+				DashErrors.varPredOverlap(x);
+			}
+			// TODO check for other overlaps??
+
 			maxDepthParams = stateTable.getMaxDepthParams();
 
 			transAtThisParamDepth = transTable.transAtThisParamDepth(maxDepthParams);

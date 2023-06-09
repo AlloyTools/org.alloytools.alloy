@@ -77,6 +77,44 @@ public class DashFQN {
 	public static List<String> splitFQN(String fqn) {
 		return Arrays.asList(fqn.split(internalQualChar));
 	}
+	// A/B + B/C => A/B/C
+	// no longer used probably
+	public static String mergeFQN(String fqn1, String fqn2) {
+		List<String> fqn1parts = splitFQN(fqn1);
+		List<String> fqn2parts = splitFQN(fqn2);
+		int fqn1i = 0;
+		int fqn2i = 0;
+		List <String> outparts = new ArrayList<String>();
+		while (fqn1i < fqn1parts.size() && !(fqn1parts.get(fqn1i).equals(fqn2parts.get(fqn2i))) ) {
+			outparts.add(fqn1parts.get(fqn1i));
+			fqn1i++;
+		}
+		if (fqn1i == fqn1parts.size()) return "";
+		while (fqn1i < fqn1parts.size()
+				&& fqn2i < fqn2parts.size()
+				&& fqn1parts.get(fqn1i).equals(fqn2parts.get(fqn2i))
+				) {
+			outparts.add(fqn1parts.get(fqn1i));
+			fqn1i++;
+			fqn2i++;
+		}
+		if (fqn1i == fqn1parts.size() && fqn2i == fqn2parts.size())	return fqn(outparts);	
+		if (fqn1i == fqn1parts.size() && fqn2i < fqn2parts.size()) {
+			while (fqn2i < fqn2parts.size()) {
+				outparts.add(fqn2parts.get(fqn2i));
+				fqn2i++;
+			}
+			return fqn(outparts);
+		}
+		else return "";
+	}
+	public static int commonPrefixLength(String s1, String s2) {
+		List<String> parts1 = splitFQN(s1);
+		List<String> parts2 = splitFQN(s2);
+		int i = 0;
+		while (i < parts1.size() && i < parts2.size() && parts1.get(i).equals(parts2.get(i))) i++;
+		return i;		
+	}
 	public static String chopNameFromFQN(String fqn) {
 		// this is from an output FQN
 		return DashUtilFcns.lastElement(splitFQN(fqn));

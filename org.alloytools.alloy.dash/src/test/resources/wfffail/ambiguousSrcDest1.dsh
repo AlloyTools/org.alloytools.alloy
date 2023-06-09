@@ -6,7 +6,8 @@ state Root {
 		state S1 {}
 		trans t1 {
 			from S1
-			goto S2
+			goto S2 // ambiguous
 		}
 	}
+	state S2 {}
 }

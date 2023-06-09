@@ -83,6 +83,18 @@ public class EventTable {
 		}
 		return false;	
 	}
+	public boolean hasInternalEventsAti(int i) {
+		for (String e: table.keySet()) {
+			if (table.get(e).params.size() == i && table.get(e).kind == IntEnvKind.INT) return true;
+		}
+		return false;	
+	}
+	public boolean hasEnvironmentalEventsAti(int i) {
+		for (String e: table.keySet()) {
+			if (table.get(e).params.size() == i && table.get(e).kind == IntEnvKind.ENV) return true;
+		}
+		return false;	
+	}
 	public boolean hasInternalEvents() {
 		for (String e: table.keySet()) {
 			if (table.get(e).kind == IntEnvKind.INT) return true;

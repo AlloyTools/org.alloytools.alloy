@@ -214,7 +214,7 @@ public class TransTable {
 	 * must be done after resolveAllState
 	 * this fcn does not modify anything in this object
 	 */
-	public void resolve(StateTable st, EventTable et, VarTable vt) {
+	public void resolve(StateTable st, EventTable et, VarTable vt, PredTable pt) {
 
 		//System.out.println(st);
 		//System.out.println(toString());
@@ -237,7 +237,7 @@ public class TransTable {
 								Common.paramVars(getParamsIdx(tfqn), getParams(tfqn))));
 			else 
 				table.get(tfqn)
-					.setSrc((DashRef) resolveExpr(st, et, vt, "state", false, false, true, sfqn, fList.get(0)));
+					.setSrc((DashRef) resolveExpr(st, et, vt, pt, "state", false, false, true, sfqn, fList.get(0)));
 	
 			// determining the dest state
 			List<Expr> gList =
@@ -253,7 +253,7 @@ public class TransTable {
 								Common.paramVars(getParamsIdx(tfqn),getParams(tfqn))));
 			else 
 				table.get(tfqn)
-					.setDest((DashRef) resolveExpr(st, et, vt, "state", false, true, true, sfqn, gList.get(0)));
+					.setDest((DashRef) resolveExpr(st, et, vt, pt, "state", false, true, true, sfqn, gList.get(0)));
 
 			// determining the on (event)
 			List<Expr> onExpList =
@@ -263,7 +263,7 @@ public class TransTable {
 			if (onExpList.size() > 1) DashErrors.tooMany("on", tfqn);
 			else if (!onExpList.isEmpty()) {
 				table.get(tfqn)
-					.setOn((DashRef) resolveExpr(st, et, vt, "event", false, false, true, sfqn, onExpList.get(0)));
+					.setOn((DashRef) resolveExpr(st, et, vt, pt, "event", false, false, true, sfqn, onExpList.get(0)));
 			}
 
 			// determining the send
@@ -273,12 +273,12 @@ public class TransTable {
 				.collect(Collectors.toList());
 			if (sendExpList.size() > 1) DashErrors.tooMany("send", tfqn);
 			else if (!sendExpList.isEmpty()) {
-				DashRef x = (DashRef) resolveExpr(st, et, vt, "event", false, true, true, sfqn, sendExpList.get(0));
+				DashRef x = (DashRef) resolveExpr(st, et, vt, pt, "event", false, true, true, sfqn, sendExpList.get(0));
 				if (et.isEnvironmentalEvent(x.getName()))
 					DashErrors.cantSendAnEnvEvent(sendExpList.get(0).pos(),sendExpList.get(0).toString());
 				else
 					table.get(tfqn)
-					.	setSend((DashRef) resolveExpr(st, et, vt, "event", false, true, true, sfqn, sendExpList.get(0)));
+					.	setSend((DashRef) resolveExpr(st, et, vt, pt, "event", false, true, true, sfqn, sendExpList.get(0)));
 			}
 
 			// determining the when (expr)
@@ -289,7 +289,7 @@ public class TransTable {
 			if (whenExpList.size() > 1) DashErrors.tooMany("when", tfqn);
 			else if (!whenExpList.isEmpty()) {
 				table.get(tfqn)
-					.setWhen(resolveExpr(st, et, vt, "var", false, false, true, sfqn, whenExpList.get(0)));
+					.setWhen(resolveExpr(st, et, vt, pt, "var", false, false, true, sfqn, whenExpList.get(0)));
 			}
 
 			// determining the do
@@ -299,8 +299,14 @@ public class TransTable {
 				.collect(Collectors.toList());
 			if (doExpList.size() > 1) DashErrors.tooMany("on", tfqn);
 			else if (!doExpList.isEmpty()) {
+				// already resolved src/dest
+				Expr action = doExpList.get(0);
+				if (st.hasEnteredAction(getDest(tfqn).getName()))
+					action = ExprHelper.createAnd(action,ExprHelper.createAndList(st.getEnteredAction(getDest(tfqn).getName())));
+				if (st.hasExitedAction(getSrc(tfqn).getName()))
+					action = ExprHelper.createAnd(action,ExprHelper.createAndList(st.getExitedAction(getSrc(tfqn).getName())));
 				table.get(tfqn)
-					.setDo(resolveExpr(st, et, vt, "var", true, true, true, sfqn, doExpList.get(0)));
+					.setDo(resolveExpr(st, et, vt, pt, "var", true, true, true, sfqn, action));
 			}
 
 		}

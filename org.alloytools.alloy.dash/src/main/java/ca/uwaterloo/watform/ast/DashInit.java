@@ -12,22 +12,12 @@ import ca.uwaterloo.watform.core.DashStrings;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.Expr;
 
-public class DashInit extends Dash {	
-
-    public Expr init;
+public class DashInit extends DashExpr {	
 
     public DashInit(Pos p, Expr i) {
-        assert(i != null);
-        this.pos = p;
-        this.init = i;
+        super(p,i);
     }
     public String toString() {
-        String s = new String();
-        s += DashStrings.initName + " {\n";
-        s += init.toString() + "\n";
-        return s + "}\n";
-    }
-    public Expr getInit() {
-        return init;
+        return super.toString(DashStrings.initName);
     }
 }

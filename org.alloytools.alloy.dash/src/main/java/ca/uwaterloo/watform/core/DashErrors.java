@@ -4,6 +4,8 @@
 
 package ca.uwaterloo.watform.core;
 
+import java.util.List;
+
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
@@ -41,6 +43,10 @@ public class DashErrors {
 	public static String stateNameCantBeFQNMsg = "When declared, state name cannot have slash: ";
 	public static void stateNameCantBeFQN(Pos o, String name) throws Err {
 		throw new ErrorSyntax(o,stateNameCantBeFQNMsg+name);
+	}
+	public static String nameCantBeFQNMsg = "When declared, name cannot have slash: ";
+	public static void nameCantBeFQN(Pos o, String name) throws Err {
+		throw new ErrorSyntax(o,nameCantBeFQNMsg+name);
 	}
 	public static String dupSiblingNamesMsg = "Duplicate sibling state names: ";
 	public static void dupSiblingNames(String dups) throws Err {
@@ -117,6 +123,10 @@ public class DashErrors {
 	public static void duplicateBufferName(Pos o, String s) {
 		throw new ErrorSyntax(o, duplicateBufferNameMsg + s);
 	}
+	public static String duplicateNameMsg = "Name already in use: ";
+	public static void duplicateName(Pos o, String s) {
+		throw new ErrorSyntax(o, duplicateNameMsg + s);
+	}
 
 	// event errors
 	public static String tooManyMsg = "Multiple ";
@@ -184,7 +194,10 @@ public class DashErrors {
 	public static void wrongNumberParams(Pos pos, String expString) {
 		throw new ErrorSyntax(pos + " " + wrongNumberParamsMsg + expString);
 	}
-
+	public static String varPredOverlapMsg = "Same name used for dynamic variable and Dash predicate: ";
+	public static void varPredOverlap(List<String> s) {
+		throw new ErrorSyntax(varPredOverlapMsg + s);
+	}
 	// parts of the code that should be unreachable -------------
 
 	public static String ancesNotPrefixMsg = " must be a prefix of ";
@@ -219,6 +232,9 @@ public class DashErrors {
 	public static void varDoesNotExist(String s1, String n) throws Err {
 		throw new ErrorFatal("for function "+s1+", var "+n+ " does not exist in var table");
 	}
+	public static void predDoesNotExist(String s1, String n) throws Err {
+		throw new ErrorFatal("for function "+s1+", var "+n+ " does not exist in pred table");
+	}
 	public static void bufferDoesNotExist(String s1, String n) throws Err {
 		throw new ErrorFatal("for function "+s1+", buffer "+n+ " does not exist in buffer table");
 	}
@@ -239,8 +255,8 @@ public class DashErrors {
 	public static void chopPrefixFromFQNwithNoPrefix(String s) throws Err {
 		throw new ErrorFatal(chopPrefixFromFQNwithNoPrefixMsg + s);
 	}
-	public static void nonEmptyStateItems() throws Err {
-		throw new ErrorFatal("Non-empty state items at end of state resolve");
+	public static void nonEmptyStateItems(List<Object> x) throws Err {
+		throw new ErrorFatal("Non-empty state items at end of state resolve: " + x);
 	}
 	public static void nonEmptyTransItems() throws Err {
 		throw new ErrorFatal("Non-empty trans items at end of trans resolve");

@@ -86,6 +86,7 @@ public class DashWffFailTests {
          {"fqnSrcDestMustHaveRightNumberParams1", wrongNumberParamsMsg}, //22
          {"srcDestCantHaveParam1", wrongNumberParamsMsg}, //23
          {"ambiguousSrcDest1", ambiguousRefMsg},
+         {"ambiguousSrcDest2", ambiguousRefMsg},
          {"test11",ambiguousRefMsg}
       });
    }

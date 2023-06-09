@@ -19,6 +19,7 @@ import ca.uwaterloo.watform.parser.StateTable;
 import ca.uwaterloo.watform.parser.TransTable;
 import ca.uwaterloo.watform.parser.EventTable;
 import ca.uwaterloo.watform.parser.VarTable;
+import ca.uwaterloo.watform.parser.PredTable;
 
 import static ca.uwaterloo.watform.parser.ResolveExpr.*;
 
@@ -122,7 +123,7 @@ public class DashState  extends Dash {
 	 * check for errors in the state hierarchy
 	 * and put all states in the state table
 	 */
-	public void load(StateTable st, TransTable tt, EventTable et, VarTable vt, List<String> ances)  {
+	public void load(StateTable st, TransTable tt, EventTable et, VarTable vt, PredTable pt, List<String> ances)  {
 		// this state is not yet in the st
 		// but its parent is in the st
 
@@ -158,6 +159,37 @@ public class DashState  extends Dash {
 				.collect(Collectors.toList());
 		xItems.removeAll(initList);
 
+		// entered ---------------------
+		List <Expr> enteredList = new ArrayList<Expr>();
+		if (items != null)
+			enteredList = 
+				items.stream()
+				.filter(i -> i instanceof DashEntered)
+				.map(p -> ((DashEntered) p).getExp())
+				.collect(Collectors.toList());
+		// enteredList is a list of Exp
+		// to remove, we need a list of items
+		xItems.removeAll(
+				items.stream()
+				.filter(i -> i instanceof DashEntered)
+				.collect(Collectors.toList()));
+
+		// exited ---------------------
+		List <Expr> exitedList = new ArrayList<Expr>();
+		if (items != null)
+			exitedList = 
+				items.stream()
+				.filter(i -> i instanceof DashExited)
+				.map(p -> ((DashExited) p).getExp())
+				.collect(Collectors.toList());
+		// exitedList is a list of Exp
+		// to remove, we need a list of items
+		xItems.removeAll(
+				items.stream()
+				.filter(i -> i instanceof DashExited)
+				.collect(Collectors.toList()));
+
+		/*
 		// actions ---------------------
 		List <DashAction> actionList = new ArrayList<DashAction>();
 		if (items != null)
@@ -177,6 +209,7 @@ public class DashState  extends Dash {
 				.map(p -> (DashCondition) p)
 				.collect(Collectors.toList());
 		xItems.removeAll(conditionList);
+		*/
 
 		// ---------------------
 		// process the children
@@ -208,7 +241,7 @@ public class DashState  extends Dash {
 
 		if (substatesList.isEmpty() ) {
 			if (!st.add(sfqn, kind, param, newParams, newParamsIdx, def,parentfqn, new ArrayList<String>(),
-				invList, initList, actionList, conditionList)) DashErrors.addStateToStateTableDup(sfqn);;
+				invList, initList, enteredList, exitedList)) DashErrors.addStateToStateTableDup(sfqn);;
 			
 		} else {
 			
@@ -222,10 +255,10 @@ public class DashState  extends Dash {
 
 			// add this state to the table
 			if (!st.add(sfqn,kind, param, newParams,newParamsIdx, def, parentfqn, childFQNs,
-				invList, initList, actionList, conditionList)) DashErrors.addStateToStateTableDup(sfqn);;
+				invList, initList, enteredList, exitedList)) DashErrors.addStateToStateTableDup(sfqn);;
 
 			// add all substates to the table
-			for (DashState s: substatesList) s.load(st, tt, et, vt, newAnces);
+			for (DashState s: substatesList) s.load(st, tt, et, vt, pt, newAnces);
 
 			// make sure defaults are correct
 			// if there's only one child it is automatically the default
@@ -306,6 +339,24 @@ public class DashState  extends Dash {
 		}
 		xItems.removeAll(varDeclsList);
 
+		// add preds ------------------------
+		List <DashPred> predsList = new ArrayList<DashPred>();
+		if (items != null)
+			predsList = 
+				items.stream()
+				.filter(i -> i instanceof DashPred)
+				.map(p -> (DashPred) p)
+				.collect(Collectors.toList());
+		// put in var table with FQN 
+		for (DashPred p:predsList) {
+			String name = p.getName();
+			Expr e = p.getExp();
+			if (DashFQN.isFQN(name)) DashErrors.nameCantBeFQN(p.getPos(), name);
+			String nfqn = DashFQN.fqn(sfqn,name);
+			if (!pt.addPred(nfqn,e)) DashErrors.duplicateName(p.getPos(),name);
+		}
+		xItems.removeAll(predsList);
+
 		// add declared buffers ---------------------------
 		List <DashBufferDecls> bufferDeclsList = new ArrayList<DashBufferDecls>();
 		if (items != null)
@@ -346,7 +397,7 @@ public class DashState  extends Dash {
 		xItems.removeAll(transList);
 
 
-		if (!xItems.isEmpty()) DashErrors.nonEmptyStateItems();
+		if (!xItems.isEmpty()) DashErrors.nonEmptyStateItems(xItems);
 	}
 
 

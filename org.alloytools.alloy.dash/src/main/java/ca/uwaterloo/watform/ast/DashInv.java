@@ -7,30 +7,21 @@ import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.DashStrings;
 
-public class DashInv extends Dash {
+public class DashInv extends DashExpr {
 
-    public Expr inv;
-    public String name; // has no meaning
-    public DashInv(Pos pos, Expr inv) {
-        this.pos = pos;
-        this.name = null;
-        this.inv = inv;
+    String name; // unused
+
+    public DashInv(Pos p, Expr inv) {
+        super(p,inv);
+ 
     }
-    public DashInv(Pos p, String n, Expr i) {
-        assert(n != null && i != null);
-        this.pos = pos;
+
+    public DashInv(Pos p, String n, Expr inv) {
+        super(p,inv);
         this.name = n;
-        this.inv = i;
     }
+
     public String toString() {
-        String s = new String();
-        s += DashStrings.invName +" "; 
-        if (name != null) s += name;
-        s += " {\n";
-        s += inv.toString() + "\n";
-        return s + "}\n";
-    }
-    public Expr getInv() {
-        return inv;
+        return super.toString(DashStrings.invName + " "+name);
     }
 }

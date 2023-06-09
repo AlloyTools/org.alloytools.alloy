@@ -60,8 +60,12 @@ public class StateTable {
 		private List<String> immChildren; // empty if none
 		private List<DashInv> origInvariants;
 		private List<DashInit> origInits;
-		private List<DashAction> actions;
-		private List<DashCondition> conditions;
+		// this aren't resolved here
+		// so no need to keep original separate from resolved
+		private List<Expr> entered;
+		private List<Expr> exited;
+		//private List<DashAction> actions;
+		//private List<DashCondition> conditions;
 		// after resolve
 		private List<Expr> invs;
 		private List<Expr> inits;
@@ -77,8 +81,11 @@ public class StateTable {
 			List<String> iChildren,
 			List<DashInv> invL,
 			List<DashInit> initL,
-			List<DashAction> actL,
-			List<DashCondition> condL) {
+			List<Expr> entered,
+			List<Expr> exited
+			//List<DashAction> actL,
+			//List<DashCondition> condL
+		) {
 		
 			assert(k != null);
 			assert(prm == null || !prm.isEmpty());
@@ -87,8 +94,8 @@ public class StateTable {
 			assert(iChildren != null); // could be empty
 			assert(invL != null);
 			assert(initL != null);
-			assert(actL != null);
-			assert(condL != null);
+			//assert(actL != null);
+			//assert(condL != null);
 			this.kind = k; 
 			this.param = prm;
 			this.params = prms; 
@@ -98,8 +105,10 @@ public class StateTable {
 			this.immChildren = iChildren; 
 			this.origInvariants = invL;
 			this.origInits = initL;
-			this.actions = actL;
-			this.conditions = condL;
+			this.entered = entered;
+			this.exited = exited;
+			//this.actions = actL;
+			//this.conditions = condL;
 
 		}
 		public String toString() {
@@ -160,8 +169,8 @@ public class StateTable {
 		List<String> iChildren,
 		List<DashInv> invL,
 		List<DashInit> initL,
-		List<DashAction> actL,
-		List<DashCondition> condL)  {
+		List<Expr> enteredL,
+		List<Expr> exitedL)  {
 		// if its null, make it empty to not throw exceptions
 		//if (iChildren == null) iChildren = new ArrayList<String>();
 		//if (table.containsKey(fqn)) {
@@ -175,7 +184,7 @@ public class StateTable {
 		//else 
 		if (table.containsKey(fqn)) return false;
 		else if (DashStrings.hasPrime(fqn)) { DashErrors.nameShouldNotBePrimed(fqn); return false; }
-		else { table.put(fqn, new StateElement(k,prm, prms,prmsIdx, d,p,iChildren, invL, initL, actL, condL)); return true; }
+		else { table.put(fqn, new StateElement(k,prm, prms,prmsIdx, d,p,iChildren, invL, initL, enteredL, exitedL)); return true; }
 		//System.out.println("adding to State table: "+fqn+space+prm + space + prms+space+d+space+p+iChildren);
 	}
 	public void addInit(Expr exp) {
@@ -345,18 +354,19 @@ public class StateTable {
 		//}
 		//return DashUtilFcns.setToList(allParams);
 	}
-	public void resolve(String root, EventTable et, VarTable vt) {
+	public void resolve(String root, EventTable et, VarTable vt, PredTable pt) {
 		// resolve inits and invariants
 		for (String sfqn: table.keySet()) {
 			inits.addAll( 
 				table.get(sfqn).origInits.stream()
-					.map(i -> ResolveExpr.resolveExpr(this, et, vt, "var", false, false, true, sfqn, i.getInit()))
+					.map(i -> ResolveExpr.resolveExpr(this, et, vt, pt, "var", false, false, true, sfqn, i.getExp()))
 					.collect(Collectors.toList()));
 			invs.addAll(
 				table.get(sfqn).origInvariants.stream()
-					.map(i -> ResolveExpr.resolveExpr(this, et, vt, "var", false, false, true, sfqn, i.getInv()))
+					.map(i -> ResolveExpr.resolveExpr(this, et, vt, pt, "var", false, false, true, sfqn, i.getExp()))
 					.collect(Collectors.toList()));
-
+			// nothing to do for entered and exited
+			// because they are resolved in context
 		}
 		isResolved = true;
 	}
@@ -367,6 +377,22 @@ public class StateTable {
 	}
 	public List<Expr> getInvs() {
 		return invs;
+	}
+	public List<Expr> getEnteredAction(String sfqn) {
+		if (table.containsKey(sfqn))
+			return table.get(sfqn).entered;  // could be null
+		else { DashErrors.stateDoesNotExist("getEntered", sfqn); return null; }		
+	}
+	public List<Expr> getExitedAction(String sfqn) {
+		if (table.containsKey(sfqn))
+			return table.get(sfqn).exited;  // could be null
+		else { DashErrors.stateDoesNotExist("getExited", sfqn); return null; }		
+	}
+	public boolean hasEnteredAction(String sfqn) {
+		return (getEnteredAction(sfqn) == null);
+	}
+	public boolean hasExitedAction(String sfqn) {
+		return (getExitedAction(sfqn) == null);
 	}
 	public List<DashRef> getLeafStatesExited(DashRef s) {
 		List<DashRef> r = new ArrayList<DashRef>();

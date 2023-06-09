@@ -63,8 +63,8 @@ public class DashStrings {
 	public static String gotoName = "goto";
 	public static String sendName = "send";
 	public static String invName = "inv";
-	public static String actionName = "action";
-	public static String conditionName = "condition";
+	public static String enterName = "enter";
+	public static String exitName = "exit";
 	public static String initName = "init";
 
 	// user must be aware of this name

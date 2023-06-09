@@ -1,0 +1,8 @@
+state Root {
+	state S1 {
+		state S1 {}
+		trans t1 {
+				goto S1
+			}
+	}
+}

@@ -279,6 +279,8 @@ parser code {:
 
     ch.put(DashSym.INIT, "init");
     ch.put(DashSym.INVARIANT, "invariant");
+    ch.put(DashSym.ENTER, "enter");
+    ch.put(DashSym.EXIT, "exit");
     //ch.put(DashSym.ACTION, "action");
     //ch.put(DashSym.CONDITION, "condition");
 
@@ -591,6 +593,8 @@ terminal Pos BUF;
 
 terminal Pos INIT;             
 terminal Pos INVARIANT;        
+terminal Pos ENTER;
+terminal Pos EXIT;
 //terminal Pos ACTION;
 //terminal Pos CONDITION;
 
@@ -1517,8 +1521,20 @@ StateItem ::= INIT:o Super:v
 StateItem ::= INVARIANT:o Super:v 
         {:  RESULT = new DashInv(o, v); :};
 
-StateItem ::= INVARIANT:o Name:n Super:v 
+// invariant
+StateItem ::= INVARIANT:o Name: n Super:v 
         {:  RESULT = new DashInv(o, n.label, v); :};
+
+// entered
+StateItem ::= ENTER:o Super:v 
+        {:  RESULT = new DashEntered(o, v); :};
+
+// exited
+StateItem ::= EXIT:o Super:v 
+        {:  RESULT = new DashExited(o, v); :};
+
+//StateItem ::= INVARIANT:o Name:n Super:v 
+//        {:  RESULT = new DashInv(o, n.label, v); :};
 
 // action
 //StateItem ::= ACTION:o Name:n LBRACKET Expr:e RBRACKET LBRACE RBRACE
@@ -1527,6 +1543,10 @@ StateItem ::= INVARIANT:o Name:n Super:v
 // condition
 //StateItem ::= CONDITION:o Name:n LBRACKET Expr:e RBRACKET LBRACE RBRACE
 //        {:  RESULT = new DashCondition(o, n.label, e); :};
+
+// named expression
+StateItem ::= PRED:o Name:n  LBRACE Expr:e RBRACE
+        {:  RESULT = new DashPred(o, n.label, e); :};
 
 // transition
 StateItem ::= TRANS:o Name:n LBRACE TransItemList:c RBRACE 

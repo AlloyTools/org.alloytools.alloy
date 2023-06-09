@@ -114,4 +114,31 @@ public class DashCoreFQNTests {
         assert(DashFQN.suffix("x","x"));
         assert(!DashFQN.suffix("A/B/xyz", "yz"));
     }
+
+    @Test 
+    public void mergeFQN() {
+        assertTrue(DashFQN.mergeFQN("A/B", "B/C").equals("A/B/C"));
+        assertTrue(DashFQN.mergeFQN("A/B/C", "B/C/D").equals("A/B/C/D"));
+        assertTrue(DashFQN.mergeFQN("A/B/C", "B/C/D/E").equals("A/B/C/D/E"));
+        assertTrue(DashFQN.mergeFQN("A", "A/C").equals("A/C"));
+        assertTrue(DashFQN.mergeFQN("A/C", "A/C").equals("A/C"));
+
+        // non-merges
+        assertTrue(DashFQN.mergeFQN("", "B/C").equals(""));
+        assertTrue(DashFQN.mergeFQN("A/B", "").equals(""));
+        assertTrue(DashFQN.mergeFQN("A/B", "D/C").equals(""));
+        assertTrue(DashFQN.mergeFQN("A", "D/C").equals(""));
+        assertTrue(DashFQN.mergeFQN("A", "C").equals(""));
+    }
+
+    @Test 
+    public void commonPrefixLength() {
+        assertTrue(DashFQN.commonPrefixLength("A/B","A") == 1);
+        assertTrue(DashFQN.commonPrefixLength("","A") == 0);
+        assertTrue(DashFQN.commonPrefixLength("A/B","") == 0);
+        assertTrue(DashFQN.commonPrefixLength("C/B","A") == 0);
+        assertTrue(DashFQN.commonPrefixLength("A/B/C/D","A/B") == 2);
+        assertTrue(DashFQN.commonPrefixLength("A/B/C","A/B/C/D/E") == 3);
+        assertTrue(DashFQN.commonPrefixLength("C/B","A/D") == 0);
+    }
 }

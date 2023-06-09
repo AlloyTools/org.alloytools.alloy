@@ -7,11 +7,12 @@ state Root {
 	}
 	default state  S2 {
 		state S3{
-			state S7{
+			state S5{
 				trans t2 {
 					goto S7
 				}
 			}
 		}
 	}
+	state S7 {}
 }
