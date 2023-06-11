@@ -1,0 +1,9 @@
+state Root {
+	conc A [AID] {
+		conc B [BID] {
+			trans t1 {}
+		}
+		trans t2 {}
+	}
+	trans t3 {}
+}

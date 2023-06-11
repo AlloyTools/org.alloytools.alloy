@@ -31,9 +31,12 @@ public class AddTransPre {
     // --------------------------------------------------------------------------------------
     /* 
         pred pre_t1[s:Snapshot,pparam0:Param0, ...] {
+
             some (src_state_t1 & <prs for src_state>.s.conf)
             orthogonal to any scopes uses
+            
             guard_cond_t1 [s] 
+
             s.stable = True => 
                 { // beginning of a big step 
                   // transition can be triggered only by environmental events 
@@ -43,6 +46,7 @@ public class AddTransPre {
                   // transition can be triggered by any type of event 
                   <prs for trig_event>.trig_events_t1 in s.events 
                 }
+            pre of a higher priority transition is not enabled
         }
         Assumption: prs for src state and trig events are a subset of prs for trans
     */
@@ -98,14 +102,18 @@ public class AddTransPre {
             int sz = ev.getParamValues().size();
             body.add(createIn(translateDashRefToArrow(ev),curEvents(sz)));
         }
-        
-        /*
-        // TODO
-        // guard_cond_t1 [s] 
-        o.add(d.getTransGuard(t).convertToAlloy(d.symbolTable, curVar(), nextVar()));
-        */
 
         // not a higher priority transition enabled
+        List<String> priTrans = d.getHigherPriTrans(tfqn);
+        List<Expr> args = new ArrayList<Expr>();
+        for (String t:priTrans) {
+            // src must directly above this trans in the hierarchy
+            // so its parameters must be a subset of the current parameters
+            // and we don't need to quantify over them
+            args = curParamVars(d.getTransParamsIdx(t), d.getTransParams(t));
+            body.add(createNot(createPredCall(translateFQN(t)+DashStrings.preName, args)));
+        }
+        
         d.alloyString += d.addPredSimple(tout+DashStrings.preName, curParamsDecls(prsIdx,params), body); 
         d.alloyString += "\n";
     }

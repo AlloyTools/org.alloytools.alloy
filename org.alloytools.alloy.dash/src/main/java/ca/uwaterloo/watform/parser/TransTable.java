@@ -198,11 +198,13 @@ public class TransTable {
 	}
 	public List<String> getHigherPriTrans(String t) {
 		// list returned could be empty
+		String src = table.get(t).src.getName();
 		List<String> tlist = new ArrayList<String>();
 		// have to look for transitions from sources earlier on the path of this transitions src
-		List<String> allPrefixes = DashFQN.allPrefixes(table.get(t).src.getName());
+		// allPrefixes includes t so it contains at least one item
+		List<String> allPrefixes = DashFQN.allPrefixes(src);
 		// remove the src state itself
-		allPrefixes.remove(allPrefixes.size()-1);
+		allPrefixes.remove(src);
 		if (table.containsKey(t)) tlist.addAll(getTransWithTheseSrcs(allPrefixes)); 
 		else  DashErrors.transDoesNotExist("getParams", t); 
 		return tlist;

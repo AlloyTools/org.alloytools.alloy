@@ -21,7 +21,7 @@ import ca.uwaterloo.watform.parser.DashModule;
 import ca.uwaterloo.watform.parser.DashUtil;
 import ca.uwaterloo.watform.mainfunctions.MainFunctions;
 
-public class DashStateTests {
+public class DashModuleTests {
 
 	private static String resourcePath = "src/test/resources/pass";
  
@@ -982,4 +982,108 @@ public class DashStateTests {
          d.getAllParamsInOrder()
          .equals(Arrays.asList("AID","BID","BID","AID")));  
    }
+
+   // priority
+   @Test 
+   public void pri1() {
+      DashModule d = test("pri1");
+      String tfqn = "Root/t1";
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{})));
+
+   }
+   @Test 
+   public void pri2() {
+      DashModule d = test("pri2");
+      String tfqn = "Root/t1";
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{})));
+     tfqn = "Root/A/t2";
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{
+            "Root/t1"
+         })));
+   }
+
+   @Test 
+   public void pri3() {
+      DashModule d = test("pri3");
+      String tfqn = "Root/t1";
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{})));
+      tfqn = "Root/t2";
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{})));
+     tfqn = "Root/t3";
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{
+            "Root/t1",
+            "Root/t2"
+         })));
+   }
+
+   @Test 
+   public void pri4() {
+      DashModule d = test("pri4");
+      String tfqn = "Root/t1";
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{})));
+      tfqn = "Root/t2";
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{
+            "Root/t1"
+         })));
+
+   }
+
+   @Test 
+   public void pri5() {
+      DashModule d = test("pri5");
+      String tfqn = "Root/t1";
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{})));
+      tfqn = "Root/t2";
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{
+            "Root/t1"
+         })));
+
+   }
+
+   @Test 
+   public void pri6() {
+      DashModule d = test("pri6");
+      String tfqn = "Root/A/B/t1";
+      
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{
+            "Root/A/t2",
+            "Root/t3"
+         })));
+      
+      tfqn = "Root/A/t2";
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{
+            "Root/t3"
+         })));
+      
+      tfqn = "Root/t3";
+      assertTrue(
+         d.getHigherPriTrans(tfqn)
+         .equals(ll(new String[]{
+         })));
+   }
+
 }
