@@ -12,7 +12,7 @@ public class DashToAlloy {
 
     public static void translate(DashModule d) {
         assert(d.hasRoot()); // there is a Dash component in this module
-        AddSpaceSignatures.addSpaceSignatures(d);  // state, transition, parameter, buffer space
+        AddSpaceSignatures.addSpaceSignatures(d);  // state, parameter, buffer space
         AddSnapshotSignature.addSnapshotSignature(d);
         AddInit.addInit(d);
         AddInv.addInv(d);
@@ -25,6 +25,7 @@ public class DashToAlloy {
         }
         if (d.hasConcurrency())
             AddTestIfNextStable.addTestIfNextStable(d);
+        AddStutter.addStutter(d);
         AddSmallStep.addSmallStep(d);
 
         if (DashOptions.isTraces)

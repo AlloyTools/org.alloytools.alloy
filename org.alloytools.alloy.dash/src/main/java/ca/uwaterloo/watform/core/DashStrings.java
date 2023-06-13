@@ -77,6 +77,7 @@ public class DashStrings {
 
 	public static String smallStepName = "dsh_small_step";
 	public static String stableName = "dsh_stable";
+	public static String stutterName = "dsh_stutter";
 	//public static String equalsName = "equals";
 	public static String isEnabled = "dsh_isEnabled";
 	public static String tracesFactName = "dsh_traces_fact";

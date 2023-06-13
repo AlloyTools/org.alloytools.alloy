@@ -70,7 +70,7 @@ public class AddSmallStep {
         Expr transIsNotEnabled;
         if (d.getAllParamsInOrder().isEmpty()) transIsNotEnabled = createOrFromList(e);
         else transIsNotEnabled = createSome(paramDecls(DashUtilFcns.listOfInt(0,prs.size()-1),prs),createOrFromList(e));
-        transIsNotEnabled = createAnd(createNot(transIsNotEnabled), createEquals(curVar(), nextVar()));
+        transIsNotEnabled = createAnd(createNot(transIsNotEnabled), createPredCall(DashStrings.stutterName, curNextVars()));
 
         e = new ArrayList<Expr>();
         e.add(createOr(transIsTaken, transIsNotEnabled));
