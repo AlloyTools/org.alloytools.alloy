@@ -1,6 +1,7 @@
 package org.alloytools.alloy.core.infra;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -13,13 +14,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.alloytools.alloy.context.api.AlloyContext;
+import org.alloytools.alloy.core.infra.NativeCode.Platform;
 import org.alloytools.alloy.infrastructure.api.AlloyMain;
+import org.alloytools.util.table.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +39,6 @@ import aQute.libg.parameters.Attributes;
 import aQute.libg.parameters.ParameterMap;
 import edu.mit.csail.sdg.alloy4.A4Preferences;
 import edu.mit.csail.sdg.alloy4.A4Preferences.Pref;
-import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 
 /**
@@ -252,16 +255,113 @@ public class AlloyDispatcher extends Env {
     @Arguments(
                arg = {} )
     interface SolverOptions extends Options {
+
+        @Description("Show the solvers that are not available on this platform" )
+        boolean unlinked();
+
+        @Description("Show a list of names" )
+        boolean list();
     }
 
 
     public void _solvers(SolverOptions options) {
-        StringBuilder sb = new StringBuilder();
-        for (SatSolver o : A4Options.SatSolver.values()) {
-            out.printf("%s%n", o);
+        if (!options.list()) {
+            out.printf("OS Platform       %s%n", NativeCode.platform);
+            out.printf("Java platform     %s/%s/%n", System.getProperty("os.name"), System.getProperty("os.arch"), System.getProperty("os.version"));
         }
+
+        List<SatSolver> list = SatSolver.values();
+        if (!options.unlinked())
+            list = list.stream().filter(SatSolver::present).collect(Collectors.toList());
+
+        BiConsumer<Integer,SatSolver> set;
+        if (options.list()) {
+            set = (row, ss) -> {
+                if (row >= 0)
+                    System.out.println(ss);
+            };
+        } else {
+            Table table = new Table(list.size() + 1, 5, 1);
+            table.set(0, 0, "id");
+            table.set(0, 1, "libname");
+            table.set(0, 2, "external");
+            table.set(0, 3, "description");
+            table.set(0, 4, "exception");
+            set = (row, ss) -> {
+                if (row < 0)
+                    System.out.println(table);
+                else {
+                    table.set(row, 0, ss.id());
+                    if (ss.libname != null) {
+                        table.set(row, 1, ss.libname);
+                        String mapLibraryName = System.mapLibraryName(ss.libname);
+                        File exec = NativeCode.findexecutable(mapLibraryName);
+                        if (exec != null) {
+                            if (ss.libname != null)
+                                try {
+                                    System.loadLibrary(ss.libname);
+                                } catch (java.lang.UnsatisfiedLinkError ee) {
+                                    table.set(row, 4, ee.toString());
+                                }
+                        }
+                    }
+                    if (ss.external() != null)
+                        table.set(row, 2, ss.external());
+                    table.set(row, 3, ss.toString());
+                }
+            };
+        }
+
+        int r = 1;
+        for (SatSolver o : list) {
+            boolean available = o.present();
+            if (options.unlinked() || available) {
+                set.accept(r, o);
+                r++;
+            }
+        }
+        set.accept(-1, null);
     }
 
+    @Arguments(
+               arg = {} )
+    @Description("Show all the native solvers for all supported platforms" )
+    interface NativeOptions extends Options {
+
+    }
+
+    public void _natives(NativeOptions options) {
+        Table table = new Table(SatSolver.values().size() + 1, NativeCode.platforms.length + 1, 1);
+        int r, c = 1;
+        for (Platform p : NativeCode.platforms) {
+            table.set(0, c++, p.toString());
+        }
+        r = 1;
+        for (SatSolver solver : SatSolver.values()) {
+            table.set(r, 0, solver.toString());
+            c = 1;
+            for (Platform p : NativeCode.platforms) {
+                StringBuilder sb = new StringBuilder();
+                if (solver.libname != null) {
+                    String mapLibraryName = p.mapLibrary(solver.libname);
+                    File exec = NativeCode.findexecutable(p, mapLibraryName);
+                    if (exec != null && exec.isFile()) {
+                        table.set(r, c, mapLibraryName);
+                    }
+                }
+                if (solver.external() != null) {
+                    String mapExeName = p.mapExe(solver.external());
+                    File exec = NativeCode.findexecutable(p, mapExeName);
+                    if (exec != null && exec.isFile()) {
+                        table.set(r, c, mapExeName);
+                    }
+                }
+                c++;
+            }
+            r++;
+        }
+        out.println(table);
+    }
 
 
     @Description("Show help information about the available sub commands" )

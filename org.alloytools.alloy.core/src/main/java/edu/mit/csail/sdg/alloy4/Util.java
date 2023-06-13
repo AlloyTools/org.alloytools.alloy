@@ -29,6 +29,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CodingErrorAction;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -39,7 +41,26 @@ import java.util.NoSuchElementException;
 
 import javax.swing.JFrame;
 
+import org.alloytools.alloy.dto.Cardinality;
+import org.alloytools.alloy.dto.FieldDTO;
+import org.alloytools.alloy.dto.ModuleDTO;
+import org.alloytools.alloy.dto.OpenDTO;
+import org.alloytools.alloy.dto.SigDefDTO;
+import org.alloytools.alloy.dto.TupleSetDTO;
+
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
+import edu.mit.csail.sdg.ast.Sig;
+import edu.mit.csail.sdg.ast.Sig.Field;
+import edu.mit.csail.sdg.ast.Type;
+import edu.mit.csail.sdg.parser.CompModule;
+import edu.mit.csail.sdg.parser.CompModule.Open;
+import edu.mit.csail.sdg.sim.SimAtom;
+import edu.mit.csail.sdg.sim.SimTuple;
+import edu.mit.csail.sdg.sim.SimTupleset;
+import edu.mit.csail.sdg.translator.A4Tuple;
+import edu.mit.csail.sdg.translator.A4TupleSet;
+import kodkod.instance.Tuple;
+import kodkod.instance.TupleSet;
 
 /**
  * This provides useful static methods for I/O and XML operations.
@@ -827,5 +848,142 @@ public final class Util {
     public static int shiftmask(int bitwidth) {
         return bitwidth < 1 ? 0 : (1 << (32 - Integer.numberOfLeadingZeros(bitwidth - 1))) - 1;
     }
+
+
+
+    public static SimTupleset toSimTupleset(A4TupleSet values) {
+        List<SimTuple> l = new ArrayList<>();
+        for (A4Tuple a4t : values) {
+            l.add(toSimTuple(a4t));
+        }
+        return SimTupleset.make(l);
+    }
+
+    public static SimTuple toSimTuple(A4Tuple a4t) {
+        List<SimAtom> atoms = new ArrayList<>();
+        for (int i = 0; i < a4t.arity(); i++) {
+            SimAtom atom = SimAtom.make(a4t.atom(i));
+            atoms.add(atom);
+        }
+        return SimTuple.make(atoms);
+    }
+
+    public static List<SimTuple> toList(TupleSet tupleSet) {
+        List<SimTuple> l = new ArrayList<>(tupleSet.size());
+        for (Tuple tuple : tupleSet) {
+            l.add(toSimTuple(tuple));
+        }
+        return l;
+    }
+
+    public static SimTupleset toSimTupleset(TupleSet tupleSet) {
+        List<SimTuple> l = new ArrayList<>();
+        for (Tuple tuple : tupleSet) {
+            l.add(toSimTuple(tuple));
+        }
+        return SimTupleset.make(l);
+    }
+
+    public static SimTuple toSimTuple(Tuple tuple) {
+        List<SimAtom> atoms = new ArrayList<>();
+        for (int i = 0; i < tuple.arity(); i++) {
+            SimAtom atom = SimAtom.make(tuple.atom(i).toString());
+            atoms.add(atom);
+        }
+        return SimTuple.make(atoms);
+    }
+
+    public static void sort(List<SimTuple> instancesArray) {
+        Collections.sort(instancesArray, new Comparator<SimTuple>() {
+
+            @Override
+            public int compare(SimTuple simTuple1, SimTuple simTuple2) {
+                String[] coll1 = simTuple1.get(0).toString().split("\\$");
+                String[] coll2 = simTuple2.get(0).toString().split("\\$");
+                if (coll1.length == 2 && coll2.length == 2) {
+                    try {
+                        return Integer.parseInt(coll1[1]) - Integer.parseInt(coll2[1]);
+                    } catch (NumberFormatException e) {
+                        return 0;
+                    }
+                }
+                return 0;
+            }
+        });
+    }
+
+    public static TupleSetDTO toDTO(SimTupleset relation, Type typeOrNull) {
+        TupleSetDTO dto = new TupleSetDTO();
+        if (relation.empty() && typeOrNull != null) {
+            dto.arity = typeOrNull.arity();
+            dto.data = new String[0][0];
+            return dto;
+        }
+
+        dto.arity = relation.arity();
+        dto.data = new String[relation.size()][];
+        for (int i = 0; i < relation.size(); i++) {
+            SimTuple tuple = relation.getTuple();
+            dto.data[i] = new String[dto.arity];
+            for (int j = 0; j < dto.arity; j++) {
+                dto.data[i][j] = tuple.get(j).toString();
+            }
+        }
+        return dto;
+    }
+
+
+    public static ModuleDTO toDTO(CompModule module) {
+        ModuleDTO dto = new ModuleDTO();
+        dto.name = module.getModelName();
+        dto.path = module.path;
+        for (Open open : module.getOpens()) {
+            OpenDTO o = new OpenDTO();
+            o.module = toDTO(open.getRealModule());
+            o.parameters.addAll(open.args);
+            dto.opens.add(o);
+        }
+        return dto;
+    }
+
+
+    public static SigDefDTO toDTO(Sig sig) {
+        SigDefDTO sigdto = new SigDefDTO();
+        sigdto.name = sig.label;
+        sigdto.builtin = sig.builtin;
+        if (sig.isAbstract != null)
+            sigdto.cardinality = Cardinality.none;
+        else if (sig.isSubset != null) {
+            sigdto.cardinality = Cardinality.set;
+        } else if (sig.isLone != null)
+            sigdto.cardinality = Cardinality.lone;
+        else if (sig.isOne != null)
+            sigdto.cardinality = Cardinality.one;
+        else if (sig.isSome != null)
+            sigdto.cardinality = Cardinality.some;
+        else
+            sigdto.cardinality = Cardinality.set;
+        sigdto.isEnum = sig.isEnum != null;
+        sigdto.meta = sig.isMeta != null;
+        sigdto.type = sig.type().toString();
+
+        for (Field field : sig.getFields()) {
+            if (field.isPrivate != null)
+                continue;
+
+            sigdto.fields.put(field.label, toDTO(field));
+        }
+        return sigdto;
+    }
+
+    public static FieldDTO toDTO(Field field) {
+        FieldDTO flddto = new FieldDTO();
+        flddto.name = field.label;
+        flddto.meta = field.isMeta != null;
+        flddto.var = field.isVariable != null;
+        flddto.type = field.type().toString();
+        return flddto;
+    }
+
 
 }
