@@ -2,186 +2,35 @@ package org.alloytools.alloy.cli;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.alloytools.alloy.cli.CLI.CLIOptions.CoreMininmization;
-import org.alloytools.alloy.cli.CLI.CLIOptions.DecomposeStrategy;
 import org.alloytools.alloy.infrastructure.api.AlloyMain;
 
-import aQute.lib.collections.ExtList;
 import aQute.lib.env.Env;
 import aQute.lib.getopt.Arguments;
-import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
-import aQute.lib.justif.Justif;
+import aQute.lib.json.JSONCodec;
 import aQute.libg.glob.Glob;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.translator.A4Options;
-import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 import edu.mit.csail.sdg.translator.A4Solution;
+import edu.mit.csail.sdg.translator.A4SolutionWriter;
 import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 
-@AlloyMain(name = { "shell", "exec" })
+@AlloyMain(name = { "exec" })
 public class CLI extends Env {
-	final CommandLine	cl		= new CommandLine(this);
 	final A4Options		options	= new A4Options();
 
 	public enum OutputType {
 		plain, json, xml;
-	}
-
-	public interface CLIOptions extends aQute.lib.getopt.Options {
-		/**
-		 * default true
-		 */
-		@Description("Infer partial instances (??). Default true")
-		boolean inferPartialInstance(boolean dflt);
-
-		/**
-		 * This option specifies the amount of symmetry breaking to do (when
-		 * symmetry breaking isn't explicitly disabled).
-		 * <p>
-		 * If a formula is unsatisfiable, then in general, the higher this
-		 * value, the faster you finish the solving. But if this value is too
-		 * high, it will instead slow down the solving.
-		 * <p>
-		 * If a formula is satisfiable, then in general, the lower this value,
-		 * the faster you finish the solving. Setting this value to 0 usually
-		 * gives the fastest solve.
-		 * <p>
-		 * Default value is 20.
-		 */
-		@Description("Amount of symmetry breaking to do when symmetry breaking isn't explicitly disabled. If a formula is "
-				+ "unsatisfiable, then in general, the higher this value, the "
-				+ "faster the solver is finished. But if this value is too high, it will instead slow down the solving. Default is 20")
-		int breakingSymmetry(int deflt);
-
-		/**
-		 * This option specifies the maximum skolem-function depth.
-		 * <p>
-		 * Default value is 0, which means it will only generate skolem
-		 * constants, and will not generate skolem functions.
-		 */
-		@Description("Maximum skolem-function depth. Default value is 0, which means it will only generate skolem constants, and will not generate skolem functions.")
-		int skolemDepth(int deflt);
-
-		enum CoreMininmization {
-			GuaranteedLocalMinimum, FasterButLessAccurate, EventFaster
-		}
-
-		/**
-		 * This option specifies the unsat core minimization strategy
-		 * (0=GuaranteedLocalMinimum 1=FasterButLessAccurate 2=EvenFaster...)
-		 * <p>
-		 * Default value is set to the fastest current strategy.
-		 */
-		@Description("This option specifies the unsat core minimization strategy (GuaranteedLocalMinimum,FasterButLessAccurate,EvenFaster). Default value is set to the fastest current strategy.")
-		CoreMininmization coreMinimization(CoreMininmization deflt);
-
-		/**
-		 * This option specifies the SAT solver to use (SAT4J, MiniSatJNI,
-		 * MiniSatProverJNI, ZChaffJNI...)
-		 * <p>
-		 * Default value is SAT4J.
-		 */
-		@Description("The solver to use. Use `alloy solvers` to list all available solvers. Default is SAT4J")
-		String solver(String deflt);
-
-		/**
-		 * This option specifies whether the solver should report only solutions
-		 * that don't cause any overflows.
-		 */
-		@Description("Whether the solver should report only solutions that don't cause any overflows.")
-		boolean noOverflow(boolean deflt);
-
-		/**
-		 * This option controls how deep we unroll loops and unroll recursive
-		 * predicate/function/macros (negative means it's disallowed). Default
-		 * is disallowed.
-		 */
-		@Description("How deep we unroll loops and unroll recursive predicate/function/macros (negative means it's disallowed). Default is -1 (disallowed).")
-		int recurse(int deflt);
-
-		enum DecomposeStrategy {
-			Off, Hybrid, Parallel
-		}
-
-		/**
-		 * This option specifies the decompose strategy (0=Off 1=Hybrid
-		 * 2=Parallel)
-		 * <p>
-		 * Default value is off.
-		 */
-		@Description("This option specifies the decompose strategy (Off,Hybrid,Parallel). Default value is Off.")
-		DecomposeStrategy decompose_mode(DecomposeStrategy dflt);
-
-		/**
-		 * This option specifies the number of threads when following a
-		 * decompose strategy
-		 * <p>
-		 * Default value is 4.
-		 */
-		@Description("This option specifies the number of threads when following a decompose strategy. Default value is 4.")
-		int decompose_threads(int deflt);
-
-		/**
-		 * Set trace level
-		 */
-
-		boolean trace();
-
-		/**
-		 * Set exceptions
-		 */
-
-		boolean exceptions();
-	}
-
-	public void __run(CLIOptions options) throws Exception {
-
-		if (options.trace()) {
-			setTrace(true);
-		}
-		if (options.exceptions()) {
-			setExceptions(true);
-		}
-		this.options.coreMinimization = options
-				.coreMinimization(CoreMininmization.values()[this.options.coreMinimization]).ordinal();
-		this.options.decompose_mode = options.decompose_mode(DecomposeStrategy.values()[this.options.decompose_mode])
-				.ordinal();
-		this.options.decompose_threads = options.decompose_threads(this.options.decompose_threads);
-		this.options.inferPartialInstance = options.inferPartialInstance(this.options.inferPartialInstance);
-		this.options.noOverflow = options.noOverflow(this.options.noOverflow);
-		this.options.skolemDepth = options.skolemDepth(this.options.skolemDepth);
-		String solver = options.solver(this.options.solver.id());
-		this.options.solver = SatSolver.parse(solver);
-		if (!this.options.solver.id().equals(solver)) {
-			warning("The solver name %s not found, using %s. Use `alloy solvers` to see a list of all solvers",
-					solver, this.options.solver);
-		}
-		this.options.symmetry = options.breakingSymmetry(this.options.symmetry);
-		this.options.unrolls = options.recurse(this.options.unrolls);
-
-		List<String> args = options._arguments();
-		if (args.isEmpty()) {
-			Justif j = new Justif();
-			cl.help(j.formatter(), this);
-			System.out.println(j.wrap());
-			return;
-		}
-
-		String help = cl.execute(this, args.remove(0), args);
-		if (help != null) {
-			System.out.println(help);
-		}
-		report(System.out);
-
 	}
 
 	/**
@@ -193,21 +42,42 @@ public class CLI extends Env {
 	 */
 
 	@Arguments(arg = "path")
+	@Description("Execute an Alloy program")
 	interface ExecOptions extends Options {
+		@Description("The command to run. If no command is specified, the default command will run. The command may specify wildcards")
 		String command();
 
+		@Description("Specify the output type: plain, json, xml")
 		OutputType type(OutputType deflt);
 
+		@Description("Specify where the output should go. Default is the console")
 		String output();
-
+		
+		@Description("If set, forbids overflow from occurring")
 		boolean nooverflow();
-
-		String solver();
+		
+		@Description("Number of allowed recursion unrolls. Default is -1, which indicates no unrolls")
+		int unrolls(int n);
+		@Description("Depth for skolem analysis, default is 0")
+		int depth(int n);
+		
+		@Description("Symmetry breaking")
+		int symmetry(int n);
 	}
 
+	/**
+	 * 
+	 * @param options
+	 * @throws Exception
+	 */
 	public void _exec(ExecOptions options) throws Exception {
 		SimpleReporter rep = new SimpleReporter(this);
-
+		A4Options opt = this.options.dup();
+		opt.noOverflow = options.nooverflow();
+		opt.unrolls = options.unrolls(-1);
+		opt.skolemDepth = options.depth(opt.skolemDepth);
+		opt.symmetry = options.depth(opt.symmetry);
+		
 		String filename = options._arguments().remove(0);
 
 		Map<String, String> cache = new HashMap<>();
@@ -225,10 +95,8 @@ public class CLI extends Env {
 				continue;
 			}
 
-			System.out.format("Command %s\n", c);
-
 			A4Solution s = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), c,
-					this.options);
+					opt);
 
 			String output = options.output();
 			OutputType type = options.type(OutputType.plain);
@@ -254,37 +122,24 @@ public class CLI extends Env {
 	}
 
 	private String generate(ExecOptions options, CompModule world, A4Solution s, OutputType type) throws Exception {
-		String result;
 		switch (type) {
 		default:
 			error("Invalid `type` option %s, using `plain`", options.type(OutputType.plain));
 			// fall through
 		case plain:
-			result = Output.boxes(world, s);
-			break;
+			return s.toTable().toString();
 
 		case json:
-			result = Output.json(world, s);
-			break;
+			s.setModule(world);
+			JSONCodec codec = new JSONCodec();
+			return codec.enc().writeDefaults().indent("  ").put(s.toDTO()).toString();
 
 		case xml:
-			result = Output.xml(world, s);
-			break;
+			StringWriter sw = new StringWriter();
+			try (PrintWriter pw = new PrintWriter(sw)) {
+				A4SolutionWriter.writeInstance(null, s, pw, Collections.emptyList(), Collections.emptyMap());
+				return sw.toString();
+			}
 		}
-		return result;
-	}
-
-	public void _shell(Shell.ShellOptions options) throws Exception {
-
-		String filename = options._arguments().remove(0);
-		try (Shell s = new Shell(this, getFile(filename), options)) {
-			s.loop();
-		}
-	}
-
-	public static void main(String[] args) throws Exception {
-		CLI cli = new CLI();
-		List<String> list = new ExtList<>(args);
-		cli.cl.execute(cli, "_run", list);
 	}
 }

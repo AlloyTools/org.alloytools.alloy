@@ -3,10 +3,10 @@ package edu.mit.csail.sdg.alloy4;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,11 +20,8 @@ import edu.mit.csail.sdg.sim.SimAtom;
 import edu.mit.csail.sdg.sim.SimTuple;
 import edu.mit.csail.sdg.sim.SimTupleset;
 import edu.mit.csail.sdg.translator.A4Solution;
-import edu.mit.csail.sdg.translator.A4Tuple;
-import edu.mit.csail.sdg.translator.A4TupleSet;
 import kodkod.instance.Instance;
 import kodkod.instance.TemporalInstance;
-import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
 
 /**
@@ -149,7 +146,7 @@ public class TableView {
     // [electrum] added state to print, -1 for static
     public static Map<String,Table> toTable(A4Solution solution, Instance instance, SafeList<Sig> sigs, int state) {
 
-        Map<String,Table> map = new HashMap<String,Table>();
+        Map<String,Table> map = new TreeMap<String,Table>();
 
         for (Sig s : sigs) {
 
@@ -159,7 +156,7 @@ public class TableView {
             TupleSet instanceTuples = (state > -1 ? ((TemporalInstance) instance).state(state) : instance).tuples(s.label);
             if (instanceTuples != null) {
 
-                List<SimTuple> instancesArray = toList(instanceTuples);
+                List<SimTuple> instancesArray = Util.toList(instanceTuples);
                 Collections.sort(instancesArray, new Comparator<SimTuple>() {
 
                     @Override
@@ -199,7 +196,7 @@ public class TableView {
                     c = 1;
                     for (Field f : s.getFields()) {
 
-                        SimTupleset relations = toSimTupleset(state > -1 ? solution.eval(f, state) : solution.eval(f));
+                        SimTupleset relations = Util.toSimTupleset(state > -1 ? solution.eval(f, state) : solution.eval(f));
                         SimTupleset joined = leftJoin.join(relations);
 
                         Table relationTable = toTable(joined);
@@ -263,47 +260,6 @@ public class TableView {
         return table;
     }
 
-    private static SimTupleset toSimTupleset(A4TupleSet values) {
-        List<SimTuple> l = new ArrayList<>();
-        for (A4Tuple a4t : values) {
-            l.add(toSimTuple(a4t));
-        }
-        return SimTupleset.make(l);
-    }
-
-    private static SimTuple toSimTuple(A4Tuple a4t) {
-        List<SimAtom> atoms = new ArrayList<>();
-        for (int i = 0; i < a4t.arity(); i++) {
-            SimAtom atom = SimAtom.make(a4t.atom(i));
-            atoms.add(atom);
-        }
-        return SimTuple.make(atoms);
-    }
-
-    private static List<SimTuple> toList(TupleSet tupleSet) {
-        List<SimTuple> l = new ArrayList<>(tupleSet.size());
-        for (Tuple tuple : tupleSet) {
-            l.add(toSimTuple(tuple));
-        }
-        return l;
-    }
-
-    private static SimTupleset toSimTupleset(TupleSet tupleSet) {
-        List<SimTuple> l = new ArrayList<>();
-        for (Tuple tuple : tupleSet) {
-            l.add(toSimTuple(tuple));
-        }
-        return SimTupleset.make(l);
-    }
-
-    private static SimTuple toSimTuple(Tuple tuple) {
-        List<SimAtom> atoms = new ArrayList<>();
-        for (int i = 0; i < tuple.arity(); i++) {
-            SimAtom atom = SimAtom.make(tuple.atom(i).toString());
-            atoms.add(atom);
-        }
-        return SimTuple.make(atoms);
-    }
 
     public static Table toTable(Type type) {
         return toTable(type.toString().replaceAll("this/", ""), false);
