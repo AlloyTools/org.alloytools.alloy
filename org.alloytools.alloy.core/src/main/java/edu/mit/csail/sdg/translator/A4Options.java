@@ -16,9 +16,13 @@
 package edu.mit.csail.sdg.translator;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BooleanSupplier;
+
+import org.alloytools.alloy.core.infra.NativeCode;
 
 import edu.mit.csail.sdg.alloy4.ErrorAPI;
-import edu.mit.csail.sdg.alloy4.SafeList;
 
 /**
  * Mutable; this class encapsulates the customizable options of the
@@ -34,32 +38,37 @@ public final class A4Options implements Serializable {
     public static final class SatSolver implements Serializable {
 
         /** This ensures the class can be serialized reliably. */
-        private static final long                serialVersionUID = 0;
+        private static final long            serialVersionUID = 0;
         /** List of all existing SatSolver values. */
-        private static final SafeList<SatSolver> values           = new SafeList<SatSolver>();
+        private static final List<SatSolver> values           = new ArrayList<SatSolver>();
         /**
          * This is a unique String for this value; it should be kept consistent in
          * future versions.
          */
-        private final String                     id;
+        private final String                 id;
         /**
          * This is the label that the toString() method will return.
          */
-        private final String                     toString;
+        private final String                 toString;
         /**
          * If not null, this is the external command-line solver to use.
          */
-        private final String                     external;
+        private final String                 external;
         /**
          * If not null, this is the set of options to use with the command-line solver.
          */
-        private final String[]                   options;
+        private final String[]               options;
+
+        private final BooleanSupplier        present;
+        public final String                  libname;
 
         /** Constructs a new SatSolver value. */
-        private SatSolver(String id, String toString, String external, String[] options, boolean add) {
+        private SatSolver(String id, String toString, String external, String[] options, boolean add, String libname, BooleanSupplier present) {
             this.id = id;
             this.toString = toString;
             this.external = external;
+            this.libname = libname;
+            this.present = present;
             this.options = new String[options != null ? options.length : 0];
             for (int i = 0; i < this.options.length; i++)
                 this.options[i] = options[i];
@@ -77,7 +86,7 @@ public final class A4Options implements Serializable {
         public static SatSolver make(String id, String toString, String external, String[] options) throws ErrorAPI {
             if (id == null || toString == null || external == null)
                 throw new ErrorAPI("NullPointerException in SatSolver.make()");
-            SatSolver ans = new SatSolver(id, toString, external, options, false);
+            SatSolver ans = new SatSolver(id, toString, external, options, false, null, null);
             synchronized (SatSolver.class) {
                 for (SatSolver x : values)
                     if (x.id.equals(id))
@@ -124,13 +133,9 @@ public final class A4Options implements Serializable {
             return id;
         }
 
-        /** Returns the list of SatSolver values. */
-        public static SafeList<SatSolver> values() {
-            SafeList<SatSolver> ans;
-            synchronized (SatSolver.class) {
-                ans = values.dup();
-            }
-            return ans;
+        /** Returns a new list of SatSolver values. */
+        public static List<SatSolver> values() {
+            return new ArrayList<>(values);
         }
 
         /** Returns the human-readable label for this enum value. */
@@ -163,47 +168,38 @@ public final class A4Options implements Serializable {
             return SAT4J;
         }
 
-        /** BerkMin via pipe */
-        public static final SatSolver BerkMinPIPE      = new SatSolver("berkmin", "BerkMin", "berkmin", null, true);
-        /** Spear via pipe */
-        public static final SatSolver SpearPIPE        = new SatSolver("spear", "Spear", "spear", new String[] {
-                                                                                                                "--model", "--dimacs"
-        }, true);
-        /** MiniSat1 via JNI */
-        public static final SatSolver MiniSatJNI       = new SatSolver("minisat(jni)", "MiniSat", null, null, true);
-        /** MiniSatProver1 via JNI */
-        public static final SatSolver MiniSatProverJNI = new SatSolver("minisatprover(jni)", "MiniSat with Unsat Core", null, null, true);
-        /// ** ZChaff via JNI */
-        // public static final SatSolver ZChaffJNI = new
-        /// SatSolver("zchaff(jni)", "ZChaff with mincost", null, null, true);
-        /** Lingeling */
-        public static final SatSolver LingelingJNI     = new SatSolver("lingeling(jni)", "Lingeling", null, null, true);
-        public static final SatSolver PLingelingJNI    = new SatSolver("plingeling(jni)", "PLingeling", null, null, true);
-        /** Glucose */
-        public static final SatSolver GlucoseJNI       = new SatSolver("glucose(jni)", "Glucose", null, null, true);
-        public static final SatSolver Glucose41JNI     = new SatSolver("glucose 4.1(jni)", "Glucose41", null, null, true);
-        /** CryptoMiniSat */
-        public static final SatSolver CryptoMiniSatJNI = new SatSolver("cryptominisat(jni)", "CryptoMiniSat", null, null, true);
-        /** SAT4J using native Java */
-        public static final SatSolver SAT4J            = new SatSolver("sat4j", "SAT4J", null, null, true);
-        /** Electrod through NuSMV */
-        public static final SatSolver ElectrodS        = new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", null, true);
+        public static final SatSolver MiniSatJNI       = new SatSolver("minisat(jni)", "MiniSat", null, null, true, "minisat", () -> NativeCode.library("minisat"));
+        public static final SatSolver MiniSatX1JNI     = new SatSolver("minisatx1(jni)", "MiniSatX1", null, null, true, "minisatx1", () -> NativeCode.library("minisatx1"));
+        public static final SatSolver MiniSatProverJNI = new SatSolver("minisatprover(jni)", "MiniSat with Unsat Core", null, null, true, "minisatprover", () -> NativeCode.library("minisatsolver"));
+        public static final SatSolver LingelingJNI     = new SatSolver("lingeling(jni)", "Lingeling", null, null, true, "lingeling", () -> NativeCode.library("lingeling"));
+        public static final SatSolver GlucoseJNI       = new SatSolver("glucose(jni)", "Glucose", null, null, true, "glucose", () -> NativeCode.library("glucose"));
+        public static final SatSolver Glucose41JNI     = new SatSolver("glucose 4.1(jni)", "Glucose41", null, null, true, "glucose41", () -> NativeCode.library("glucose41"));
+        public static final SatSolver CryptoMiniSatJNI = new SatSolver("cryptominisat(jni)", "CryptoMiniSat", null, null, true, "cryptominisat", () -> NativeCode.library("cryptominisat"));
+        public static final SatSolver ZChaffMincost    = new SatSolver("zchaffmincost(jni)", "ZChaffMincost", null, null, true, "zchaffmincost", () -> NativeCode.library("zchaffmincost"));
+        public static final SatSolver SAT4J            = new SatSolver("sat4j", "SAT4J", null, null, true, null, () -> true);
+        public static final SatSolver ElectrodS        = new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", null, true, null, () -> NativeCode.executable("NuSMV").isPresent() && NativeCode.executable("electrod").isPresent());
+        public static final SatSolver ElectrodX        = new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", null, true, null, () -> NativeCode.executable("nuSMV").isPresent() && NativeCode.executable("electrod").isPresent());
 
         public static final SatSolver electrodS(String[] opts) {
-            return new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", opts, true);
+            return new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", opts, true, null, null);
         }
-
-        /** Electrod through nuXmv */
-        public static final SatSolver ElectrodX = new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", null, true);
 
         public static final SatSolver electrodX(String[] opts) {
-            return new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", opts, true);
+            return new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", opts, true, null, null);
         }
 
+
+
         /** Outputs the raw CNF file only */
-        public static final SatSolver CNF = new SatSolver("cnf", "Output CNF to file", null, null, true);
+        public static final SatSolver CNF = new SatSolver("cnf", "Output CNF to file", null, null, true, null, () -> true);
         /** Outputs the raw Kodkod file only */
-        public static final SatSolver KK  = new SatSolver("kodkod", "Output Kodkod to file", null, null, true);
+        public static final SatSolver KK  = new SatSolver("kodkod", "Output Kodkod to file", null, null, true, null, () -> true);
+
+        public boolean present() {
+            return present == null || present.getAsBoolean();
+        }
+
+
 
     }
 
@@ -339,4 +335,5 @@ public final class A4Options implements Serializable {
         x.decompose_threads = decompose_threads;
         return x;
     }
+
 }

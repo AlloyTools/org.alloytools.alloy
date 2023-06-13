@@ -34,15 +34,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
@@ -78,7 +73,6 @@ import edu.mit.csail.sdg.alloy4.A4Preferences.Pref;
 import edu.mit.csail.sdg.alloy4.OurBorder;
 import edu.mit.csail.sdg.alloy4.OurUtil;
 import edu.mit.csail.sdg.alloy4.OurUtil.GridBagConstraintsBuilder;
-import edu.mit.csail.sdg.alloy4.Subprocess;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 
 /**
@@ -255,155 +249,32 @@ public class PreferencesDialog extends JFrame {
     }
 
     private final Map<Pref< ? >,JComponent> pref2comp = new HashMap<Pref< ? >,JComponent>();
-    private final String                    binary;
     private final SwingLogPanel             log;
 
     public PreferencesDialog(SwingLogPanel log, String binary) {
         this.log = log;
-        this.binary = binary;
         if (log != null && binary != null) {
-            Solver.setChoices(testSolvers(), SatSolver.SAT4J);
+            List<SatSolver> solvers = testSolvers();
+            Solver.setChoices(solvers, SatSolver.SAT4J);
+            log.log("Available solvers on " + System.getProperty("os.name") + ":" + System.getProperty("os.arch") + "\n");
+            solvers.forEach(s -> log.log(s.toString() + "\n"));
         }
         initUI();
     }
 
-    protected Iterable<SatSolver> testSolvers() {
-        List<SatSolver> satChoices = SatSolver.values().makeCopy();
-        satChoices.remove(SatSolver.BerkMinPIPE);
-        String fs = System.getProperty("file.separator");
-        String test2 = Subprocess.exec(20000, new String[] {
-                                                            binary + fs + "spear", "--model", "--dimacs", binary + fs + "tmp.cnf"
-        });
-        if (!isSat(test2))
-            satChoices.remove(SatSolver.SpearPIPE);
-        if (!loadLibrary("minisat")) {
-            log.logBold("Warning: JNI-based SAT solver does not work on this platform.\n");
-            log.log("This is okay, since you can still use SAT4J as the solver.\n" + "For more information, please visit http://alloy.mit.edu/alloy4/\n");
-            log.logDivider();
-            log.flush();
-            satChoices.remove(SatSolver.MiniSatJNI);
-        }
-        if (!loadLibrary("minisatprover"))
-            satChoices.remove(SatSolver.MiniSatProverJNI);
-        if (!loadLibrary("lingeling"))
-            satChoices.remove(SatSolver.LingelingJNI);
-        if (!loadLibrary("glucose"))
-            satChoices.remove(SatSolver.GlucoseJNI);
-        if (!loadLibrary("cryptominisat"))
-            satChoices.remove(SatSolver.CryptoMiniSatJNI);
-        // [electrum] load unbounded model checking backend
-        if (!staticLibrary("electrod")) {
-            satChoices.remove(SatSolver.ElectrodX);
-            satChoices.remove(SatSolver.ElectrodS);
-        }
-        if (!staticLibrary("NuSMV"))
-            satChoices.remove(SatSolver.ElectrodS);
-        if (!staticLibrary("nuXmv"))
-            satChoices.remove(SatSolver.ElectrodX);
+    protected List<SatSolver> testSolvers() {
+        List<SatSolver> satChoices = SatSolver.values();
+        satChoices.removeIf(solver -> !solver.present());
+
         SatSolver now = Solver.get();
         if (!satChoices.contains(now)) {
-            now = SatSolver.LingelingJNI;
-            if (!satChoices.contains(now))
-                now = SatSolver.SAT4J;
-            Solver.set(now);
+            Solver.set(SatSolver.SAT4J);
         }
-        if (now == SatSolver.SAT4J && satChoices.size() > 3 && satChoices.contains(SatSolver.CNF) && satChoices.contains(SatSolver.KK)) {
-            log.logBold("Warning: Alloy4 defaults to SAT4J since it is pure Java and very reliable.\n");
-            log.log("For faster performance, go to Options menu and try another solver like MiniSat.\n");
-            log.log("If these native solvers fail on your computer, remember to change back to SAT4J.\n");
-            log.logDivider();
-            log.flush();
-        }
+
         return satChoices;
     }
 
-    /**
-     * Returns true iff the output says "s SATISFIABLE" (while ignoring comment
-     * lines and value lines)
-     */
-    private static boolean isSat(String output) {
-        int i = 0, n = output.length();
-        // skip COMMENT lines and VALUE lines
-        while (i < n && (output.charAt(i) == 'c' || output.charAt(i) == 'v')) {
-            while (i < n && (output.charAt(i) != '\r' && output.charAt(i) != '\n'))
-                i++;
-            while (i < n && (output.charAt(i) == '\r' || output.charAt(i) == '\n'))
-                i++;
-            continue;
-        }
-        return output.substring(i).startsWith("s SATISFIABLE");
-    }
 
-    private static boolean staticLibrary(String name) {
-        // check if in java library path
-        final String[] dirs = System.getProperty("java.library.path").split(System.getProperty("path.separator"));
-        for (int i = dirs.length - 1; i >= 0; i--) {
-            final File file = new File(dirs[i] + File.separator + name);
-            if (file.canExecute()) {
-                if (isDebug)
-                    System.out.println("Loaded: " + name + " at " + file);
-                return true;
-            }
-        }
-        // check if in system path
-        for (String str : (System.getenv("PATH")).split(Pattern.quote(File.pathSeparator)))
-            try {
-            Path pth = Paths.get(str);
-            if (Files.exists(pth.resolve(name))) {
-                if (isDebug)
-                    System.out.println("Loaded: " + name + " at " + pth);
-                return true;
-            }
-        } catch (java.nio.file.InvalidPathException e) {
-            if (isDebug)
-                System.out.println("Invalid file path on PATH: " + str + ", ignoring");
-        }
-
-        if (isDebug)
-            System.out.println("Failed to load: " + name);
-        return false;
-    }
-
-
-    private boolean loadLibrary(String library) {
-        boolean loaded = _loadLibrary(library);
-        if (isDebug)
-            if (loaded)
-                System.out.println("Loaded: " + library);
-            else
-                System.out.println("Failed to load: " + library);
-        return loaded;
-    }
-
-    private static boolean _loadLibrary(String library) {
-        try {
-            System.loadLibrary(library);
-            return true;
-        } catch (UnsatisfiedLinkError ex) {
-        }
-        try {
-            System.loadLibrary(library + "x1");
-            return true;
-        } catch (UnsatisfiedLinkError ex) {}
-        try {
-            System.loadLibrary(library + "x2");
-            return true;
-        } catch (UnsatisfiedLinkError ex) {}
-        try {
-            System.loadLibrary(library + "x3");
-            return true;
-        } catch (UnsatisfiedLinkError ex) {}
-        try {
-            System.loadLibrary(library + "x4");
-            return true;
-        } catch (UnsatisfiedLinkError ex) {}
-        try {
-            System.loadLibrary(library + "x5");
-            return true;
-        } catch (UnsatisfiedLinkError ex) {
-            return false;
-        }
-    }
 
     protected final void initUI() {
         this.tab = new JTabbedPane();
