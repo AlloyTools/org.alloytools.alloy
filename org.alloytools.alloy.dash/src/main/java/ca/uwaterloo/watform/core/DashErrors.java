@@ -298,4 +298,10 @@ public class DashErrors {
 	public static void noInitialEntered(){
 		throw new ErrorFatal("there are no default initial states");
 	}
+	public static void sistersDontChangeDoesNotHaveParams(String s) {
+		throw new ErrorFatal("sistersDontChangeDoesNotHaveParams: "+s);
+	}
+	public static void hasSpecificParamValues() {
+		throw new ErrorFatal("hasSpecificParamValues");
+	}
 }

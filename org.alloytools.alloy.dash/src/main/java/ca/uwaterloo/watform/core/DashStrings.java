@@ -107,7 +107,7 @@ public class DashStrings {
 	public static String preName = "_pre";
 	public static String postName = "_post";
 	//public static String semanticsName = "_semantics";
-	public static String testIfNextStableName = "_testIfNextStable";
+	public static String testIfNextStableName = "_nextIsStable";
 	public static String enabledAfterStepName = "_enabledAfterStep";
 	
 	// variable/parameter names
@@ -117,6 +117,7 @@ public class DashStrings {
 	public static String pName = "p";
 	public static String genEventName = "dsh_genEvs";
 	public static String scopeName = "dsh_scp";
+	public static String randomParamExt = "_aa";
 
 	// strings used internally
 	public static String processRef = "$$PROCESSREF$$";

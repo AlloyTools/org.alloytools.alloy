@@ -221,6 +221,15 @@ public class ExprHelper  {
         }
         return ret;
     }
+    public static Expr createJoinList(List<Expr> elist, Expr e) {
+        assert(elist!=null);
+        Collections.reverse(elist);
+        Expr ret = e;
+        for (Expr el: elist) {
+            ret = createJoin(el,ret);
+        }
+        return ret;
+    }
     public static ExprBinary createRangeRes(Expr left, Expr right) {
         return (ExprBinary) ExprBinary.Op.RANGE.make(Pos.UNKNOWN, Pos.UNKNOWN, left, right);
     }

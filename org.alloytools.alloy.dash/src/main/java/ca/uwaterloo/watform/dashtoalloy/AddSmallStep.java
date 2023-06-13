@@ -30,17 +30,23 @@ import static ca.uwaterloo.watform.dashtoalloy.Common.*;
 public class AddSmallStep {
     /*
         pred small_step [s:Snapshot, s': Snapshot] { 
-                some pparam0 : Param0 , pparam1 : Param1 ... | 
+                (some pparam0 : Param0 , pparam1 : Param1 ... | 
                     { // for all t’s at level i with params Param5, Param6, ...
                     (or t[s, s_next, pparam5, pparam6 ]) 
-                    // loop? big-step issue?
-                }
+                    }) 
+                or
+                (!(some pparam0 : Param0 , pparam1 : Param1 ... | 
+                    { // for all t’s at level i with params Param5, Param6, ...
+                    (or t_pre[s, s_next, pparam5, pparam6 ]) )
+                    and s = s') 
+
     */
     public static void addSmallStep(DashModule d) {
 
         ArrayList<Expr> e = new ArrayList<Expr>();
         List<String> prs = d.getAllParamsInOrder();
 
+        // trans is taken
         for (String tfqn: d.getAllTransNames()) {
             String tout = translateFQN(tfqn); 
             // p3.p2.p1.t for parameters of this transition
@@ -48,12 +54,26 @@ public class AddSmallStep {
             // p3.p2.p1.s'.s.t for parameters of this transition
             else e.add(createPredCall(tout,curNextParamVars(d.getTransParamsIdx(tfqn),d.getTransParams(tfqn))));
         }
-        List<Expr> body = new ArrayList<Expr>();
-        if (d.getAllParamsInOrder().isEmpty()) body.add(createOrFromList(e));
-        else body.add(createSome(paramDecls(DashUtilFcns.listOfInt(0,prs.size()-1),prs),createOrFromList(e)));
+        Expr transIsTaken;
+        if (d.getAllParamsInOrder().isEmpty()) transIsTaken = createOrFromList(e);
+        else transIsTaken = createSome(paramDecls(DashUtilFcns.listOfInt(0,prs.size()-1),prs),createOrFromList(e));
 
-        //TODO add loop if all notenabled
+        // no trans is enabled
+        e = new ArrayList<Expr>();
+        for (String tfqn: d.getAllTransNames()) {
+            String tout = translateFQN(tfqn); 
+            // p3.p2.p1.t for parameters of this transition
+            if (DashOptions.isElectrum) e.add(createPredCall(tout,paramVars(d.getTransParamsIdx(tfqn), d.getTransParams(tfqn))));
+            // p3.p2.p1.s'.s.t for parameters of this transition
+            else e.add(createPredCall(tout+DashStrings.preName,curParamVars(d.getTransParamsIdx(tfqn),d.getTransParams(tfqn))));
+        }
+        Expr transIsNotEnabled;
+        if (d.getAllParamsInOrder().isEmpty()) transIsNotEnabled = createOrFromList(e);
+        else transIsNotEnabled = createSome(paramDecls(DashUtilFcns.listOfInt(0,prs.size()-1),prs),createOrFromList(e));
+        transIsNotEnabled = createAnd(createNot(transIsNotEnabled), createEquals(curVar(), nextVar()));
 
-        d.alloyString += d.addPredSimple(DashStrings.smallStepName,curNextDecls(),body);
+        e = new ArrayList<Expr>();
+        e.add(createOr(transIsTaken, transIsNotEnabled));
+        d.alloyString += d.addPredSimple(DashStrings.smallStepName,curNextDecls(),e);
     }
 }

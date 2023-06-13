@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
 
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.ExprVar;
@@ -109,6 +111,83 @@ public class AddTransPost {
         // action_t1[s,s']
         if (d.getTransDo(tfqn) != null)
             body.add(translateExpr(d.getTransDo(tfqn),d));
+
+        // vars not mentioned in action do not change
+        // includes entered/exited
+        Set<String> intVarsThatDontChange = DashUtilFcns.listToSet(d.getAllInternalVarNames());
+        // TODO buffers?
+
+        // remove variables mentioned in invariants
+        // whether they are primed or not
+        for (Expr i:d.getInvs()) {
+            List<DashRef> primedDashRefs = d.primedDashRefs(i);
+            for (DashRef r:primedDashRefs) {
+                intVarsThatDontChange.remove(r.getName());
+            }
+        }
+
+        // separate primed variables in transitions into those
+        // that we can't put any constraints on (remove these from intVarsThatDontChange)
+        // and those that we constrain the sister value os (sistersDontChange)
+        Set<String> sistersDontChange = new HashSet<String>();
+        if (d.getTransDo(tfqn) != null) {
+            for (DashRef r: d.primedDashRefs(d.getTransDo(tfqn))) {
+                //System.out.println(r);
+                if (r.getParamValues().isEmpty()) intVarsThatDontChange.remove(r.getName());
+                else if (hasSpecificParamValues(d, r)) {
+                    //System.out.println("has specific param values");
+                    intVarsThatDontChange.remove(r.getName());
+                    // might not be in sistersDontChange
+                    sistersDontChange.remove(r.getName());
+                } else {
+                    //System.out.println("has generic param values");
+                    // has generic param values
+                    sistersDontChange.add(r.getName());
+                    intVarsThatDontChange.remove(r.getName());
+                }
+            }
+        }
+        //System.out.println(tfqn);
+        //System.out.println(sistersDontChange);
+        List<Decl> decls;
+        List<Expr> args;
+
+        // constraints on sister elements
+        for (String x: sistersDontChange) {
+            decls = new ArrayList<Decl>();
+            args = new ArrayList<Expr>();
+            List<Integer> paramsIdx = d.getVarBufferParamsIdx(x);
+            List<String> params = d.getVarBufferParams(x);
+            for (int i=0; i < params.size();i++) {
+                String p = params.get(i);
+                decls.add(new DeclExt(p + randomParamExt, 
+                    createDiff(createVar(p), paramVar(paramsIdx.get(i), p))));
+                args.add(createVar(p + randomParamExt));
+            }
+            if (decls.isEmpty()) DashErrors.sistersDontChangeDoesNotHaveParams(x);
+            else body.add(createAll(decls,
+                createEquals(
+                    createJoinList(args, curJoinExpr(createVar(translateFQN(x)))),
+                    createJoinList(args, nextJoinExpr(createVar(translateFQN(x)))))));
+        }
+        
+
+        // constraint on untouched vars 
+        for (String x:intVarsThatDontChange) {
+            decls = new ArrayList<Decl>();
+            args = new ArrayList<Expr>();
+            for (String p: d.getVarBufferParams(x)) {
+                decls.add(new DeclExt(p + randomParamExt, p));
+                args.add(createVar(p + randomParamExt));
+            }
+            if (decls.isEmpty()) body.add(createEquals(
+                    curJoinExpr(createVar(translateFQN(x))), 
+                    nextJoinExpr(createVar(translateFQN(x)))));
+            else body.add(createAll(decls, createEquals(
+                    createJoinList(args, curJoinExpr(createVar(translateFQN(x)))),
+                    createJoinList(args, nextJoinExpr(createVar(translateFQN(x)))))));
+        }
+
 
         DashRef ev = d.getTransSend(tfqn);
         Expr rhs, rhs1, q;
@@ -286,4 +365,19 @@ public class AddTransPost {
         return createPredCall(testIfNextStableName,args);
     }
 
+    private static boolean hasSpecificParamValues(DashModule d, DashRef r) {
+        // only for variables
+        //TODO buffers??
+        List<Expr> genericPValues = paramVars(d.getVarBufferParamsIdx(r.getName()), d.getVarBufferParams(r.getName()));
+        List<Expr> actualPValues = r.getParamValues();
+        Boolean ret = false;
+        if (genericPValues.size() == actualPValues.size()) {
+            for (int i=0; i < genericPValues.size(); i++) {
+                //System.out.println("generic: " + genericPValues.get(i));
+                //System.out.println("actual: " + actualPValues.get(i));
+                if (!sEquals(genericPValues.get(i), actualPValues.get(i))) ret = ret || true;
+            }
+        } else DashErrors.hasSpecificParamValues();
+        return ret;
+    }
 }

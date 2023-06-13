@@ -222,9 +222,12 @@ public class VarTable {
 	// must be done after resolve
 	// might be primed or unprimed
 	public List<DashRef> collectDashRefs(Expr exp) {
+		assert(exp != null);
 		List<DashRef> x = new ArrayList<DashRef>();
 		if (DashRef.isDashRef(exp)) {
 			x.add((DashRef) exp);
+			return x;
+		} else if (isExprVar(exp)) {
 			return x;
 		} else if (isExprBinary(exp)) {
 			x.addAll(collectDashRefs(getLeft(exp)));
@@ -246,7 +249,7 @@ public class VarTable {
 			x.addAll(collectDashRefs(getRight(exp)));
 			return x;
 		} else if (exp instanceof ExprList){
-			for (Expr e: ((ExprCall) exp).args) x.addAll(collectDashRefs(e));
+			for (Expr e: ((ExprList) exp).args) x.addAll(collectDashRefs(e));
 			return x;
 		} else if (exp instanceof ExprUnary){
 			return collectDashRefs(((ExprUnary) exp).sub);
@@ -264,7 +267,7 @@ public class VarTable {
 		} else if (exp instanceof ExprConstant){
 			return new ArrayList<DashRef>();
 		} else {
-			DashErrors.UnsupportedExpr("collectDashRefs", "");
+			DashErrors.UnsupportedExpr("collectDashRefs", exp.toString());
 			return null;
 		}
 	}

@@ -347,9 +347,6 @@ public class DashModule extends CompModuleHelper {
     	return transTable.getAllTransNames();
     }
 
-    public List<String> getParams(String tfqn) {
-    	return transTable.getParams(tfqn);
-    }
     public DashRef getTransSrc(String tfqn) {
     	return transTable.getSrc(tfqn);
     }
@@ -380,6 +377,11 @@ public class DashModule extends CompModuleHelper {
     }
     public List<String> getAllVarNames() {
     	return varTable.getAllVarNames();
+    }
+    public List<String> getAllInternalVarNames() {
+    	return varTable.getAllVarNames().stream()
+    			.filter(i -> varTable.isInternal(i))
+    			.collect(Collectors.toList());
     }
     public List<String> getVarBufferParams(String vfqn) {
     	return varTable.getParams(vfqn);
@@ -602,6 +604,10 @@ public class DashModule extends CompModuleHelper {
 			//debug("Root/S1/t1");
 		}
 		status = Status.RESOLVED_DASH;
+	}
+
+	public List<DashRef> primedDashRefs(Expr exp) {
+		return varTable.primedDashRefs(exp);
 	}
 
 	public void translate() {
