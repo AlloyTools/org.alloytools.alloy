@@ -223,36 +223,6 @@ StateItem ::= Names:n COLON:o BUF LBRACKET SIGINT RBRACKET
            Integer endIndex = DashSituation.bufferIndex - 1;
            RESULT = new DashBufferDecls(o, ll, DashStrings.intName,  DashStrings.IntEnvKind.INT, startIndex, endIndex); 
         :};
-StateItem ::= ENV:o Names:n COLON BUF LBRACKET Name:m RBRACKET  
-        {: 
-           ArrayList<String> ll = new ArrayList<String>();
-           Integer startIndex = DashSituation.bufferIndex;
-           for (ExprVar x: n) {
-                ll.add(x.label);
-                // it will do this the same way both passes through parsing
-                DashSituation.bufferElements.add(m.label);
-                DashSituation.bufferNames.add(x.label);
-                DashSituation.bufferIndex++;
-           }
-           // endIndex is inclusive
-           Integer endIndex = DashSituation.bufferIndex - 1;
-           RESULT = new DashBufferDecls(o, ll, m.label,  DashStrings.IntEnvKind.ENV, startIndex, endIndex); 
-        :};
-StateItem ::= ENV:o Names:n COLON BUF LBRACKET SIGINT RBRACKET  
-        {: 
-           ArrayList<String> ll = new ArrayList<String>();
-           Integer startIndex = DashSituation.bufferIndex;
-           for (ExprVar x: n) {
-                ll.add(x.label);
-                // it will do this the same way both passes through parsing
-                DashSituation.bufferElements.add(DashStrings.intName);
-                DashSituation.bufferNames.add(x.label);
-                DashSituation.bufferIndex++;
-           }
-           // endIndex is inclusive
-           Integer endIndex = DashSituation.bufferIndex - 1;
-           RESULT = new DashBufferDecls(o, ll, DashStrings.intName,  DashStrings.IntEnvKind.ENV, startIndex, endIndex); 
-        :};
 
 // init
 // Super is a list of expressions joined by conjunction
