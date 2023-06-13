@@ -1,3 +1,10 @@
+/*
+ * 
+ * In a weird case where a transition is triggered on an internal event
+ * but its guard depends on an external var value
+ * it won't be triggered after a stutter
+ */
+
 package ca.uwaterloo.watform.dashtoalloy;
 
 import java.util.Collections;
@@ -40,8 +47,12 @@ public class AddStutter {
         for (int i = 0; i <= d.getMaxDepthParams(); i++) {
         	body.add(noChange(DashStrings.confName+Integer.toString(i)));
         	body.add(noChange(DashStrings.scopesUsedName+Integer.toString(i)));
-        	if (d.hasEvents() && d.hasEventsAti(i))
-        		body.add(noChange(DashStrings.eventsName+Integer.toString(i)));
+        	if (d.hasEvents() && d.hasInternalEventsAti(i))
+        		// internal events go away
+        		// external events can be added
+ 				body.add(createEquals(
+                                    createRangeRes(nextEvents(i),allInternalEventsVar()), 
+                                    createNoneArrow(i)));
         }
 
         // internal vars
