@@ -40,9 +40,13 @@ public class Alloy {
 
         @Override
         protected String findLibrary(String libname) {
-            String mapped = System.mapLibraryName(libname);
-            String path = System.getProperty("alloy.binary") + File.separator + mapped;
-            return path;
+            String mappedName = System.mapLibraryName(libname);
+            File f = NativeCode.findexecutable(mappedName);
+            if (f != null) {
+                return f.getAbsolutePath();
+            }
+
+            return null;
         }
 
         @Override
