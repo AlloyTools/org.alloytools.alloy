@@ -114,15 +114,19 @@ public class AddTransPost {
 
         // vars not mentioned in action do not change
         // includes entered/exited
-        Set<String> intVarsThatDontChange = DashUtilFcns.listToSet(d.getAllInternalVarNames());
-        // TODO buffers?
+        Set<String> intVarsBuffersThatDontChange = DashUtilFcns.listToSet(d.getAllInternalVarNames());
+        intVarsBuffersThatDontChange.addAll(d.getAllBufferNames());
+        // we treat buffers the same as variables because their index is the closest arg and
+        // either the entire buffer within a sister component stays the same or it doesn't -- there is no need
+        // to reference the buffer index argument.
 
+        //System.out.println(intVarsBuffersThatDontChange);
         // remove variables mentioned in invariants
         // whether they are primed or not
         for (Expr i:d.getInvs()) {
             List<DashRef> primedDashRefs = d.primedDashRefs(i);
             for (DashRef r:primedDashRefs) {
-                intVarsThatDontChange.remove(r.getName());
+                intVarsBuffersThatDontChange.remove(r.getName());
             }
         }
 
@@ -133,22 +137,23 @@ public class AddTransPost {
         if (d.getTransDo(tfqn) != null) {
             for (DashRef r: d.primedDashRefs(d.getTransDo(tfqn))) {
                 //System.out.println(r);
-                if (r.getParamValues().isEmpty()) intVarsThatDontChange.remove(r.getName());
+                if (r.getParamValues().isEmpty()) intVarsBuffersThatDontChange.remove(r.getName());
                 else if (hasSpecificParamValues(d, r)) {
                     //System.out.println("has specific param values");
-                    intVarsThatDontChange.remove(r.getName());
+                    intVarsBuffersThatDontChange.remove(r.getName());
                     // might not be in sistersDontChange
                     sistersDontChange.remove(r.getName());
                 } else {
                     //System.out.println("has generic param values");
                     // has generic param values
                     sistersDontChange.add(r.getName());
-                    intVarsThatDontChange.remove(r.getName());
+                    intVarsBuffersThatDontChange.remove(r.getName());
                 }
             }
         }
         //System.out.println(tfqn);
         //System.out.println(sistersDontChange);
+        //System.out.println("----");
         List<Decl> decls;
         List<Expr> args;
 
@@ -173,7 +178,7 @@ public class AddTransPost {
         
 
         // constraint on untouched vars 
-        for (String x:intVarsThatDontChange) {
+        for (String x:intVarsBuffersThatDontChange) {
             decls = new ArrayList<Decl>();
             args = new ArrayList<Expr>();
             for (String p: d.getVarBufferParams(x)) {
