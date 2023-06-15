@@ -59,7 +59,7 @@ public final class A4Options implements Serializable {
          */
         private final String[]               options;
 
-        private final BooleanSupplier        present;
+        transient final BooleanSupplier      present;
         public final String                  libname;
 
         /** Constructs a new SatSolver value. */

@@ -2,14 +2,19 @@ package org.alloytools.alloy.cli;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -43,8 +48,19 @@ public class CLI extends Env {
 	final A4Options options = new A4Options();
 
 	public enum OutputType {
-		plain, json, xml;
+		none,plain, json, xml;
 	}
+
+	InputStream stdin = new FilterInputStream(System.in) {
+		@Override
+		public void close() throws IOException {
+		}
+	};
+	PrintStream stdout = new PrintStream(new FilterOutputStream(System.out)) {
+		public void close() {
+			System.out.flush();
+		};
+	};
 
 	/**
 	 * Show the list of solvers
@@ -60,7 +76,7 @@ public class CLI extends Env {
 		@Description("The command to run. If no command is specified, the default command will run. The command may specify wildcards to run multiple commands. If the command is an integer, it will run the command with that index.")
 		String command();
 
-		@Description("Specify the output type: plain, json, xml")
+		@Description("Specify the output type: plain, json, xml, or none")
 		OutputType type(OutputType deflt);
 
 		@Description("Specify where the output should go. Default is the console")
@@ -80,6 +96,9 @@ public class CLI extends Env {
 
 		@Description("Be quiet with progress information")
 		boolean quiet();
+
+		@Description("After resolving each command, start an evaluator")
+		boolean evaluator();
 	}
 
 	/**
@@ -96,18 +115,18 @@ public class CLI extends Env {
 		opt.unrolls = options.unrolls(opt.unrolls);
 		opt.skolemDepth = options.depth(opt.skolemDepth);
 		opt.symmetry = options.depth(opt.symmetry);
-		
+
 		String filename = options._arguments().remove(0);
 		File file = IO.getFile(filename);
-		if ( !file.isFile()) {
+		if (!file.isFile()) {
 			error("No such file %s", file);
 			return;
 		}
-		if ( !file.canRead()) {
+		if (!file.canRead()) {
 			error("Cannot read file %s", file);
 			return;
 		}
-		
+
 		Map<String, String> cache = new HashMap<>();
 		CompModule world = CompUtil.parseEverything_fromFile(rep, cache, filename);
 
@@ -123,7 +142,7 @@ public class CLI extends Env {
 				error("command index %s is more than available commands %s", index, commands);
 			}
 			run = c -> commands.indexOf(c) == index;
-		}else {
+		} else {
 			Glob g = new Glob(cmd);
 			run = c -> g.matches(c.label);
 		}
@@ -134,7 +153,6 @@ public class CLI extends Env {
 		}
 
 		Map<CommandInfo, A4Solution> answers = new TreeMap<>();
-
 		for (Command c : commands) {
 			if (!run.test(c)) {
 				trace("ignore command %s", c);
@@ -142,7 +160,7 @@ public class CLI extends Env {
 			}
 
 			if (!options.quiet())
-				System.out.println("solving command " + c);
+				stdout.println("solving command " + c);
 
 			long start = System.nanoTime();
 			A4Solution s = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), c,
@@ -153,11 +171,32 @@ public class CLI extends Env {
 			info.command = c;
 			info.durationInMs = TimeUnit.NANOSECONDS.toMillis(finish - start);
 			answers.put(info, s);
+
 		}
 		if (!options.quiet() && answers.isEmpty()) {
-			System.out.println("no commands found " + cmd);
+			stdout.println("no commands found " + cmd);
 		}
+
 		generate(world, answers, options.type(OutputType.plain), out);
+
+		if (options.evaluator() && !answers.isEmpty()) {
+			evaluator(world, answers);
+		}
+	}
+
+	private void evaluator(CompModule world, Map<CommandInfo, A4Solution> answers) throws Exception {
+		for (Entry<CommandInfo, A4Solution> s : answers.entrySet()) {
+			A4Solution sol = s.getValue();
+			if (sol.satisfiable()) {
+				stdout.println("Evaluator for " + s.getKey().command);
+				stdout.flush();
+				Evaluator e = new Evaluator(world, sol, stdin, stdout);
+				String lastCommand = e.loop();
+				if ( lastCommand.equals("/exit"))
+					break;
+			}
+		}
+		stdout.println("bye");
 	}
 
 	@Arguments(arg = "path")
@@ -178,15 +217,15 @@ public class CLI extends Env {
 		String filename = options._arguments().remove(0);
 		Map<String, String> cache = new HashMap<>();
 		CompModule world = CompUtil.parseEverything_fromFile(rep, cache, filename);
-		for ( Command c : world.getAllCommands()) {
-			System.out.println(c);
+		for (Command c : world.getAllCommands()) {
+			stdout.println(c);
 		}
 	}
 
 	private OutputStream output(String output) throws IOException {
 
 		if (output == null) {
-			return System.out;
+			return stdout;
 		}
 
 		File file = IO.getFile(output);
@@ -205,51 +244,57 @@ public class CLI extends Env {
 
 	private void generate(CompModule world, Map<CommandInfo, A4Solution> s, OutputType type, OutputStream out)
 			throws Exception {
-		switch (type) {
-		default:
-		case plain:
-			Table overall = new Table(s.size() * 2, 1, 0);
-			int n = 0;
-			for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
-				Table info = new Table(2, 2, 0);
-				info.set(0, 0, "Command");
-				info.set(0, 1, e.getKey().command);
-				info.set(1, 0, "Duration in ms");
-				info.set(1, 1, e.getKey().durationInMs);
-				overall.set(n, 0, info);
-				overall.set(n + 1, 0, e.getValue().toTable());
-				n += 2;
-			}
-			IO.store(overall, out);
-			break;
-
-		case json:
-			List<SolutionDTO> trace = new ArrayList<>();
-
-			for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
-				A4Solution a4s = e.getValue();
-				a4s.setModule(world);
-				trace.add(a4s.toDTO());
-			}
-			JSONCodec codec = new JSONCodec();
-			codec.enc().writeDefaults().indent("  ").to(out).put(trace);
-			break;
-
-		case xml:
-			try (PrintWriter pw = new PrintWriter(out)) {
-				if (s.size() > 1) {
-					pw.println("<top>");
-				}
+		try {
+			switch (type) {
+			default:
+			case none:
+				return;
+			case plain:
+				Table overall = new Table(s.size() * 2, 1, 0);
+				int n = 0;
 				for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
-					A4SolutionWriter.writeInstance(null, e.getValue(), pw, Collections.emptyList(),
-							Collections.emptyMap());
+					Table info = new Table(2, 2, 0);
+					info.set(0, 0, "Command");
+					info.set(0, 1, e.getKey().command);
+					info.set(1, 0, "Duration in ms");
+					info.set(1, 1, e.getKey().durationInMs);
+					overall.set(n, 0, info);
+					overall.set(n + 1, 0, e.getValue().toTable());
+					n += 2;
 				}
-				if (s.size() > 1) {
-					pw.println("</top>");
-				}
-			}
-			break;
+				IO.store(overall, out);
+				break;
 
+			case json:
+				List<SolutionDTO> trace = new ArrayList<>();
+
+				for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
+					A4Solution a4s = e.getValue();
+					a4s.setModule(world);
+					trace.add(a4s.toDTO());
+				}
+				JSONCodec codec = new JSONCodec();
+				codec.enc().writeDefaults().indent("  ").to(out).put(trace);
+				break;
+
+			case xml:
+				try (PrintWriter pw = new PrintWriter(out)) {
+					if (s.size() > 1) {
+						pw.println("<top>");
+					}
+					for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
+						A4SolutionWriter.writeInstance(null, e.getValue(), pw, Collections.emptyList(),
+								Collections.emptyMap());
+					}
+					if (s.size() > 1) {
+						pw.println("</top>");
+					}
+				}
+				break;
+
+			}
+		} finally {
+			IO.close(out);
 		}
 	}
 
