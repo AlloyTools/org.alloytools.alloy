@@ -5,8 +5,6 @@ package org.alloytools.alloy.dto;
  * A Data Transfer Object (DTO) that encapsulates information about a specific
  * field within an Alloy signature.
  *
- * This class is designed to facilitate the organized and efficient transfer of
- * data pertaining to a particular field within an Alloy signature.
  */
 public class FieldDTO {
 

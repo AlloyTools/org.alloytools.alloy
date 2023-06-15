@@ -2035,6 +2035,7 @@ public final class A4Solution {
             return toTable(0);
         }
 
+
         Table result = new Table(getTraceLength() + 1, 3, 1);
         result.set(0, 0, "loop");
         result.set(0, 1, "state");
