@@ -6,10 +6,7 @@ import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 
-@AlloyMain(
-           name = {
-                   "lsp"
-           } )
+@AlloyMain
 public class CLIFacade {
 
     @Description("Language Server for Alloy. " )
@@ -19,8 +16,14 @@ public class CLIFacade {
 
     }
 
+    @Description("Language Server for Alloy. " )
     public void _lsp(LSPOptions options) throws Exception {
         AlloyLanguageServer.main(options._arguments().toArray(new String[0]));
+    }
+
+    @Override
+    public String toString() {
+        return "LSP";
     }
 
 }

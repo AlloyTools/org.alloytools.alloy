@@ -7,13 +7,13 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -34,9 +34,9 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.justif.Justif;
-import aQute.lib.strings.Strings;
 import aQute.libg.parameters.Attributes;
 import aQute.libg.parameters.ParameterMap;
+import aQute.service.reporter.Reporter;
 import edu.mit.csail.sdg.alloy4.A4Preferences;
 import edu.mit.csail.sdg.alloy4.A4Preferences.Pref;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
@@ -48,39 +48,16 @@ import edu.mit.csail.sdg.translator.A4Options.SatSolver;
  * distribution jar.
  *
  */
+@Description("The Alloy command line interpreter" )
 public class AlloyDispatcher extends Env {
 
-    static Logger      log;
-    PrintStream        out = System.out;
-    PrintStream        err = System.err;
-    AlloyContext       context;
-    Optional<Manifest> manifest;
+    PrintStream          out = System.out;
+    PrintStream          err = System.err;
+    AlloyContext         context;
+    Optional<Manifest>   manifest;
+    Logger               log;
+    private List<Object> mains;
 
-
-
-    static class MainDef implements AutoCloseable {
-
-        public final String  name;
-        public final Object  instance;
-        public final boolean deflt;
-
-        public MainDef(Object instance, String name, boolean deflt) {
-            this.instance = instance;
-            this.name = name;
-            this.deflt = deflt;
-        }
-
-        @Override
-        public String toString() {
-            return "MainDef [name=" + name + ", instance=" + instance + "]";
-        }
-
-        @Override
-        public void close() throws Exception {
-            if (instance instanceof AutoCloseable)
-                IO.close((AutoCloseable) instance);
-        }
-    }
 
     enum Levels {
                  off,
@@ -108,82 +85,74 @@ public class AlloyDispatcher extends Env {
 
         @Description("Set per logger log level. The syntax is <logger-prefix>=<level>, where level is off, trace, debug, info, warn, error" )
         String[] log();
-
-        @Description("A comma separated string with Alloy preferences. Preference id's (and their values) can be found with the `prefs` sub command. Usually enclosed in quotes to prevent the shell from breaking them up. Preferences are stored persistently." )
-        String preferences();
     }
 
     public static void main(String[] args) {
         AlloyDispatcher dispatcher = new AlloyDispatcher();
         CommandLine cl = new CommandLine(dispatcher);
         try {
-            String help = cl.execute(dispatcher, "alloy", Arrays.asList(args));
+            String help = cl.execute(dispatcher, "_alloy", Arrays.asList(args));
             if (help != null) {
                 System.err.println(help);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        dispatcher.report(System.out);
     }
 
-    public void _alloy(BaseOptions options) throws Exception {
+    public void __alloy(BaseOptions options) throws Exception {
         if (options.debug())
             System.setProperty("debug", "yes");
 
-        setslf4j(options.defaultLevel(Levels.error), options.log());
+        setslf4j(options.debug() ? Levels.debug : options.defaultLevel(Levels.error), options.log());
+        log = LoggerFactory.getLogger("alloy");
+        if (log.isDebugEnabled())
+            log.debug("starting alloy {}", getVersion());
 
         CommandLine cl = options._command();
         AlloyContext context = getContext(options);
-        Map<String,MainDef> mains = getMains(context, cl);
-
-        doPreferences(options.preferences());
-
+        mains = getMains(context, cl);
         try {
-
-
             List<String> arguments = options._arguments();
 
-            MainDef selected;
-            if (arguments.isEmpty()) {
-                selected = mains.entrySet().stream().filter(e -> e.getValue().deflt).map(e -> e.getValue()).findAny().orElse(null);
-                if (selected == null) {
-                    error("invalid JAR, could not find a main that is the default and no command was given. Main classes found %s", mains);
-                    return;
-                }
-            } else {
-                String _name = arguments.remove(0);
-                String name = _name.equals("help") ? "_help" : _name; // 'help' is built in but we override it
-                selected = mains.entrySet().stream().filter(e -> e.getValue().name.equals(name)).map(e -> e.getValue()).findAny().orElse(null);
-                if (selected == null) {
-                    error("No such command: %s, available commands are %s", name, mains.keySet());
-                    return;
-                }
+            String subcommand = "gui";
+
+            if (!arguments.isEmpty()) {
+                subcommand = arguments.remove(0);
+                if (subcommand.equals("help"))
+                    subcommand = "_help";
             }
 
-            if (isOk()) {
-                log.debug("selected main {} is with arguments {}", selected, arguments);
-
-                try {
-                    String execute = cl.execute(selected.instance, selected.name, arguments);
-                    if (execute != null) {
-                        err.println(execute);
+            CommandLine l = new CommandLine(this);
+            for (Object target : mains) {
+                Map<String,Method> commands = l.getCommands(target);
+                if (commands.containsKey(subcommand)) {
+                    try {
+                        log.debug("subcommand {} found in {}", subcommand, target);
+                        String info = l.execute(target, subcommand, arguments);
+                        if (info != null) {
+                            System.out.println(info);
+                        }
+                    } catch (Exception e) {
+                        log.error("excuting sub command {}:{} error {}", target, subcommand, e, e);
+                        exception(e, "executing %s:%s", target, subcommand);
                     }
-                } catch (Exception e) {
-                    if (options.debug())
-                        e.printStackTrace();
-
-                    error("%s", e.getMessage());
+                    if (target instanceof Reporter && target != this) {
+                        getInfo((Reporter) target);
+                    }
+                    report(System.err);
+                    return;
                 }
-                return;
             }
-            if (selected.instance instanceof Env) {
-                Env env = (Env) selected.instance;
-                getInfo(env);
-            }
-            report(System.out);
+            error("no such command %s, use help to get a full list", subcommand);
+            __help(null);
+            report(System.err);
+
         } finally {
-            mains.values().forEach(IO::close);
+            mains.forEach(o -> {
+                if (o instanceof AutoCloseable)
+                    IO.close((AutoCloseable) o);
+            });
         }
     }
 
@@ -197,6 +166,7 @@ public class AlloyDispatcher extends Env {
         boolean full();
     }
 
+    @Description("Display the current version" )
     public void _version(VersionOptions options) {
         String version = getVersion();
         if (!options.full()) {
@@ -231,6 +201,7 @@ public class AlloyDispatcher extends Env {
     }
 
 
+    @Description("Show the preferences or modify them" )
     public void _prefs(PreferencesOptions options) {
         if (options.cli()) {
             StringBuilder sb = new StringBuilder();
@@ -264,6 +235,7 @@ public class AlloyDispatcher extends Env {
     }
 
 
+    @Description("Show the list of solvers" )
     public void _solvers(SolverOptions options) {
         if (!options.list()) {
             out.printf("OS Platform       %s%n", NativeCode.platform);
@@ -330,6 +302,7 @@ public class AlloyDispatcher extends Env {
 
     }
 
+    @Description("Show all the native solvers for all supported platforms" )
     public void _natives(NativeOptions options) {
         Table table = new Table(SatSolver.values().size() + 1, NativeCode.platforms.length + 1, 1);
         int r, c = 1;
@@ -373,44 +346,56 @@ public class AlloyDispatcher extends Env {
 
     }
 
+    @Description("Show all the native solvers for all supported platforms" )
     public void __help(HelpOptions options) {
-        List<String> arguments = options._arguments();
-        CommandLine cl = options._command();
-        Map<String,MainDef> mains = getMains(context, cl);
+        CommandLine cl = new CommandLine(this);
+
         Justif j = new Justif(80);
         try (Formatter f = j.formatter()) {
 
-            if (arguments.isEmpty()) {
-                cl.help(f, this, "alloy");
-                f.format("Sub commands are: %s%n", mains.keySet().stream().collect(Collectors.joining(", ")).replace("_help", "help"));
-                f.format("Do 'help <sub-cmd> to get more information about a particular sub command%n", mains.keySet().stream().collect(Collectors.joining(", ")));
-            } else {
-                for (Map.Entry<String,MainDef> e : mains.entrySet()) {
-                    String name = e.getKey();
-                    if (!arguments.contains(name))
+            cl.help(f, this);
+
+            if (options == null || options._arguments().isEmpty()) {
+                for (Object target : mains) {
+                    if (target == this)
                         continue;
 
-                    MainDef main = e.getValue();
-                    if (main.deflt)
-                        f.format("[default]");
-                    cl.help(f, main.instance, name);
+                    for (Entry<String,Method> e : cl.getCommands(target).entrySet()) {
+                        if (e.getValue().getName().startsWith("__"))
+                            continue;
+
+                        Description d = e.getValue().getAnnotation(Description.class);
+                        String desc = " ";
+                        if (d != null)
+                            desc = d.value();
+
+                        f.format("  %s\t0-\t1%s %n", e.getKey(), desc);
+                    }
+                    f.format("%n");
+                }
+            } else {
+                List<String> _arguments = options._arguments();
+                String subcommand = _arguments.remove(0);
+                for (Object target : mains) {
+                    Map<String,Method> commands = cl.getCommands(target);
+                    if (commands.containsKey(subcommand)) {
+                        cl.help(f, target, subcommand);
+                    }
                 }
             }
-            out.println(j.wrap());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        out.println(j.wrap());
     }
 
 
-    private Map<String,MainDef> getMains(AlloyContext context, CommandLine cl) {
-        Map<String,MainDef> result = new TreeMap<>();
-        localCommands(cl, result);
-        globalCommands(context, result);
-        return result;
-    }
+    private List<Object> getMains(AlloyContext context, CommandLine cl) {
+        List<Object> result = new ArrayList<>();
+        result.add(this);
 
-    private void globalCommands(AlloyContext context, Map<String,MainDef> result) {
         ParameterMap header = getHeaderMap("Provide-Capability");
-
+        log.debug("Provide-Capability {}", header);
         header.entrySet().stream().filter(e -> e.getKey().startsWith(AlloyMain.NAMESPACE)).forEach(e -> {
             try {
                 Attributes attrs = e.getValue();
@@ -419,33 +404,18 @@ public class AlloyDispatcher extends Env {
                     throw new RuntimeException("Expected a fqn in the capability " + e);
 
                 Class< ? > mainClass = AlloyDispatcher.class.getClassLoader().loadClass(fqn);
-                AlloyMain mainAnn = mainClass.getAnnotation(AlloyMain.class);
-                if (mainAnn != null) {
-                    Object instance = getInstance(context, e, mainClass);
-                    for (String name : mainAnn.name()) {
-                        MainDef main = new MainDef(instance, name, mainAnn.isDefault());
-                        result.put(main.name, main);
-                        log.debug("found main class {}", main);
-                    }
-                } else {
-                    throw new RuntimeException("Main class " + mainClass + " is listed in capability " + e + " but does not have an AlloyMain annotation");
-                }
+                AlloyMain alloyMain = mainClass.getAnnotation(AlloyMain.class);
+                if (alloyMain == null)
+                    throw new RuntimeException("Expected an AlloyMain annotation on " + fqn);
+
+                Object instance = getInstance(context, e, mainClass);
+                log.debug("found command provider {} -> {}", fqn, instance);
+                result.add(instance);
             } catch (ClassNotFoundException e1) {
                 throw new RuntimeException("In capability " + e + ", the fqn cannot be located as class in the current JAR: " + e1);
             }
         });
-    }
-
-    private void localCommands(CommandLine cl, Map<String,MainDef> result) {
-        Map<String,Method> commands = cl.getCommands(this);
-        for (Map.Entry<String,Method> e : commands.entrySet()) {
-            String cmd = e.getKey();
-            if (cmd.equals("alloy"))
-                continue;
-
-            MainDef md = new MainDef(this, cmd, false);
-            result.put(cmd, md);
-        }
+        return result;
     }
 
     private Object getInstance(AlloyContext context, Entry<String,Attributes> e, Class< ? > mainClass) {
@@ -458,31 +428,6 @@ public class AlloyDispatcher extends Env {
                 throw new RuntimeException("Capability " + e + " specifies class " + mainClass + " but that class has no default constructor nor one that takes AlloyContext");
             }
         }
-    }
-
-    final static Pattern PREF_P = Pattern.compile("\\s*(?<id>[^=]+)\\s*(=\\s*(?<value>.*)\\s*)");
-
-    private void doPreferences(String preferences) {
-        if (preferences == null)
-            return;
-
-        for (String pref : Strings.splitQuoted(preferences)) {
-            Matcher m = PREF_P.matcher(pref);
-            if (!m.matches()) {
-                error("cannot match preferences '%s', particularly `%s`", preferences, pref);
-            } else {
-                String id = m.group("id");
-                String value = m.group("value");
-                if (value == null)
-                    value = "true";
-
-                String result = A4Preferences.set(id, value);
-                if (result != null) {
-                    error("Setting pref %s failed: %s", id, result);
-                }
-            }
-        }
-
     }
 
     private ParameterMap getHeaderMap(String name) {
@@ -513,7 +458,7 @@ public class AlloyDispatcher extends Env {
 
     static final Pattern TARGET_P = Pattern.compile("\\s*(?<name>[^=]+)\\s*=\\s*(?<level>off|trace|debug|info|warn|error)\\s*");
 
-    public static void setslf4j(Levels deflt, String... targets) {
+    public void setslf4j(Levels deflt, String... targets) {
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", deflt.toString());
         if (targets != null)
             for (String target : targets) {
@@ -526,6 +471,5 @@ public class AlloyDispatcher extends Env {
                     System.err.println("invalid slf4j target definition " + target + ", expect " + TARGET_P);
                 }
             }
-        log = LoggerFactory.getLogger(AlloyDispatcher.class);
     }
 }
