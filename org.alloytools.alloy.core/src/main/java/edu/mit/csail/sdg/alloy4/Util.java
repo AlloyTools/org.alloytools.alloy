@@ -850,7 +850,6 @@ public final class Util {
     }
 
 
-
     public static SimTupleset toSimTupleset(A4TupleSet values) {
         List<SimTuple> l = new ArrayList<>();
         for (A4Tuple a4t : values) {
