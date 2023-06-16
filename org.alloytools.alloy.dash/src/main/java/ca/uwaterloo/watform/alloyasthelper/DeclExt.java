@@ -45,7 +45,7 @@ public class DeclExt extends Decl {
         String x = new String();
         StringJoiner sj = new StringJoiner(", ");
         // var keyword
-        System.out.println("Decl" + names + (this.isVar==null));
+        //System.out.println("Decl" + names + (this.isVar==null));
         if (isVar != null) {
             x += DashStrings.varName + " ";
         }
