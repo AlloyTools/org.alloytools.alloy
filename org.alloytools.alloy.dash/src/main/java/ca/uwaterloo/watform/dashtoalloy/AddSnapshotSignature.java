@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.DashOptions;
@@ -58,18 +59,18 @@ public class AddSnapshotSignature {
                     decls.add(
                         DeclExt.newVarDeclExt(
                             confName+Integer.toString(i), 
-                            createArrowExprList(DashUtilFcns.newListWith(cop, createVar(stateLabelName)))));
+                            createArrowExprList(DashUtilFcns.newListWith(cop, createSet(createVar(stateLabelName))))));
                     // scopesUsed 1, etc.
                     decls.add(
                         DeclExt.newVarDeclExt(
                             scopesUsedName+Integer.toString(i), 
-                            createArrowExprList(DashUtilFcns.newListWith(cop, createVar(stateLabelName)))));
+                            createArrowExprList(DashUtilFcns.newListWith(cop, createSet(createVar(stateLabelName))))));
                     if (d.hasEvents() & d.hasEventsAti(i))
                         // events 1, etc.
                         decls.add(
                             DeclExt.newVarDeclExt(
                                 eventsName+Integer.toString(i), 
-                                createArrowExprList(DashUtilFcns.newListWith(cop, createVar(allEventsName)))));
+                                createArrowExprList(DashUtilFcns.newListWith(cop, createSet(createVar(allEventsName))))));
                 }
                 d.alloyString += d.addSigWithDeclsSimple(identifierName, decls);
             }
@@ -87,13 +88,29 @@ public class AddSnapshotSignature {
             // vfqns with no params and simple type
             // becomes var sig vfqn in var {}
             // no buffers in this case
+            // this is tricky if one/lone/set modifiers on type ***
             List<String> allvfqnsNoParamsSimpleTyp = allvfqns.stream()
-                .filter(i -> d.getVarBufferParams(i).size() == 0 && isExprVar(d.getVarType(i)))
+                .filter(i -> d.getVarBufferParams(i).size() == 0 && !isWeirdOne(i,d))
                 .collect(Collectors.toList());
-            for (String v: allvfqnsNoParamsSimpleTyp) 
-                d.alloyString += d.addVarSigSimple(translateFQN(v), ((ExprVar) translateExpr(d.getVarType(v),d,true)) );
+            for (String v: allvfqnsNoParamsSimpleTyp) {
+                
+                Expr typ = d.getVarType(v);
+                //System.out.println(typ.getClass());
+                //System.out.println(((ExprUnary) typ).op);
+                if (isExprVar(typ)) {
+                    d.alloyString += d.addVarSigSimple(translateFQN(v), ((ExprVar) translateExpr(typ,d,true)) );
+                } else if (isExprSet(typ) && isExprVar(getSub(typ))) {
+                    d.alloyString += d.addVarSigSimple(translateFQN(v), ((ExprVar)translateExpr(getSub(typ),d,true)) );
+                } else if (isExprLone(typ) && isExprVar(getSub(typ))) {
+                    d.alloyString += d.addVarLoneSigSimple(translateFQN(v), ((ExprVar)translateExpr(getSub(typ),d,true)) );
+                } else if (isExprOne(typ) && isExprVar(getSub(typ))) {
+                    d.alloyString += d.addVarOneSigSimple(translateFQN(v), ((ExprVar) translateExpr(getSub(typ),d,true)) );
+                } else {
+                    TranslationToAlloyErrors.Unsupported(typ);
+                }
+            }
             
-            // vfqns with no params and arrow type (A -> B)
+            // vfqns with no params and non-simple var types (weird ones)
             // becomes sig A { var vfqn: B }
             // but A has already been declared somewhere by the user
             // and we can't easily add a field to an existing signature in
@@ -135,7 +152,7 @@ public class AddSnapshotSignature {
                 decls = new ArrayList<Decl>();
                 for (String v: allvfqnsWithThisFirstParam) {
                     if (d.getVarBufferParams(v).size() == 1) {
-                        decls.add(DeclExt.newVarDeclExt(v, translateExpr(d.getVarType(v),d, true)));
+                        decls.add(DeclExt.newVarDeclExt(translateFQN(v), translateExpr(d.getVarType(v),d, true)));
                     } else {
                         plist = createVarList(d.getVarBufferParams(v).subList(1, d.getVarBufferParams(v).size()-1));
                         plist.add(translateExpr(d.getVarType(v),d, true));
@@ -159,6 +176,7 @@ public class AddSnapshotSignature {
                     decls.add(DeclExt.newVarDeclExt(translateFQN(b),createArrowExprList(plist)));
                 }
                 d.alloyString += d.addSigExtendsWithDeclsSimple(prm, identifierName, decls);
+
             }
 
             // buffers with no parameters

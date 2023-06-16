@@ -511,6 +511,9 @@ public class ExprToString {
         //    out.print(",");
         //}
         //first = false;
+        if (decl.isVar != null) {
+            out.print(DashStrings.varName + " ");
+        }
         out.print(DashUtilFcns.strCommaList(decl.names));
         out.print(": ");
         ExprToOut(decl.expr);        

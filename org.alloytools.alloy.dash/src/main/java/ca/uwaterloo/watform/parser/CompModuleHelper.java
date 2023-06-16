@@ -194,9 +194,11 @@ public class CompModuleHelper extends CompModule {
             null);
         String s = DashStrings.sigName + space + name;
         s += " {\n"+tab;
-        StringJoiner j = new StringJoiner(",\n"+tab);
-        decls.forEach(i -> j.add(ppDecl(i)));
-        s += j.toString() + "\n}\n";
+        if (!decls.isEmpty()) {
+            StringJoiner j = new StringJoiner(",\n"+tab);
+            decls.forEach(i -> j.add(ppDecl(i)));
+            s += j.toString() + "\n}\n";
+        } else s += "}\n";
         //System.out.println(s);
         return s;
     } 
@@ -241,7 +243,7 @@ public class CompModuleHelper extends CompModule {
             null,
             null,
             null);
-        String s = DashStrings.sigName + space + name + space + "{\n";
+        String s = DashStrings.oneName + space +DashStrings.sigName + space + name + space + "{\n";
         //s += ppDecls(decls);
         StringJoiner j = new StringJoiner(",\n");
         decls.forEach(i -> j.add(ppDecl(i)));
@@ -249,6 +251,7 @@ public class CompModuleHelper extends CompModule {
         //System.out.println(s);
         return s;
     } 
+    // var sig name in typ {}
     public String addVarSigSimple(String name, ExprVar typ) {
         // var sig s in typ {};
         addSig(
@@ -272,7 +275,6 @@ public class CompModuleHelper extends CompModule {
         //System.out.println(s);
         return s;
     }
-
     public String addVarSigSimple(String name, List<ExprVar> typ) {
         // var sig s in typ {};
         addSig(
@@ -292,6 +294,56 @@ public class CompModuleHelper extends CompModule {
         String s = DashStrings.varName + space + DashStrings.sigName + space;
         s += name + space + DashStrings.inName + space;
         s += ppExpr(((Expr) typ)); 
+        s += " { }\n";
+        //System.out.println(s);
+        return s;
+    }
+
+    // var one sig name in typ {}
+    public String addVarOneSigSimple(String name, ExprVar typ) {
+        // var one sig s in typ {};
+        addSig(
+            Pos.UNKNOWN,
+            name,
+            createVar(DashStrings.inName), 
+            Arrays.asList(typ),
+            new ArrayList<Decl>(),
+            null,
+            null,
+            null,
+            AttrType.ONE.makenull(Pos.UNKNOWN), 
+            null,
+            null,
+            AttrType.VARIABLE.makenull(Pos.UNKNOWN)
+            );
+        String s = DashStrings.varName + space + DashStrings.oneName + space + DashStrings.sigName + space;
+        s += name + space + DashStrings.inName + space;
+        s += ppExpr(typ); 
+        s += " { }\n";
+        //System.out.println(s);
+        return s;
+    }
+
+    // var lone sig name in typ {}
+    public String addVarLoneSigSimple(String name, ExprVar typ) {
+        // var lone sig s in typ {};
+        addSig(
+            Pos.UNKNOWN,
+            name,
+            createVar(DashStrings.inName), 
+            Arrays.asList(typ),
+            new ArrayList<Decl>(),
+            null,
+            null,
+            null,
+            AttrType.LONE.makenull(Pos.UNKNOWN), 
+            null,
+            null,
+            AttrType.VARIABLE.makenull(Pos.UNKNOWN)
+            );
+        String s = DashStrings.varName + space + DashStrings.loneName + space + DashStrings.sigName + space;
+        s += name + space + DashStrings.inName + space;
+        s += ppExpr(typ); 
         s += " { }\n";
         //System.out.println(s);
         return s;
@@ -348,9 +400,7 @@ public class CompModuleHelper extends CompModule {
         Expr body = createAndFromList(eList);
         addFact(Pos.UNKNOWN,name,body);
         String s = new String();
-        s += DashStrings.factName + " " + name + " {";
-        StringJoiner j = new StringJoiner(", ");
-        s += tab;
+        s += DashStrings.factName + " " + name + " {\n" + tab;
         StringJoiner sj = new StringJoiner("\n" + tab);   
         for (Expr e: eList) {
             //ExprToString eToString = new ExprToString(false);

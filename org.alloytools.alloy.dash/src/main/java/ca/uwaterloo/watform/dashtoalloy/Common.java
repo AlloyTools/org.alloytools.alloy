@@ -55,7 +55,8 @@ public class Common {
     // [s:Snapshot, s':Snapshot] 
     public static List<Decl> curDecls() {
         List<Decl> o = new ArrayList<Decl>();
-        o.add(curDecl());
+        if (!DashOptions.isElectrum)
+            o.add(curDecl());
         return o;
     }
 
@@ -79,14 +80,14 @@ public class Common {
     // s:Snapshot, p0:P0, p1:P1, ...]
     public static List<Decl> curParamsDecls(List<Integer> prsIdx, List<String> prs) {
         List<Decl> o = new ArrayList<Decl>();
-        if (!DashOptions.isElectrum) o.add(curDecl());
+        o.addAll(curDecls());
         o.addAll(paramDecls(prsIdx,  prs));
         return o;
     }
     // s:Snapshot, s':Snapshot, p0:P0, p1:P1, ...]
     public static List<Decl> curNextParamsDecls(List<Integer> prsIdx, List<String> prs) {
         List<Decl> o = new ArrayList<Decl>();
-        if (!DashOptions.isElectrum) { o.add(curDecl()); o.add(nextDecl()); }
+        o.addAll(curNextDecls()); 
         o.addAll(paramDecls(prsIdx,  prs));
         return o;
     }
@@ -119,11 +120,27 @@ public class Common {
     public static ExprVar nextVar() {
         return createVar(DashStrings.nextName);
     }
+    public static List<Expr> curVars() {
+        List<Expr> o = new ArrayList<Expr>();
+        if (!DashOptions.isElectrum) {
+            o.add(curVar());
+        }
+        return o;        
+    }
+     public static List<Expr> nextVars() {
+        List<Expr> o = new ArrayList<Expr>();
+        if (!DashOptions.isElectrum) {
+            o.add(nextVar());
+        }
+        return o;        
+    }
     //[s,s']
     public static List<Expr> curNextVars() {
         List<Expr> o = new ArrayList<Expr>();
-        o.add(curVar());
-        o.add(nextVar());
+        if (!DashOptions.isElectrum) {
+            o.add(curVar());
+            o.add(nextVar());
+        }
         return o;        
     }
     //pi: Identfiers
@@ -144,14 +161,15 @@ public class Common {
     // [s, p1,p2,...]
     public static List<Expr> curParamVars(List<Integer> prsIdx, List<String> prs) {
         List<Expr> o = new ArrayList<Expr>();
-        o.add(curVar());
+        o.addAll(curVars());
         o.addAll(paramVars(prsIdx,prs));
         return o;
     }
     // [s', p1,p2,...]
     public static List<Expr> nextParamVars(List<Integer> prsIdx, List<String> prs) {
         List<Expr> o = new ArrayList<Expr>();
-        o.add(nextVar());
+
+        o.addAll(nextVars());
         o.addAll(paramVars(prsIdx, prs));
         return o;
     }
@@ -237,16 +255,20 @@ public class Common {
 
     // s.name
     public static Expr curJoinExpr(Expr e) {
-        return createJoin(curVar(), e);
+        if (DashOptions.isElectrum) return e;
+        else return createJoin(curVar(), e);
     }
     //s'.name
     public static Expr nextJoinExpr(Expr e) {
         if (DashOptions.isElectrum) {
-            //TODO -- prime all variables??
-            return createTrue();
+            assert(isExprVar(e));
+            return primedVarExpr(e);
         } else {
             return createJoin(nextVar(), e);
         }
+    }
+    public static Expr primedVarExpr(Expr e) {
+        return createPrime(e);
     }
     /*
     // p3 -> p2 -> p1 -> x
@@ -274,10 +296,20 @@ public class Common {
         return createJoinList(ll);
     }
 
-    //TODO better name!
+    //in Electrum - if we have a dynamic var (not buffer) with a non-var, non-one var, non-lone var, non-set var
+    // type, we have to handle is specially
     public static boolean isWeirdOne(String vfqn, DashModule d) {
         //System.out.println("Vqn: " + vfqn);
-        return d.getVarBufferParams(vfqn).size() == 0 && isExprArrow(d.getVarType(vfqn));
+        if (d.hasVar(vfqn)) {
+            Expr typ = d.getVarType(vfqn);
+            return (d.getVarBufferParams(vfqn).size() == 0 && 
+                    !((isExprOne(typ) && isExprVar(getSub(typ))) ||
+                    (isExprLone(typ) && isExprVar(getSub(typ))) ||
+                    (isExprSet(typ) && isExprVar(getSub(typ)))));
+        } else {
+            // it is a buffer and getVarType does not work on buffers
+            return false;
+        }
     }
 
     // common case

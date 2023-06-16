@@ -13,6 +13,7 @@ public class DashStrings {
 	public static String inName = "in";
 	public static String abstractName = "abstract";
 	public static String oneName = "one";
+	public static String loneName = "lone";
 	public static String varName = "var";
 	public static String openName = "open";
 	public static String asName = "as";

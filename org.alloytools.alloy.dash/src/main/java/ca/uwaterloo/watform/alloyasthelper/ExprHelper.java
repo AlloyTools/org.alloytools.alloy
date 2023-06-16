@@ -42,6 +42,15 @@ public class ExprHelper  {
     public static boolean isExprUnary(Expr e) {
         return (e instanceof ExprUnary);
     }
+    public static boolean isExprSet(Expr e) {
+        return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.SETOF));
+    }
+    public static boolean isExprOne(Expr e) {
+        return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.ONE));
+    }
+    public static boolean isExprLone(Expr e) {
+        return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.LONE));
+    }
     public static boolean isExprCard(Expr e) {
         return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.CARDINALITY));
     }
@@ -183,7 +192,9 @@ public class ExprHelper  {
     public static Expr createUnaryExpr(ExprUnary.Op op, Expr sub) {
         return (ExprUnary) op.make(Pos.UNKNOWN, sub);
     }
-
+    public static Expr createPrime(Expr sub) {
+        return ExprUnary.Op.PRIME.make(Pos.UNKNOWN, sub);
+    }
 
     public static Expr createExprList(ExprList.Op op, List<Expr> args) {
         return (Expr) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN, op, args);

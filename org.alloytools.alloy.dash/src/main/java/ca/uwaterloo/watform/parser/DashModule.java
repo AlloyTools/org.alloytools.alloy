@@ -375,6 +375,9 @@ public class DashModule extends CompModuleHelper {
     public boolean isInternalEvent(String efqn) {
     	return eventTable.isInternalEvent(efqn);
     }
+    public boolean hasVar(String name) {
+    	return varTable.hasVar(name);
+    }
     public List<String> getAllVarNames() {
     	return varTable.getAllVarNames();
     }

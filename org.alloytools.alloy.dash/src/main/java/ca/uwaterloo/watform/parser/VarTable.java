@@ -104,7 +104,9 @@ public class VarTable {
 
 
 	}
-	
+	public boolean hasVar(String name) {
+		return (varTable.containsKey(name));
+	}	
 	public List<String> getAllVarNames() {
 		return new ArrayList<String>(varTable.keySet());
 	}

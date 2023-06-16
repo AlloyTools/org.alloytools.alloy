@@ -79,12 +79,23 @@ public class AddSpaceSignatures {
         }
 
         // abstract sig BufIdx {} if this model has buffers
-        // if not Electrum
+        // if not Electrum or if this buffer would be grouped under a parameter in Electrum declaration
         // o/w buffers have to be fields in sig BufIdx
         // and this functionality is within AddSnapshotSignatures        
-        if (!DashOptions.isElectrum && d.hasBuffers()) {
-            for (int i: d.getBufferIndices()) {
-                d.alloyString += d.addSigSimple(DashStrings.bufferIndexName + i);
+
+        if (d.hasBuffers()) {
+            // buffers with parameters
+            // every buffer has a different index
+            // so just one decl per sig
+            List<String> allbfqns = d.getAllBufferNames();
+            for (String b:allbfqns) {
+                if (DashOptions.isElectrum) {
+                    if (d.getVarBufferParams(b).size() != 0)
+                        // because buffer is declared under param
+                        // o/w declared with buffer index in Snapshot stuff
+                        d.alloyString += d.addSigSimple(DashStrings.bufferIndexName + d.getBufferIndex(b));
+                } else 
+                    d.alloyString += d.addSigSimple(DashStrings.bufferIndexName + d.getBufferIndex(b));
             }
         } 
 

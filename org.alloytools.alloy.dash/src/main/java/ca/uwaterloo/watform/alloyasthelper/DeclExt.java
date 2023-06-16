@@ -11,6 +11,7 @@ import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprVar;
 
 import ca.uwaterloo.watform.core.DashErrors;
+import ca.uwaterloo.watform.core.DashStrings;
 
 import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
 import ca.uwaterloo.watform.alloyasthelper.ExprToString;
@@ -37,11 +38,17 @@ public class DeclExt extends Decl {
             isVar ? Pos.UNKNOWN:null, 
             new ArrayList<>(Arrays.asList(ExprHelper.createVar(v))), 
             e);
+
     }
     public String toString() {
         // Decl does not have a toString()
         String x = new String();
         StringJoiner sj = new StringJoiner(", ");
+        // var keyword
+        System.out.println("Decl" + names + (this.isVar==null));
+        if (isVar != null) {
+            x += DashStrings.varName + " ";
+        }
         names.forEach(n -> sj.add(n.toString()));
         x += sj.toString();
         x += " : ";
@@ -68,6 +75,7 @@ public class DeclExt extends Decl {
     // makes it seem like there is a pos for "var"
     // making it a "var" decl
     public static DeclExt newVarDeclExt(String v, Expr typ) {
+
         return new DeclExt(v , typ, true);        
     }
 
