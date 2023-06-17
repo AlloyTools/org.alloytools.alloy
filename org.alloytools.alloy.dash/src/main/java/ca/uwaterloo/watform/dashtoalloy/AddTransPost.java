@@ -80,7 +80,7 @@ public class AddTransPost {
     }
     */
 
-    // TODO for Electrum!
+    
     public static void addTransPost(DashModule d, String tfqn) {
         String tout = translateFQN(tfqn);
         List<Integer> prsIdx = d.getTransParamsIdx(tfqn); 

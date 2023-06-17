@@ -43,8 +43,8 @@ public class DashStrings {
 	public static String utilBufferName = "util/buffer";
 
 	public static String utilTcmcPathName = "util/tcmc_path";
-	public static String tcmcKsSigmaName = "tcmc/ks_sigma";
-	public static String tcmcKsS0Name = "tcmc/ks_s0";	
+	public static String tcmcSigmaName = "tcmc_path/pathSigma";
+	public static String tcmcInitialStateName = "tcmc_path/pathState";	
 
 
 	// Dash input keywords
@@ -67,6 +67,7 @@ public class DashStrings {
 	public static String enterName = "enter";
 	public static String exitName = "exit";
 	public static String initName = "init";
+	public static String singleEventName = "singleEvent";
 
 	// user must be aware of this name
 	public static String bufferIndexName = "bufIdx";

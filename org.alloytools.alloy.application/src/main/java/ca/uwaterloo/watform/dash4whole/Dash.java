@@ -66,9 +66,15 @@ public class Dash {
    public static void main(String args[]) throws Exception { 
 
         if(args.length == 0) {
-            System.out.println("Arguments: (-m traces|tcmc|electrum) (-c #) (-p) (-t) (-r) filename(s)");
-            System.out.println(" -c is cmdnum; -t is translateOnly; -r is resolveOnly; -p is printDash");
-            System.out.println("if given a .als files, it runs all its commands");
+            System.out.println("Arguments: (-m traces|tcmc|electrum) (-single) (-c #) (-p) (-t) (-r) filename(s)");
+            System.out.println("-m traces|tcmc|electrum is verification method");
+            System.out.println("-single includes single event input");
+            System.out.println("-c # is cmdnum to execute");
+            System.out.println("-t is translateOnly");
+            System.out.println("-r is resolveOnly");
+            System.out.println("-e is echo file from internal parsed data");
+            System.out.println("expects .dsh or .als file");
+            System.out.println("if given a .als files, it ignores other options and runs all its commands");
             System.exit(0);
         }
 
@@ -111,10 +117,12 @@ public class Dash {
                 i++;                   
             } else if (args[i].equals("-t")) {
                 translateOnly = true;
-            } else if (args[i].equals("-p")) {
+            } else if (args[i].equals("-e")) {
                 printOnly = true;
             } else if (args[i].equals("-r")) {
                 resolveOnly = true;
+            } else if (args[i].equals("-single")) {
+                DashOptions.singleEventInput = true;
             } else {
                 // everything else is a file name
                 filelist.add(args[i]);

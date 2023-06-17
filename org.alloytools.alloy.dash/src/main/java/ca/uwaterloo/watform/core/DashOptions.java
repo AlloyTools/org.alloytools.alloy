@@ -9,10 +9,11 @@ public class DashOptions {
     public static boolean isElectrum = false;
     public static boolean isTcmc = false;
     public static boolean isTraces = true;
-
+    public static boolean singleEventInput  = false;
+    
     //NAD other stuff that might be removed
     //public static boolean variablesUnchanged = true;
-    //public static boolean assumeSingleInput  = false;
+    
     //public static boolean generateSigAxioms  = false;
     //public static boolean reachabilityCheck   = false;
 

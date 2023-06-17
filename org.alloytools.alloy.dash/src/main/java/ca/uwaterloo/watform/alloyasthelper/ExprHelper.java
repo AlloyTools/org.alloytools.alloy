@@ -210,8 +210,14 @@ public class ExprHelper  {
     public static Expr createOne(Expr sub) {
         return (ExprUnary) ExprUnary.Op.ONE.make(Pos.UNKNOWN, sub);
     }
+    public static Expr createLone(Expr sub) {
+        return (ExprUnary) ExprUnary.Op.LONE.make(Pos.UNKNOWN, sub);
+    }
     public static Expr createSomeOf(Expr sub) {
         return (ExprUnary) ExprUnary.Op.SOMEOF.make(Pos.UNKNOWN, sub);
+    }
+    public static Expr createNo(Expr sub) {
+        return (ExprUnary) ExprUnary.Op.NO.make(Pos.UNKNOWN, sub);
     }
     public static Expr createSet(Expr sub) {
         return (ExprUnary) ExprUnary.Op.SETOF.make(Pos.UNKNOWN,  sub);
