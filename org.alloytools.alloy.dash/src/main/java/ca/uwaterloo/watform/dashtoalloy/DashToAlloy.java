@@ -27,6 +27,7 @@ public class DashToAlloy {
             AddTestIfNextStable.addTestIfNextStable(d);
         AddStutter.addStutter(d);
         AddSmallStep.addSmallStep(d);
+        if (DashOptions.isTcmc) AddCompleteBigSteps.addCompleteBigSteps(d);
 
         if (DashOptions.enoughOperations) AddEnoughOperationsPred.addEnoughOperationsPred(d);
         if (DashOptions.singleEventInput)
@@ -34,7 +35,7 @@ public class DashToAlloy {
         if (DashOptions.isTraces)
             AddTracesFact.addTracesFact(d);
         else if (DashOptions.isTcmc) {
-            if (DashOptions.reachability) AddReachabilityFact.addReachabilityFact(d);
+            if (DashOptions.reachability) AddReachability.addReachability(d);
             AddTcmcFact.addTcmcFact(d);
         }
         else if (DashOptions.isElectrum)

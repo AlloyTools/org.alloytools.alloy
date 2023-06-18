@@ -335,6 +335,9 @@ public class ExprHelper  {
     public static Expr createIff(Expr left, Expr right) {
         return (Expr) ExprBinary.Op.IFF.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
+    public static Expr createImplies(Expr left, Expr right) {
+        return (Expr) ExprBinary.Op.IMPLIES.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
+    }
     public static ExprBinary createArrow(Expr left,Expr right) {
         return (ExprBinary) ExprBinary.Op.ARROW.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }

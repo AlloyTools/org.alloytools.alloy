@@ -59,6 +59,12 @@ public class Common {
             o.add(curDecl());
         return o;
     }
+    public static List<Decl> nextDecls() {
+        List<Decl> o = new ArrayList<Decl>();
+        if (!DashOptions.isElectrum)
+            o.add(nextDecl());
+        return o;
+    }
 
     // [s:Snapshot, s':Snapshot] 
     public static List<Decl> curNextDecls() {
