@@ -28,6 +28,7 @@ public class DashToAlloy {
         AddStutter.addStutter(d);
         AddSmallStep.addSmallStep(d);
 
+        if (DashOptions.enoughOperations) AddEnoughOperationsPred.addEnoughOperationsPred(d);
         if (DashOptions.singleEventInput)
             AddSingleEventInputFact.addSingleEventInputFact(d);
         if (DashOptions.isTraces)

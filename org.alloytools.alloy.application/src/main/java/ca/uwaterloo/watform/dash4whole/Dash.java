@@ -70,6 +70,7 @@ public class Dash {
             System.out.println("-m traces|tcmc|electrum is verification method");
             System.out.println("-single includes single event input fact");
             System.out.println("-reach includes reachability fact (for tcmc only)");
+            System.out.println("-enough includes enoughOperations pred");
             System.out.println("-c # is cmdnum to execute");
             System.out.println("-t is translateOnly");
             System.out.println("-r is resolveOnly");
@@ -126,6 +127,8 @@ public class Dash {
                 DashOptions.singleEventInput = true;
             } else if (args[i].equals("-reach")) {
                 DashOptions.reachability = true;
+            } else if (args[i].equals("-enough")) {
+                DashOptions.enoughOperations = true;
             } else {
                 // everything else is a file name
                 filelist.add(args[i]);

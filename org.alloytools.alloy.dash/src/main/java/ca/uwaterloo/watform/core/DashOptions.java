@@ -10,7 +10,8 @@ public class DashOptions {
     public static boolean isTcmc = false;
     public static boolean isTraces = true;
     public static boolean singleEventInput  = false;
-    public static boolean reachability  = true;
+    public static boolean reachability  = false;
+    public static boolean enoughOperations  = false;
     //NAD other stuff that might be removed
     //public static boolean variablesUnchanged = true;
     

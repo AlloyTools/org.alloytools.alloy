@@ -89,6 +89,7 @@ public class DashStrings {
 	public static String tcmcFactName = dsh_prefix + "tcmc_fact";
 	public static String singleEventName = dsh_prefix + "single_event";
 	public static String reachabilityName = dsh_prefix + "reachability";
+	public static String enoughOperationsName = dsh_prefix + "enoughOperations";
 
 	/* names used in Dash translation */
 	// sig names
