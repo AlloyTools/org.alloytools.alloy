@@ -66,9 +66,10 @@ public class Dash {
    public static void main(String args[]) throws Exception { 
 
         if(args.length == 0) {
-            System.out.println("Arguments: (-m traces|tcmc|electrum) (-single) (-c #) (-p) (-t) (-r) filename(s)");
+            System.out.println("Arguments: (-m traces|tcmc|electrum) (-single) (-reach) (-c #) (-p) (-t) (-r) filename(s)");
             System.out.println("-m traces|tcmc|electrum is verification method");
-            System.out.println("-single includes single event input");
+            System.out.println("-single includes single event input fact");
+            System.out.println("-reach includes reachability fact (for tcmc only)");
             System.out.println("-c # is cmdnum to execute");
             System.out.println("-t is translateOnly");
             System.out.println("-r is resolveOnly");
@@ -123,6 +124,8 @@ public class Dash {
                 resolveOnly = true;
             } else if (args[i].equals("-single")) {
                 DashOptions.singleEventInput = true;
+            } else if (args[i].equals("-reach")) {
+                DashOptions.reachability = true;
             } else {
                 // everything else is a file name
                 filelist.add(args[i]);

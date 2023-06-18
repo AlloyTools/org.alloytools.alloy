@@ -68,43 +68,46 @@ public class DashStrings {
 	public static String enterName = "enter";
 	public static String exitName = "exit";
 	public static String initName = "init";
-	public static String singleEventName = "singleEvent";
+	
 
 	// user must be aware of this name
 	public static String bufferIndexName = "bufIdx";
 
+	public static String dsh_prefix = "dsh_";
 	// init is a reserved word in Dash
-	public static String initFactName = "dsh_initial";
-	public static String electrumInitName = "dsh_init";
+	public static String initFactName = dsh_prefix + "initial";
+	public static String electrumInitName = dsh_prefix + "init";
 	// predicate names
 
-	public static String smallStepName = "dsh_small_step";
-	public static String stableName = "dsh_stable";
-	public static String stutterName = "dsh_stutter";
+	public static String smallStepName = dsh_prefix + "small_step";
+	public static String stableName = dsh_prefix + "stable";
+	public static String stutterName = dsh_prefix + "stutter";
 	//public static String equalsName = "equals";
-	public static String isEnabled = "dsh_isEnabled";
-	public static String tracesFactName = "dsh_traces_fact";
-	public static String electrumFactName = "dsh_electrum_fact";
-	public static String tcmcFactName = "dsh_tcmc_fact";
-
+	public static String isEnabled = dsh_prefix + "isEnabled";
+	public static String tracesFactName = dsh_prefix + "traces_fact";
+	public static String electrumFactName = dsh_prefix + "electrum_fact";
+	public static String tcmcFactName = dsh_prefix + "tcmc_fact";
+	public static String singleEventName = dsh_prefix + "single_event";
+	public static String reachabilityName = dsh_prefix + "reachability";
 
 	/* names used in Dash translation */
 	// sig names
-	public static String snapshotName = "DshSnapshot";
-	public static String allEventsName = "DshEvents";
-	public static String allEnvironmentalEventsName = "DshEnvEvents";
-	public static String allInternalEventsName = "DshIntEvents";
-	public static String variablesName = "DshVars";
-	public static String stateLabelName = "DshStates";
+	public static String DshPrefix = "Dsh";
+	public static String snapshotName = DshPrefix + "Snapshot";
+	public static String allEventsName = DshPrefix + "Events";
+	public static String allEnvironmentalEventsName = DshPrefix + "EnvEvents";
+	public static String allInternalEventsName = DshPrefix + "IntEvents";
+	public static String variablesName = DshPrefix + "Vars";
+	public static String stateLabelName = DshPrefix + "States";
 	//public static String systemStateName = "SystemState";
 	//public static String transitionLabelName = "TransitionLabel";
-	public static String identifierName = "DshIds";
-	public static String bufferName = "DshBuffer";
+	public static String identifierName = DshPrefix + "Ids";
+	public static String bufferName = DshPrefix + "Buffer";
 
 	// field names
-	public static String confName = "dsh_conf";
-	public static String scopesUsedName = "dsh_sc_used";
-	public static String eventsName = "dsh_events";
+	public static String confName = dsh_prefix + "conf";
+	public static String scopesUsedName = dsh_prefix + "sc_used";
+	public static String eventsName = dsh_prefix + "events";
 	
 	// predicate names
 	//public static String tName = "dsh_t";
@@ -119,8 +122,8 @@ public class DashStrings {
 	public static String curName = "s";
 	public static String nextName = "sn";
 	public static String pName = "p";
-	public static String genEventName = "dsh_genEvs";
-	public static String scopeName = "dsh_scp";
+	public static String genEventName = "genEvs";
+	public static String scopeName = "sc";
 	public static String randomParamExt = "_aa";
 
 	// strings used internally

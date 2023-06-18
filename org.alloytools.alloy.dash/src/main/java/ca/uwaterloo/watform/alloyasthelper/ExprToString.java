@@ -223,12 +223,20 @@ public class ExprToString {
     } 
 
     private void addBracketsIfNeeded(Expr expr) {
-        if (!(isExprVar(expr) || (isExprUnary(expr) && !isExprCard(expr) ))) {
+        if (!(isExprVar(expr) || 
+                (isExprUnary(expr) && 
+                    !isExprCard(expr)&& 
+                    !isExprRClosure(expr) && 
+                    !isExprClosure(expr)))) {
             out.beginC(2);
             out.print("(");      
         }    
         ExprToOut(expr);
-         if (!(isExprVar(expr) || (isExprUnary(expr) && !isExprCard(expr) ) )) {
+        if (!(isExprVar(expr) || 
+                (isExprUnary(expr) && 
+                    !isExprCard(expr) && 
+                    !isExprRClosure(expr) && 
+                    !isExprClosure(expr)) )) {
             out.print(")");
             out.end();
         }            

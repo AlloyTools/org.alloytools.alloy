@@ -54,7 +54,16 @@ public class ExprHelper  {
     public static boolean isExprCard(Expr e) {
         return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.CARDINALITY));
     }
-    
+ 
+    public static boolean isExprRClosure(Expr e) {
+        return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.RCLOSURE));
+    }
+
+    public static boolean isExprClosure(Expr e) {
+        return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.CLOSURE));
+    }
+
+
     public static boolean isExprJoin(Expr e) {
         return ((e instanceof ExprBinary) && ((ExprBinary) e).op.equals(ExprBinary.Op.JOIN));
     }
@@ -222,6 +231,9 @@ public class ExprHelper  {
     public static Expr createSet(Expr sub) {
         return (ExprUnary) ExprUnary.Op.SETOF.make(Pos.UNKNOWN,  sub);
     }
+    public static ExprUnary createReflexiveTransitiveClosure(Expr sub) {
+        return (ExprUnary) ExprUnary.Op.RCLOSURE.make(Pos.UNKNOWN, sub);
+    }
     public static ExprBinary createJoin(Expr left, Expr right) {
         return (ExprBinary) ExprBinary.Op.JOIN.make(Pos.UNKNOWN, Pos.UNKNOWN, left, right);
     }
@@ -250,6 +262,10 @@ public class ExprHelper  {
     public static ExprBinary createRangeRes(Expr left, Expr right) {
         return (ExprBinary) ExprBinary.Op.RANGE.make(Pos.UNKNOWN, Pos.UNKNOWN, left, right);
     }
+    public static ExprBinary createDomainRes(Expr left, Expr right) {
+        return (ExprBinary) ExprBinary.Op.DOMAIN.make(Pos.UNKNOWN, Pos.UNKNOWN, left, right);
+    }
+
     public static Expr createUnionList(List<Expr> elist) {
         Expr ret = null;
         assert(elist!=null);
