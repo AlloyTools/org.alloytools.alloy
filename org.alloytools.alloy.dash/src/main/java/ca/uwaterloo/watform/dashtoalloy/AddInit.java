@@ -51,14 +51,14 @@ public class AddInit {
             if (!ent.isEmpty()) body.add(createEquals(curConf(i),createUnionList(ent)));
             else body.add(createEquals(curConf(i), createNone()));
         }
-        for (int i = 1; i <= d.getMaxDepthParams(); i++) {
+        for (int i = 0; i <= d.getMaxDepthParams(); i++) {
             // scopesUsedi = none
             body.add(createEquals(
                 curScopesUsed(i),
                 createNoneArrow(i)));
             // no limits on initial set of events except that they must be environmental
             //s.events1 :> internalEvents = none -> none
-            if (d.hasEventsAti(i))
+            if (d.hasInternalEventsAti(i))
                 body.add(createEquals(
                     createRangeRes(curEvents(i), allInternalEventsVar()),
                     createNoneArrow(i)));

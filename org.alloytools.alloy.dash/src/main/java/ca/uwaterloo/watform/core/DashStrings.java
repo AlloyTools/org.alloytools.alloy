@@ -42,9 +42,10 @@ public class DashStrings {
 
 	public static String utilBufferName = "util/buffer";
 
-	public static String utilTcmcPathName = "util/tcmc_path";
-	public static String tcmcSigmaName = "tcmc_path/pathSigma";
-	public static String tcmcInitialStateName = "tcmc_path/pathState";	
+	public static String utilTcmcPathName = "util/tcmc";
+	public static String tcmcInitialStateName = "tcmc/ks_s0";	
+	public static String tcmcSigmaName = "tcmc/ks_sigma";
+
 
 
 	// Dash input keywords
