@@ -97,13 +97,12 @@ public class AddTransPost {
             List<Expr> exi = DashRef.hasNumParams(exited,i).stream()
                 .map(x -> translateDashRefToArrow(x))
                 .collect(Collectors.toList());
-            Expr e = curConf(i);
-            for (Expr x:exi) {
-                // can't diff ((ent1 - ent2) - ent3)
-                // but have to diff from whole set
-                e = createDiff(e,x);
-            }
-            //if (!exi.isEmpty()) e = createDiff(e,createDiffList(exi));
+            // both ent and exi could be empty at this level
+            Expr e;
+            if (!exi.isEmpty()) 
+                e = createDiff(curConf(i),createUnionList(exi));
+            else 
+                e = curConf(i);
             if (!ent.isEmpty()) e = createUnion(e,createUnionList(ent));
             body.add(createEquals(nextConf(i),e));
         }
