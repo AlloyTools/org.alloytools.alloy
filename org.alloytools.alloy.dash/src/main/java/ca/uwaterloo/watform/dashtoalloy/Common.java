@@ -213,6 +213,9 @@ public class Common {
     public static Expr eventsVar(int size) {
         return createVar(DashStrings.eventsName + size);
     }
+    public static Expr transTakenVar(int size) {
+        return createVar(DashStrings.transTakenName + size);
+    }
 
     public static Expr curScopesUsed(int size) {
         return curJoinExpr(scopesUsedVar(size));
@@ -236,6 +239,12 @@ public class Common {
     // s'.event3
     public static Expr nextEvents(int size) {
         return nextJoinExpr(eventsVar(size));
+    }
+    public static Expr curTransTaken(int size) {
+        return curJoinExpr(transTakenVar(size));
+    }
+    public static Expr nextTransTaken(int size) {
+        return nextJoinExpr(transTakenVar(size));
     }
 
     // s.stable == boolean/True

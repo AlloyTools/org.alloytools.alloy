@@ -74,7 +74,8 @@ public class DashRef extends Expr {
 	private static enum DashRefKind {
 		STATE,
 		EVENT,
-		VAR
+		VAR,
+		TRANS
 		// BUFFER ????
 	}
 
@@ -122,7 +123,10 @@ public class DashRef extends Expr {
 	public static DashRef createVarDashRef(String n, List<Expr> prmValues) {
 		return new DashRef(DashRefKind.VAR,n, prmValues);
 	}
-
+	public static DashRef createTransDashRef(String n, List<Expr> prmValues) {
+		return new DashRef(DashRefKind.TRANS,n, prmValues);
+		
+	}
 
 	/*
 	public static Expr createDashRef(Pos p, String n, List<Expr> eList) {

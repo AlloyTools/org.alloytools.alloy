@@ -39,14 +39,14 @@ public class AddSpaceSignatures {
         recurseCreateStateSpaceSigs(d, d.getRootName());
         d.alloyString += "\n";
 
-        // we don't need transition names anymore (rather we use scopes)
+ 
         // abstract sig TransLabel {}
-        // d.alloyString += d.addAbstractSigSimple(DashStrings.transitionLabelName);
+        d.alloyString += d.addAbstractSigSimple(DashStrings.transitionLabelName);
         // add all transitions as one sig extensions of TransLabel
-        //for (String t : d.getTransNames()) {
-            //d.alloyString += d.addOneExtendsSigSimple(translateFQN(t), DashStrings.transitionLabelName);
-        //}
-        //d.alloyString += "\n";
+        for (String t : d.getAllTransNames()) {
+            d.alloyString += d.addOneExtendsSigSimple(translateFQN(t), DashStrings.transitionLabelName);
+        }
+        d.alloyString += "\n";
 
         // abstract sig Identifiers {} if this model has parametrized components
         // if not Electrum

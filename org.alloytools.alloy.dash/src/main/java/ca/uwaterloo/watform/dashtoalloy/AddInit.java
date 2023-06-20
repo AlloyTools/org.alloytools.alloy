@@ -56,6 +56,9 @@ public class AddInit {
             body.add(createEquals(
                 curScopesUsed(i),
                 createNoneArrow(i)));
+            body.add(createEquals(
+                curTransTaken(i),
+                createNoneArrow(i)));
             // no limits on initial set of events except that they must be environmental
             //s.events1 :> internalEvents = none -> none
             if (d.hasInternalEventsAti(i))

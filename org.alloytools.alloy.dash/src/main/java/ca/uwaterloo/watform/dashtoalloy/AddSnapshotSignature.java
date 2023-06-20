@@ -39,6 +39,7 @@ public class AddSnapshotSignature {
 
             d.alloyString += d.addVarSigSimple(scopesUsedName+"0", createVar(stateLabelName));
             d.alloyString += d.addVarSigSimple(confName+"0", createVar(stateLabelName));
+            d.alloyString += d.addVarSigSimple(transTakenName+"0", createVar(transitionLabelName));
             if (d.hasEvents())
                 d.alloyString += d.addVarSigSimple(eventsName+"0", createVar(allEventsName));
 
@@ -60,6 +61,11 @@ public class AddSnapshotSignature {
                         DeclExt.newVarDeclExt(
                             confName+Integer.toString(i), 
                             createArrowExprList(DashUtilFcns.newListWith(cop, createSet(createVar(stateLabelName))))));
+                    // conf 1, etc.
+                    decls.add(
+                        DeclExt.newVarDeclExt(
+                            transTakenName+Integer.toString(i), 
+                            createArrowExprList(DashUtilFcns.newListWith(cop, createSet(createVar(transitionLabelName))))));
                     // scopesUsed 1, etc.
                     decls.add(
                         DeclExt.newVarDeclExt(
@@ -206,6 +212,7 @@ public class AddSnapshotSignature {
             //TODO: if no concurrency, don't need scopesUsed !!
             decls.add(DeclExt.newSetDeclExt(scopesUsedName+"0", stateLabelName));
             decls.add(DeclExt.newSetDeclExt(confName+"0", stateLabelName));
+            decls.add(DeclExt.newSetDeclExt(transTakenName+"0", transitionLabelName));
             if (d.hasEvents())
                 decls.add(DeclExt.newSetDeclExt(eventsName+"0", allEventsName));
             List<String> cop;        
@@ -213,13 +220,16 @@ public class AddSnapshotSignature {
                 cop = Collections.nCopies(i,identifierName);
                 // scopesUsed 1, etc. 
                 //if (d.transAtThisParamDepth(i)) 
-                    decls.add((Decl) new DeclExt(
-                        scopesUsedName+Integer.toString(i), 
-                        createArrowStringList(DashUtilFcns.newListWith(cop, stateLabelName))));
+                decls.add((Decl) new DeclExt(
+                    scopesUsedName+Integer.toString(i), 
+                    createArrowStringList(DashUtilFcns.newListWith(cop, stateLabelName))));
                 // conf 1, etc.
                 decls.add((Decl) new DeclExt(
                     confName+Integer.toString(i), 
                     createArrowStringList(DashUtilFcns.newListWith(cop, stateLabelName))));
+                decls.add((Decl) new DeclExt(
+                    transTakenName+Integer.toString(i), 
+                    createArrowStringList(DashUtilFcns.newListWith(cop, transitionLabelName))));
                 // event 1, etc.
                 if (d.hasEvents() && d.hasEventsAti(i))
                     decls.add((Decl) new DeclExt(

@@ -29,15 +29,16 @@ public class DashToAlloy {
         AddSmallStep.addSmallStep(d);
         if (DashOptions.isTcmc) AddCompleteBigSteps.addCompleteBigSteps(d);
 
-        if (DashOptions.enoughOperations) AddEnoughOperationsPred.addEnoughOperationsPred(d);
+        if (DashOptions.enoughOperations) 
+            AddEnoughOperationsPred.addEnoughOperationsPred(d);
         if (DashOptions.singleEventInput)
             AddSingleEventInputFact.addSingleEventInputFact(d);
+        if (DashOptions.isTcmc && DashOptions.reachability) 
+            AddReachabilityPred.addReachabilityPred(d);
         if (DashOptions.isTraces)
             AddTracesFact.addTracesFact(d);
-        else if (DashOptions.isTcmc) {
-            if (DashOptions.reachability) AddReachability.addReachability(d);
+        else if (DashOptions.isTcmc)     
             AddTcmcFact.addTcmcFact(d);
-        }
         else if (DashOptions.isElectrum)
             AddElectrumFact.addElectrumFact(d);
     }

@@ -101,7 +101,7 @@ public class DashStrings {
 	public static String variablesName = DshPrefix + "Vars";
 	public static String stateLabelName = DshPrefix + "States";
 	//public static String systemStateName = "SystemState";
-	//public static String transitionLabelName = "TransitionLabel";
+	public static String transitionLabelName = "Transitions";
 	public static String identifierName = DshPrefix + "Ids";
 	public static String bufferName = DshPrefix + "Buffer";
 
@@ -109,7 +109,7 @@ public class DashStrings {
 	public static String confName = dsh_prefix + "conf";
 	public static String scopesUsedName = dsh_prefix + "sc_used";
 	public static String eventsName = dsh_prefix + "events";
-	
+	public static String transTakenName = dsh_prefix + "taken";
 	// predicate names
 	//public static String tName = "dsh_t";
 	public static String preName = "_pre";

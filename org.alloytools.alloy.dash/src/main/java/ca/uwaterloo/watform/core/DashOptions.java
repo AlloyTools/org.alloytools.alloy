@@ -12,6 +12,7 @@ public class DashOptions {
     public static boolean singleEventInput  = false;
     public static boolean reachability  = false;
     public static boolean enoughOperations  = false;
+    public static boolean includeTrans = true; // for debugging
     //NAD other stuff that might be removed
     //public static boolean variablesUnchanged = true;
     

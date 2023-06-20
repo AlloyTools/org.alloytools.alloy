@@ -111,6 +111,16 @@ public class AddTransPost {
         if (d.getTransDo(tfqn) != null)
             body.add(translateExpr(d.getTransDo(tfqn),d));
 
+        Expr ex;
+        DashRef dr;
+        for (int i=0;i <= d.getMaxDepthParams(); i++) {
+            if (prsIdx.size() == i) {
+                // for convenience of methods, make it a DashRef first
+                dr = DashRef.createTransDashRef(tout, paramVars(prsIdx,prs));
+                ex = translateDashRefToArrow(dr); 
+            } else ex = createNoneArrow(i);
+            body.add(createEquals(nextTransTaken(i), ex));
+        }
         // vars not mentioned in action do not change
         // includes entered/exited
         Set<String> intVarsBuffersThatDontChange = DashUtilFcns.listToSet(d.getAllInternalVarNames());
