@@ -34,7 +34,7 @@ public class DashToAlloy {
         if (DashOptions.singleEventInput)
             AddSingleEventInputFact.addSingleEventInputFact(d);
         if (DashOptions.isTcmc && DashOptions.reachability) 
-            AddReachabilityPred.addReachabilityPred(d);
+            AddReachabilityFact.addReachabilityFact(d);
         if (DashOptions.isTraces)
             AddTracesFact.addTracesFact(d);
         else if (DashOptions.isTcmc)     
