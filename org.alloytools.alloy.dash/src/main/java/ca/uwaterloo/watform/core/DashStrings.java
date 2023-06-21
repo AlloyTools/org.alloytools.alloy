@@ -100,10 +100,12 @@ public class DashStrings {
 	public static String allInternalEventsName = DshPrefix + "IntEvents";
 	public static String variablesName = DshPrefix + "Vars";
 	public static String stateLabelName = DshPrefix + "States";
+	public static String scopeLabelName = DshPrefix + "Scopes";
 	//public static String systemStateName = "SystemState";
 	public static String transitionLabelName = "Transitions";
 	public static String identifierName = DshPrefix + "Ids";
 	public static String bufferName = DshPrefix + "Buffer";
+	public static String scopeSuffix = "Scope";
 
 	// field names
 	public static String confName = dsh_prefix + "conf";
@@ -117,7 +119,7 @@ public class DashStrings {
 	//public static String semanticsName = "_semantics";
 	public static String testIfNextStableName = "_nextIsStable";
 	public static String enabledAfterStepName = "_enabledAfterStep";
-	
+	public static String allSnapshotsDifferentName = "allSnapshotsDifferent";
 	// variable/parameter names
 	// how to name parameter variables
 	public static String curName = "s";

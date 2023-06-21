@@ -296,7 +296,7 @@ public class AddTransPost {
             }
             // scopesUsedi' = scopesUsedi + scopesUsed
             u = DashRef.hasNumParams(sU,i).stream()
-                .map(x -> translateDashRefToArrow(x))
+                .map(x -> translateDashRefToArrow(replaceScope(x)))
                 .collect(Collectors.toList());
             e = curScopesUsed(i);
             if (!u.isEmpty()) e = createUnion(e,createUnionFromList(u));

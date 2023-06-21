@@ -71,7 +71,7 @@ public class AddTransPre {
         List<DashRef> nonO = d.nonOrthogonalScopesOf(tfqn);
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
             List<Expr> u = DashRef.hasNumParams(nonO,i).stream()
-                .map(x -> translateDashRefToArrow(x))
+                .map(x -> translateDashRefToArrow(replaceScope(x)))
                 .collect(Collectors.toList());
             for (Expr x: u) body.add(createNot(createIn(x,curScopesUsed(i))));
         }

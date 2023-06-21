@@ -210,7 +210,7 @@ public class AddSnapshotSignature {
             // scopesUsed0, conf0, event0
             //if (d.transAtThisParamDepth(0))
             //TODO: if no concurrency, don't need scopesUsed !!
-            decls.add(DeclExt.newSetDeclExt(scopesUsedName+"0", stateLabelName));
+            decls.add(DeclExt.newSetDeclExt(scopesUsedName+"0", scopeLabelName));
             decls.add(DeclExt.newSetDeclExt(confName+"0", stateLabelName));
             decls.add(DeclExt.newSetDeclExt(transTakenName+"0", transitionLabelName));
             if (d.hasEvents())
@@ -222,7 +222,7 @@ public class AddSnapshotSignature {
                 //if (d.transAtThisParamDepth(i)) 
                 decls.add((Decl) new DeclExt(
                     scopesUsedName+Integer.toString(i), 
-                    createArrowStringList(DashUtilFcns.newListWith(cop, stateLabelName))));
+                    createArrowStringList(DashUtilFcns.newListWith(cop, scopeLabelName))));
                 // conf 1, etc.
                 decls.add((Decl) new DeclExt(
                     confName+Integer.toString(i), 

@@ -36,6 +36,8 @@ public class AddSpaceSignatures {
         // abstract sig Statelabel {}
         d.alloyString += d.addAbstractSigSimple(DashStrings.stateLabelName);
         d.alloyString += d.addAbstractExtendsSigSimple(d.getRootName(),DashStrings.stateLabelName);
+        d.alloyString += d.addAbstractSigSimple(DashStrings.scopeLabelName);
+        d.alloyString += d.addOneExtendsSigSimple(d.getRootName()+DashStrings.scopeSuffix,DashStrings.scopeLabelName);
         recurseCreateStateSpaceSigs(d, d.getRootName());
         d.alloyString += "\n";
 
@@ -103,6 +105,9 @@ public class AddSpaceSignatures {
     private static void recurseCreateStateSpaceSigs(DashModule d, String parent) {
         for (String child: d.getImmChildren(parent)) {
             //System.out.println(translateFQN(child)+" "+translateFQN(parent));
+            // for scopes Used
+            d.alloyString += d.addOneExtendsSigSimple(translateFQN(child)+DashStrings.scopeSuffix,DashStrings.scopeLabelName);
+            // for conf
             if (d.isLeaf(child)) d.alloyString += d.addOneExtendsSigSimple(translateFQN(child),translateFQN(parent));
             else {
                 //if (d.isAnd(parent)) 

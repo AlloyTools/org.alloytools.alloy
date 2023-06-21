@@ -246,7 +246,12 @@ public class Common {
     public static Expr nextTransTaken(int size) {
         return nextJoinExpr(transTakenVar(size));
     }
-
+    public static Expr curStable() {
+        return curJoinExpr(stable());
+    }
+    public static Expr nextStable() {
+        return nextJoinExpr(stable());
+    }
     // s.stable == boolean/True
     public static Expr curStableTrue() {
         return createIsTrue(curJoinExpr(stable()));
@@ -297,6 +302,10 @@ public class Common {
     }
     */
 
+    public static DashRef replaceScope(DashRef e) {
+        assert(e.isState());
+        return DashRef.createStateDashRef(e.getName()+DashStrings.scopeSuffix, e.getParamValues());
+    }
     public static Expr translateDashRefToArrow(DashRef e) {
         List<Expr> ll = new ArrayList<Expr>(e.getParamValues());
         Collections.reverse(ll);

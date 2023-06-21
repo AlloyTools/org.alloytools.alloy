@@ -28,7 +28,7 @@ public class DashToAlloy {
         AddStutter.addStutter(d);
         AddSmallStep.addSmallStep(d);
         if (DashOptions.isTcmc) AddCompleteBigSteps.addCompleteBigSteps(d);
-
+        if (DashOptions.isTcmc) AddAllSnapshotsDifferentFact.addAllSnapshotsDifferentFact(d);
         if (DashOptions.enoughOperations) 
             AddEnoughOperationsPred.addEnoughOperationsPred(d);
         if (DashOptions.singleEventInput)
