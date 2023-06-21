@@ -309,6 +309,7 @@ public class ExprToString {
 
     private void ExprITEToOut(ExprITE expr) {
         out.beginC(2);
+        out.print("{");
         addBracketsIfNeeded(expr.cond);
         out.print("=>");
         out.brk(1,indent);
@@ -318,6 +319,7 @@ public class ExprToString {
         //{")
         out.brk(1,indent);
         addBracketsIfNeeded(expr.right);
+        out.print("}");
         //out.print(" }");
         out.brk(1,-indent);
         out.end();
@@ -334,7 +336,7 @@ public class ExprToString {
 
     private void ExprListToOut(ExprList expr) {
         if (expr.op == ExprList.Op.AND ) {
-            String op = " and";
+            String op = " &&";
             out.beginC(2);
             for (int i = 0; i < expr.args.size(); i++) {
                 if (i > 0)
@@ -344,7 +346,7 @@ public class ExprToString {
             out.end();
         }
         else if (expr.op == ExprList.Op.OR) {
-            String op = " or";
+            String op = " ||";
             out.print("{ ");
             out.beginC(2);
             for (int i = 0; i < expr.args.size(); i++) {

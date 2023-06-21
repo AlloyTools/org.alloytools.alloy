@@ -103,6 +103,7 @@ public class DashStrings {
 	public static String scopeLabelName = DshPrefix + "Scopes";
 	//public static String systemStateName = "SystemState";
 	public static String transitionLabelName = "Transitions";
+	public static String noTransName = "NO_TRANS";
 	public static String identifierName = DshPrefix + "Ids";
 	public static String bufferName = DshPrefix + "Buffer";
 	public static String scopeSuffix = "Scope";

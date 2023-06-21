@@ -47,7 +47,9 @@ public class AddStutter {
         for (int i = 0; i <= d.getMaxDepthParams(); i++) {
         	body.add(noChange(DashStrings.confName+Integer.toString(i)));
         	body.add(noChange(DashStrings.scopesUsedName+Integer.toString(i)));
-        	body.add(createEquals(nextTransTaken(i),
+                if (i == 0)body.add(createEquals(nextTransTaken(i),
+                        createVar(DashStrings.noTransName)));
+        	else body.add(createEquals(nextTransTaken(i),
                         createNoneArrow(i)));
             if (d.hasEvents() && d.hasInternalEventsAti(i))
         		// internal events go away
