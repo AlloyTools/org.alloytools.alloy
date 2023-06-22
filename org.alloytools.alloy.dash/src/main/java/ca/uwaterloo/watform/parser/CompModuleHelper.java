@@ -360,6 +360,7 @@ public class CompModuleHelper extends CompModule {
      */
     public String addPredSimple(String name, List<Decl> decls, List<Expr> eList) {
         Expr body = createAndFromList(eList);
+        //System.out.println(body);
         addFunc(Pos.UNKNOWN, Pos.UNKNOWN, createVar(name), null, decls, null, body);
         String s = new String();
         s += DashStrings.predName + " " + name;

@@ -67,14 +67,16 @@ public class AddTransPre {
         if (d.getTransWhen(tfqn) != null)
             body.add(translateExpr(d.getTransWhen(tfqn),d));
 
-        // has a scope that is orthogonal to any scopes used
-        List<DashRef> nonO = d.nonOrthogonalScopesOf(tfqn);
-        for (int i=0;i <= d.getMaxDepthParams(); i++) {
-            List<Expr> u = DashRef.hasNumParams(nonO,i).stream()
-                .map(x -> translateDashRefToArrow(replaceScope(x)))
-                .collect(Collectors.toList());
-            for (Expr x: u) body.add(createNot(createIn(x,curScopesUsed(i))));
-        }
+        //if (d.hasConcurrency()) {
+            // has a scope that is orthogonal to any scopes used
+            List<DashRef> nonO = d.nonOrthogonalScopesOf(tfqn);
+            for (int i=0;i <= d.getMaxDepthParams(); i++) {
+                List<Expr> u = DashRef.hasNumParams(nonO,i).stream()
+                    .map(x -> translateDashRefToArrow(replaceScope(x)))
+                    .collect(Collectors.toList());
+                for (Expr x: u) body.add(createNot(createIn(x,curScopesUsed(i))));
+            }
+        //}
 
         // event trigger
         // only one triggering event
@@ -113,7 +115,7 @@ public class AddTransPre {
             args = curParamVars(d.getTransParamsIdx(t), d.getTransParams(t));
             body.add(createNot(createPredCall(translateFQN(t)+DashStrings.preName, args)));
         }
-        
+        //System.out.println(body);
         d.alloyString += d.addPredSimple(tout+DashStrings.preName, curParamsDecls(prsIdx,params), body); 
         d.alloyString += "\n";
     }
