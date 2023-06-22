@@ -116,6 +116,7 @@ public class AddTransPre {
             body.add(createNot(createPredCall(translateFQN(t)+DashStrings.preName, args)));
         }
         //System.out.println(body);
+        //body.add(createNullExpr());
         d.alloyString += d.addPredSimple(tout+DashStrings.preName, curParamsDecls(prsIdx,params), body); 
         d.alloyString += "\n";
     }
