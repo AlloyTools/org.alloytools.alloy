@@ -5,6 +5,7 @@ import java.util.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -34,7 +35,7 @@ public class Dash {
 
    @SuppressWarnings("resource" )
 
-   public static void executeCommands(CompModule c, Integer cmdnum, A4Reporter rep) {
+   public static void executeCommands(CompModule c, Integer commandNumber, A4Reporter rep) {
         // Choose some default options for how you want to execute the commands
         A4Options options = new A4Options();
 
@@ -42,7 +43,7 @@ public class Dash {
         // this is an annoying way to convert a list to an array
         Integer i = 1;
         for (Command cmd : commands) { 
-            if (i == cmdnum | cmdnum == 0) {
+            if (i == commandNumber | commandNumber == 0) {
                 System.out.println("Executing command: " + cmd);
                 A4Solution ans = null;
                 try {
@@ -58,23 +59,24 @@ public class Dash {
             }
             i++;
         }
-        if (cmdnum >= i) {
-            System.err.println("Command number: " + cmdnum + " does not exist in file");
+        if (commandNumber >= i) {
+            System.err.println("Command number: " + commandNumber + " does not exist in file");
         }
    }
 
    public static void main(String args[]) throws Exception { 
 
         if(args.length == 0) {
-            System.out.println("Arguments: (-m traces|tcmc|electrum) (-single) (-reach) (-c #) (-p) (-t) (-r) filename(s)");
+            System.out.println("Arguments: (-m traces|tcmc|electrum) (-single) (-reach) (-c #) (-p) (-t) (-tla) (-r) filename(s)");
             System.out.println("-m traces|tcmc|electrum is verification method");
             System.out.println("-single includes single event input fact");
             System.out.println("-reach includes reachability fact (for tcmc only)");
             System.out.println("-enough includes enoughOperations pred");
-            System.out.println("-c # is cmdnum to execute");
+            System.out.println("-c # is commandNumber to execute");
             System.out.println("-t is translateOnly");
             System.out.println("-r is resolveOnly");
             System.out.println("-e is echo file from internal parsed data");
+            System.out.println("-tla produces a translation to TLA+, with the same file name as the dash file, in the same folder as the original dash file");
             System.out.println("expects .dsh or .als file");
             System.out.println("if given a .als files, it ignores other options and runs all its commands");
             System.exit(0);
@@ -87,10 +89,11 @@ public class Dash {
 
         // default values
         String method = "traces";
-        Integer cmdnum = 0;
-        Boolean translateOnly = false;
-        Boolean printOnly = false;
-        Boolean resolveOnly = false;
+        int commandNumber = 0;
+        boolean translateOnly = false;
+        boolean printOnly = false;
+        boolean resolveOnly = false;
+        boolean translateTLA = false;
 
         for (int i=0; i<args.length;i++) {
             if (args[i].equals("-m")) {
@@ -107,8 +110,8 @@ public class Dash {
                 i++;
             } else if (args[i].equals("-c")) {
                 if (i+1 != args.length) {
-                    cmdnum = Integer.parseInt(args[i+1]);
-                    if (cmdnum < 0) {
+                    commandNumber = Integer.parseInt(args[i+1]);
+                    if (commandNumber < 0) {
                         System.err.println("Command number must be greater than 1");
                         System.exit(0);
                     }
@@ -129,7 +132,12 @@ public class Dash {
                 DashOptions.reachability = true;
             } else if (args[i].equals("-enough")) {
                 DashOptions.enoughOperations = true;
-            } else {
+            } else if (args[i].equals("-tla"))
+            {
+                System.out.println("Command acknowledged");
+                translateTLA = true;
+            }
+            else {
                 // everything else is a file name
                 filelist.add(args[i]);
             }
@@ -140,7 +148,8 @@ public class Dash {
         DashOptions.isTcmc = (method.equals("tcmc"));
         DashOptions.isElectrum = (method.equals("electrum"));    
 
-        for (String filename : filelist) {
+        for (String filename : filelist) { // this whole section may need rewriting
+            
             // add the .dsh extension if not included
             if (!filename.endsWith(".dsh") && !filename.endsWith(".als")) {
                 int index = filename.lastIndexOf('.');
@@ -148,7 +157,8 @@ public class Dash {
                     System.err.println("Expected a Dash file with 'dsh' or 'als' extension: "+filename);
                     break;
                 } else {
-                    filename = filename + ".dsh";
+                    
+                    filename = filename + ".dsh"; // use another variable? gets confusing
                 }
             }
 
@@ -174,7 +184,7 @@ public class Dash {
                     System.out.println("Parsed Alloy file");
                     // will raise an exception if problems
                     System.out.println("Resolved Alloy file");
-                    executeCommands(c,cmdnum,rep);
+                    executeCommands(c,commandNumber,rep);
                 } catch (Exception e) {
                     DashUtilFcns.handleException(e);
                 }
@@ -183,9 +193,22 @@ public class Dash {
                     DashModule d = MainFunctions.parseDashFile(filename, rep);
                     System.out.println("Parsed Dash file");
                     if (d == null) DashErrors.emptyFile(filename);
+                    
                     if (printOnly) {
                         System.out.println(d.toStringAlloy());
-                    } else {
+                    } else if(translateTLA)
+                    {
+                        String contents = MainFunctions.translateTLA(d);
+                        String TLAfilename = filename.substring(0,filename.length()-4)+".tla";
+                        File out = new File(TLAfilename);
+                            if (!out.exists()) out.createNewFile();
+                            System.out.println("Creating: " + TLAfilename);
+                            FileWriter fw = new FileWriter(out.getAbsoluteFile());
+                            BufferedWriter bw = new BufferedWriter(fw);
+                            bw.write(contents);
+                            bw.close();
+                    }
+                    else {
                         d = MainFunctions.resolveDash(d, rep);
                         System.out.println("Resolved Dash"); 
                         CompModule c = MainFunctions.translate(d, rep);
@@ -204,7 +227,7 @@ public class Dash {
                             c = MainFunctions.resolveAlloy(c,rep);
                             System.out.println("Resolved Alloy");
                             if (!resolveOnly) {
-                                executeCommands(c,cmdnum,rep);
+                                executeCommands(c,commandNumber,rep);
                             }
                         }                   
                     }
