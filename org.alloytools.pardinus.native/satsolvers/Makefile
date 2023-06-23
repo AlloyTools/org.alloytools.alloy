@@ -1,14 +1,15 @@
 
 DIRS = native/linux/amd64 native/windows/amd64 native/darwin/amd64 native/darwin/arm64
 REPOS= minisat glucose lingeling gini minisatprover
-CLASSPATH = ../target/classes:../../org.alloytools.pardinus/target/classes
+CLASSPATH = ../target/classes:../../org.alloytools.pardinus.core/target/classes
 
 REPOS_PATHS = $(addsuffix /repo/.git/config,$(REPOS))
 
 .PHONY: all native darwin linux windows go
 
-all: clean darwin linux windows go
-	rm -rf natives
+install: clean darwin linux windows go
+	-rm -rf ../native
+	cp -rf native ..
 
 clean:
 	rm -rf build native headers $(addsuffix /repo,$(REPOS))
@@ -22,10 +23,6 @@ headers:
 	javah -classpath $(CLASSPATH) -o headers/AlloyLingeling.h 		org.alloytools.solvers.natv.lingeling.Lingeling
 	javah -classpath $(CLASSPATH) -o headers/AlloyMiniSat.h 		org.alloytools.solvers.natv.minisat.MiniSat
 	javah -classpath $(CLASSPATH) -o headers/AlloyMiniSatProver.h 	org.alloytools.solvers.natv.minisatprover.MiniSatProver
-
-install:
-	rm -rf ../native
-	cp -rf native/ ..
 
 $(DIRS):
 	mkdir -p $@
