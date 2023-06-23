@@ -198,7 +198,12 @@ public class Dash {
                         System.out.println(d.toStringAlloy());
                     } else if(translateTLA)
                     {
-                        String contents = MainFunctions.translateTLA(d);
+                        String comment = "\\* Modification History\n\\* Translated from Dash at "+System.currentTimeMillis()+" EPOCH";
+                        String moduleName = f.getFileName().toString();
+                        String header = "------------------------------- MODULE "+moduleName.substring(0, moduleName.length()-4)+" -------------------------------";
+                        String footer = "=============================================================================";
+                        String contents = header+"\n"+MainFunctions.translateTLA(d)+"\n"+footer+"\n"+comment;
+
                         String TLAfilename = filename.substring(0,filename.length()-4)+".tla";
                         File out = new File(TLAfilename);
                             if (!out.exists()) out.createNewFile();
