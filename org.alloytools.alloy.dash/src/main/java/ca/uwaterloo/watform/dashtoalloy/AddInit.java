@@ -55,9 +55,10 @@ public class AddInit {
         }
         for (int i = 0; i <= d.getMaxDepthParams(); i++) {
             // scopesUsedi = none
-            body.add(createEquals(
-                curScopesUsed(i),
-                createNoneArrow(i)));
+            if (d.hasConcurrency())
+                body.add(createEquals(
+                    curScopesUsed(i),
+                    createNoneArrow(i)));
             if (i == 0 )
                 body.add(createEquals(
                     curTransTaken(i),

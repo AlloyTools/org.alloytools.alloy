@@ -37,7 +37,8 @@ public class AddSnapshotSignature {
             // scopesUsed0, conf0, event0
             List<Decl> decls;
 
-            d.alloyString += d.addVarSigSimple(scopesUsedName+"0", createVar(stateLabelName));
+            if (d.hasConcurrency())
+                d.alloyString += d.addVarSigSimple(scopesUsedName+"0", createVar(stateLabelName));
             if (!d.hasOnlyOneState())
                 d.alloyString += d.addVarSigSimple(confName+"0", createVar(stateLabelName));
             d.alloyString += d.addVarSigSimple(transTakenName+"0", createVar(transitionLabelName));
@@ -68,11 +69,12 @@ public class AddSnapshotSignature {
                         DeclExt.newVarDeclExt(
                             transTakenName+Integer.toString(i), 
                             createArrowExprList(DashUtilFcns.newListWith(cop, createSet(createVar(transitionLabelName))))));
-                    // scopesUsed 1, etc.
-                    decls.add(
-                        DeclExt.newVarDeclExt(
-                            scopesUsedName+Integer.toString(i), 
-                            createArrowExprList(DashUtilFcns.newListWith(cop, createSet(createVar(stateLabelName))))));
+                    if (d.hasConcurrency())
+                        // scopesUsed 1, etc.
+                        decls.add(
+                            DeclExt.newVarDeclExt(
+                                scopesUsedName+Integer.toString(i), 
+                                createArrowExprList(DashUtilFcns.newListWith(cop, createSet(createVar(stateLabelName))))));
                     if (d.hasEvents() & d.hasEventsAti(i))
                         // events 1, etc.
                         decls.add(
@@ -210,9 +212,9 @@ public class AddSnapshotSignature {
             List<Decl> decls = new ArrayList<Decl>();
 
             // scopesUsed0, conf0, event0
-            //if (d.transAtThisParamDepth(0))
-            //TODO: if no concurrency, don't need scopesUsed !!
-            decls.add(DeclExt.newSetDeclExt(scopesUsedName+"0", scopeLabelName));
+                
+            if (d.hasConcurrency())
+                decls.add(DeclExt.newSetDeclExt(scopesUsedName+"0", scopeLabelName));
             if (!d.hasOnlyOneState()) decls.add(DeclExt.newSetDeclExt(confName+"0", stateLabelName));
             decls.add(DeclExt.newSetDeclExt(transTakenName+"0", transitionLabelName));
             if (d.hasEvents())
@@ -221,10 +223,11 @@ public class AddSnapshotSignature {
             for (int i = 1; i <= d.getMaxDepthParams(); i++) {
                 cop = Collections.nCopies(i,identifierName);
                 // scopesUsed 1, etc. 
-                //if (d.transAtThisParamDepth(i)) 
-                decls.add((Decl) new DeclExt(
-                    scopesUsedName+Integer.toString(i), 
-                    createArrowStringList(DashUtilFcns.newListWith(cop, scopeLabelName))));
+                //if (d.transAtThisParamDepth(i))
+                if (d.hasConcurrency()) 
+                    decls.add((Decl) new DeclExt(
+                        scopesUsedName+Integer.toString(i), 
+                        createArrowStringList(DashUtilFcns.newListWith(cop, scopeLabelName))));
                 // conf 1, etc.
                 if (!d.hasOnlyOneState())
                     decls.add((Decl) new DeclExt(

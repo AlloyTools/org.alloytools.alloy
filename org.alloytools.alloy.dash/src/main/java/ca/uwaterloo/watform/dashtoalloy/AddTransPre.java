@@ -68,7 +68,7 @@ public class AddTransPre {
         if (d.getTransWhen(tfqn) != null)
             body.add(translateExpr(d.getTransWhen(tfqn),d));
 
-        //if (d.hasConcurrency()) {
+        if (d.hasConcurrency()) {
             // has a scope that is orthogonal to any scopes used
             List<DashRef> nonO = d.nonOrthogonalScopesOf(tfqn);
             for (int i=0;i <= d.getMaxDepthParams(); i++) {
@@ -77,7 +77,7 @@ public class AddTransPre {
                     .collect(Collectors.toList());
                 for (Expr x: u) body.add(createNot(createIn(x,curScopesUsed(i))));
             }
-        //}
+        }
 
         // event trigger
         // only one triggering event

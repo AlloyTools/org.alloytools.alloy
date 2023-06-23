@@ -243,13 +243,18 @@ public class AddTransPost {
         //if (case2.isEmpty()) c2 = createTrue();
         c2 = createAndFromList(case2);
 
-        List<Expr> scopesUsedEmpty = new ArrayList<Expr>();
-        
-        for (int i=0;i <= d.getMaxDepthParams(); i++) {
-            scopesUsedEmpty.add(createEquals(nextScopesUsed(i),createNoneArrow(i)));
+        Expr stableTrueAndScopesUsedEmpty;
+        if (d.hasConcurrency()) {
+            List<Expr> scopesUsedEmpty = new ArrayList<Expr>();
+            
+            for (int i=0;i <= d.getMaxDepthParams(); i++) {
+                scopesUsedEmpty.add(createEquals(nextScopesUsed(i),createNoneArrow(i)));
+            }
+            stableTrueAndScopesUsedEmpty = 
+                createAnd(nextStableTrue(), createAndFromList(scopesUsedEmpty));
+        } else {
+            stableTrueAndScopesUsedEmpty = nextStableTrue();
         }
-        Expr stableTrueAndScopesUsedEmpty = 
-            createAnd(nextStableTrue(), createAndFromList(scopesUsedEmpty));
 
         // case 3
         // forall i: (eventsi' :> InternalEvent = t1_send_ev (if i))
@@ -296,13 +301,15 @@ public class AddTransPost {
                 if (ev != null && ev.getParamValues().size() == i) 
                     case4.add(createEquals(nextEvents(i),createUnion(curEvents(i), translateDashRefToArrow(ev))));
             }
-            // scopesUsedi' = scopesUsedi + scopesUsed
-            u = DashRef.hasNumParams(sU,i).stream()
-                .map(x -> translateDashRefToArrow(replaceScope(x)))
-                .collect(Collectors.toList());
-            e = curScopesUsed(i);
-            if (!u.isEmpty()) e = createUnion(e,createUnionFromList(u));
-            case4.add(createEquals(nextScopesUsed(i),e));
+            if (d.hasConcurrency()) {
+                // scopesUsedi' = scopesUsedi + scopesUsed
+                u = DashRef.hasNumParams(sU,i).stream()
+                    .map(x -> translateDashRefToArrow(replaceScope(x)))
+                    .collect(Collectors.toList());
+                e = curScopesUsed(i);
+                if (!u.isEmpty()) e = createUnion(e,createUnionFromList(u));
+                case4.add(createEquals(nextScopesUsed(i),e));
+            }
         }
 
         //if (case4.isEmpty()) c4 = createTrue();

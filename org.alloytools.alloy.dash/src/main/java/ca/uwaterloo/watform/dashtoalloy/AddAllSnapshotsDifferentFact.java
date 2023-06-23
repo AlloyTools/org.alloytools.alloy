@@ -46,7 +46,7 @@ public class AddAllSnapshotsDifferentFact {
             if (!d.hasOnlyOneState())
                 body.add(createEquals(curConf(i),nextConf(i)));
             // s.scopesUsedi = sn.scopesUsedi
-            //if (d.hasConcurrency())
+            if (d.hasConcurrency())
                 body.add(createEquals(curScopesUsed(i),nextScopesUsed(i)));
             body.add(createEquals(curTransTaken(i),nextTransTaken(i)));
             if (d.hasInternalEventsAti(i))

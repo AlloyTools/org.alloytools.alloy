@@ -217,6 +217,9 @@ public class ExprHelper  {
     }
 
     /* a few useful specific ones */
+    public static Expr createNoop(Expr sub) {
+        return (ExprUnary) ExprUnary.Op.NOOP.make(Pos.UNKNOWN, sub);
+    }
     public static Expr createNot(Expr sub) {
         return (ExprUnary) ExprUnary.Op.NOT.make(Pos.UNKNOWN, sub);
     }
