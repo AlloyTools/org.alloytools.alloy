@@ -1,5 +1,6 @@
 package org.alloytools.alloy.cli;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -13,10 +14,12 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.libg.qtokens.QuotedTokenizer;
 import edu.mit.csail.sdg.alloy4.TableView;
+import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.translator.A4Solution;
+import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 import jline.console.ConsoleReader;
 import jline.console.completer.StringsCompleter;
 
@@ -32,12 +35,14 @@ public class Evaluator extends Env {
 
 	final InputStream	in;
 	final OutputStream	out;
+	final PrintWriter	pw;
 
 	public Evaluator(CompModule world, A4Solution solution, InputStream in, OutputStream out) {
 		this.world = world;
 		this.current = solution;
 		this.in = in;
 		this.out = out;
+		this.pw = new PrintWriter(out);
 	}
 
 	String loop() throws Exception {
@@ -72,22 +77,15 @@ public class Evaluator extends Env {
 					} else
 						try {
 							world.clearGlobals();
-			                for (ExprVar a : current.getAllAtoms()) {
-			                    world.addGlobal(a.label, a);
-			                }
-			                for (ExprVar a : current.getAllSkolems()) {
-			                    world.addGlobal(a.label, a);
-			                }
+							for (ExprVar a : current.getAllAtoms()) {
+								world.addGlobal(a.label, a);
+							}
+							for (ExprVar a : current.getAllSkolems()) {
+								world.addGlobal(a.label, a);
+							}
 
 							Expr e = world.parseOneExpressionFromString(line);
-							Object o = current.eval(e, state);
-							if (o != null) {
-								String s = o.toString();
-								if (TableView.isTable(s)) {
-									o = TableView.toTable(s, false);
-								}
-								out.println(o);
-							}
+							println(e);
 						} catch (Exception e) {
 							if (e.getClass() != Exception.class)
 								exception(e, "%s %s", e.getMessage(), line);
@@ -105,13 +103,20 @@ public class Evaluator extends Env {
 
 	@Description("Show basic information about the current solution")
 	interface InfoOptions extends Options {
-
+		@Description("Show the skolem values")
+		boolean skolems();
 	}
 
 	@Arguments(arg = {})
 	@Description("Show basic information about the current solution")
 	public void _info(InfoOptions options) {
-		System.out.println(state + "/" + (current.getTraceLength() - 1));
+		pw.println(state + "/" + (current.getTraceLength() - 1));
+		if (options.skolems()) {
+			for (ExprVar a : current.getAllSkolems()) {
+				pw.printf("%-40s %s", a.label, toString(a));
+			}
+		}
+		pw.flush();
 	}
 
 	@Arguments(arg = {})
@@ -176,13 +181,41 @@ public class Evaluator extends Env {
 		returnValue = "/exit";
 	}
 
+	@Arguments(arg = { "[command]" })
+	@Description("Commands")
+	interface RunOptions extends InfoOptions {
+
+	}
+
+	@Description("Execute a command or list the commands when no argument given")
+	public void _run(RunOptions opts) throws IOException {
+		List<String> args = opts._arguments();
+		if (args.isEmpty()) {
+			pw.println(getCommands());
+			pw.flush();
+			return;
+		}
+		String name = args.get(0);
+		Command cmd = world.getAllCommands().stream().filter(g -> g.label.equals(name)).findAny().orElse(null);
+		if (cmd == null) {
+			error("no such command %s, existing commands are %s", name, getCommands());
+			return;
+		}
+		doCommand(cmd);
+		_info(opts);
+	}
+
+	private String getCommands() {
+		return world.getAllCommands().stream().map(Object::toString).collect(Collectors.joining("\n"));
+	}
+
 	@Arguments(arg = {})
 	@Description("continue the next solution, if there is one")
 	interface ContinueOptions extends Options {
 
 	}
 
-	@Description("exit the shell completely, not continuation if there is a next solution")
+	@Description("continue the next solution, if there is one")
 	public void _continue(ContinueOptions opts) {
 		returnValue = "/continue";
 	}
@@ -207,6 +240,32 @@ public class Evaluator extends Env {
 		});
 
 		reader.addCompleter(new StringsCompleter(completions));
+	}
+
+	private void doCommand(Command c) throws IOException {
+		if (c == null) {
+			c = world.getAllCommands().get(0);
+		}
+		SimpleReporter rep = new SimpleReporter(this);
+		current = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), c,
+				current.opt);
+		state = 0;
+	}
+
+	private String toString(Expr e) {
+		Object o = current.eval(e, state);
+		if (o != null) {
+			String s = o.toString();
+			if (TableView.isTable(s)) {
+				return TableView.toTable(s, false).toString();
+			}
+			return s;
+		}
+		return "";
+	}
+
+	private void println(Expr e) {
+		pw.println(toString(e));
 	}
 
 }
