@@ -87,24 +87,26 @@ public class AddTransPost {
         List<String> prs = d.getTransParams(tfqn);
         List<Expr> body = new ArrayList<Expr>();
 
-        // confi' = confi - exitedi + enteredi
-        List<DashRef> entered = d.entered(tfqn);
-        List<DashRef> exited = d.exited(tfqn);
-        for (int i=0;i <= d.getMaxDepthParams(); i++) {
-            List<Expr> ent = DashRef.hasNumParams(entered,i).stream()
-                .map(x -> translateDashRefToArrow(x))
-                .collect(Collectors.toList());
-            List<Expr> exi = DashRef.hasNumParams(exited,i).stream()
-                .map(x -> translateDashRefToArrow(x))
-                .collect(Collectors.toList());
-            // both ent and exi could be empty at this level
-            Expr e;
-            if (!exi.isEmpty()) 
-                e = createDiff(curConf(i),createUnionList(exi));
-            else 
-                e = curConf(i);
-            if (!ent.isEmpty()) e = createUnion(e,createUnionList(ent));
-            body.add(createEquals(nextConf(i),e));
+        if (!d.hasOnlyOneState()) {
+            // confi' = confi - exitedi + enteredi
+            List<DashRef> entered = d.entered(tfqn);
+            List<DashRef> exited = d.exited(tfqn);
+            for (int i=0;i <= d.getMaxDepthParams(); i++) {
+                List<Expr> ent = DashRef.hasNumParams(entered,i).stream()
+                    .map(x -> translateDashRefToArrow(x))
+                    .collect(Collectors.toList());
+                List<Expr> exi = DashRef.hasNumParams(exited,i).stream()
+                    .map(x -> translateDashRefToArrow(x))
+                    .collect(Collectors.toList());
+                // both ent and exi could be empty at this level
+                Expr e;
+                if (!exi.isEmpty()) 
+                    e = createDiff(curConf(i),createUnionList(exi));
+                else 
+                    e = curConf(i);
+                if (!ent.isEmpty()) e = createUnion(e,createUnionList(ent));
+                body.add(createEquals(nextConf(i),e));
+            }
         }
 
         // action_t1[s,s']

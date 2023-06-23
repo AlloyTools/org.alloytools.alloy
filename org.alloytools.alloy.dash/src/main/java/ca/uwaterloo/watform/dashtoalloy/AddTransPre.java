@@ -56,13 +56,14 @@ public class AddTransPre {
         List<Expr> body = new ArrayList<Expr>();
         String tout = translateFQN(tfqn);
 
-        // p3 -> p2 -> p1 -> src & s.confVar(i) != none
-        // src does not have to be a basic state      
-        body.add(
-            createSomeOf(
-                createIntersect(
-                    translateDashRefToArrow(d.getTransSrc(tfqn)),
-                    curConf(prsIdx.size()))));
+        if (!d.hasOnlyOneState())
+            // p3 -> p2 -> p1 -> src & s.confVar(i) != none
+            // src does not have to be a basic state      
+            body.add(
+                createSomeOf(
+                    createIntersect(
+                        translateDashRefToArrow(d.getTransSrc(tfqn)),
+                        curConf(prsIdx.size()))));
 
         if (d.getTransWhen(tfqn) != null)
             body.add(translateExpr(d.getTransWhen(tfqn),d));

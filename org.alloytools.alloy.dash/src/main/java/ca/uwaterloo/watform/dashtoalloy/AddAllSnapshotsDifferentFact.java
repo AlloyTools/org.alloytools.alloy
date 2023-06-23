@@ -43,7 +43,8 @@ public class AddAllSnapshotsDifferentFact {
         List<Expr> body = new ArrayList<Expr>();
         Expr e;
         for (int i = 0; i <= d.getMaxDepthParams(); i++) {
-            body.add(createEquals(curConf(i),nextConf(i)));
+            if (!d.hasOnlyOneState())
+                body.add(createEquals(curConf(i),nextConf(i)));
             // s.scopesUsedi = sn.scopesUsedi
             //if (d.hasConcurrency())
                 body.add(createEquals(curScopesUsed(i),nextScopesUsed(i)));

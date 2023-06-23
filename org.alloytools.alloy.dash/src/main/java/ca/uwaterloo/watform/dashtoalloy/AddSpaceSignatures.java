@@ -34,8 +34,10 @@ public class AddSpaceSignatures {
     
     public static void addSpaceSignatures(DashModule d) {
         // abstract sig Statelabel {}
-        d.alloyString += d.addAbstractSigSimple(DashStrings.stateLabelName);
-        d.alloyString += d.addAbstractExtendsSigSimple(d.getRootName(),DashStrings.stateLabelName);
+        if (!d.hasOnlyOneState()) {
+            d.alloyString += d.addAbstractSigSimple(DashStrings.stateLabelName);
+            d.alloyString += d.addAbstractExtendsSigSimple(d.getRootName(),DashStrings.stateLabelName);
+        }
         d.alloyString += d.addAbstractSigSimple(DashStrings.scopeLabelName);
         d.alloyString += d.addOneExtendsSigSimple(d.getRootName()+DashStrings.scopeSuffix,DashStrings.scopeLabelName);
         recurseCreateStateSpaceSigs(d, d.getRootName());
@@ -109,14 +111,16 @@ public class AddSpaceSignatures {
             // for scopes Used
             d.alloyString += d.addOneExtendsSigSimple(translateFQN(child)+DashStrings.scopeSuffix,DashStrings.scopeLabelName);
             // for conf
-            if (d.isLeaf(child)) d.alloyString += d.addOneExtendsSigSimple(translateFQN(child),translateFQN(parent));
-            else {
-                //if (d.isAnd(parent)) 
-                    //d.alloyString += d.addExtendsSigSimple(translateFQN(child), translateFQN(parent));
-                //else 
-                String x = d.addAbstractExtendsSigSimple(translateFQN(child), translateFQN(parent));
-                d.alloyString += x;
-                //System.out.println("HERE" + x);
+            if (!d.hasOnlyOneState()) {
+                if (d.isLeaf(child)) d.alloyString += d.addOneExtendsSigSimple(translateFQN(child),translateFQN(parent));
+                else {
+                    //if (d.isAnd(parent)) 
+                        //d.alloyString += d.addExtendsSigSimple(translateFQN(child), translateFQN(parent));
+                    //else 
+                    String x = d.addAbstractExtendsSigSimple(translateFQN(child), translateFQN(parent));
+                    d.alloyString += x;
+                    //System.out.println("HERE" + x);
+                }
             }
             if (!d.isLeaf(child)) recurseCreateStateSpaceSigs(d,child);  
         }  

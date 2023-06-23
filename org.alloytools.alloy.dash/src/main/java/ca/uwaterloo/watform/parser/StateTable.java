@@ -261,6 +261,9 @@ public class StateTable {
 				return false;
 		} else { DashErrors.stateDoesNotExist("hasConcurrency", s); return null; }
 	}
+	public Boolean hasOnlyOneState() {
+		return (table.keySet().size() == 1 );
+	}
 	public String getParent(String child) {
 		if (table.containsKey(child))
 			return table.get(child).parent;  // could be null if root

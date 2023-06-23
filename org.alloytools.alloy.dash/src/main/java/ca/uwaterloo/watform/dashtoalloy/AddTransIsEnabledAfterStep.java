@@ -74,13 +74,14 @@ public class AddTransIsEnabledAfterStep {
             }
         }    
 
-        // some (p3 -> p2 -> p1 -> src & s'.confi)
-        // src does not have to be a basic state  
-        body.add(
-            createSomeOf(
-                createIntersect(
-                    translateDashRefToArrow(d.getTransSrc(tfqn)),
-                    nextConf(prsIdx.size()))));
+        if (!d.hasOnlyOneState())
+            // some (p3 -> p2 -> p1 -> src & s'.confi)
+            // src does not have to be a basic state  
+            body.add(
+                createSomeOf(
+                    createIntersect(
+                        translateDashRefToArrow(d.getTransSrc(tfqn)),
+                        nextConf(prsIdx.size()))));
 
         // primed guard condition is true 
         // TODO
@@ -156,14 +157,5 @@ public class AddTransIsEnabledAfterStep {
         d.alloyString += d.addPredSimple(tout+DashStrings.enabledAfterStepName,decls,body);
     }
 
-    /*
-    public static Decl genEventsDecl(int i) {
-        return (Decl) new DeclExt(DashStrings.genEventName + i, DashStrings.allEventsName);
-    }
-    
-    public static Expr genEventsVar(int i) {
-        return createVar(DashStrings.genEventName + i);
-    }
-    */
 
 }

@@ -41,15 +41,17 @@ public class AddInit {
         List<String> prs = d.getAllParamsInOrder();
         List<Expr> body = new ArrayList<Expr>();
         
-        // forall i. confi = default entries
-        List<DashRef> entered = d.initialEntered();
-        if (entered.isEmpty()) DashErrors.noInitialEntered();
-        for (int i=0;i <= d.getMaxDepthParams(); i++) {
-            List<Expr> ent = DashRef.hasNumParams(entered,i).stream()
-                .map(x -> translateDashRefToArrow(x))
-                .collect(Collectors.toList());
-            if (!ent.isEmpty()) body.add(createEquals(curConf(i),createUnionList(ent)));
-            else body.add(createEquals(curConf(i), createNone()));
+        if (!d.hasOnlyOneState()) {
+            // forall i. confi = default entries
+            List<DashRef> entered = d.initialEntered();
+            if (entered.isEmpty()) DashErrors.noInitialEntered();
+            for (int i=0;i <= d.getMaxDepthParams(); i++) {
+                List<Expr> ent = DashRef.hasNumParams(entered,i).stream()
+                    .map(x -> translateDashRefToArrow(x))
+                    .collect(Collectors.toList());
+                if (!ent.isEmpty()) body.add(createEquals(curConf(i),createUnionList(ent)));
+                else body.add(createEquals(curConf(i), createNone()));
+            }
         }
         for (int i = 0; i <= d.getMaxDepthParams(); i++) {
             // scopesUsedi = none
