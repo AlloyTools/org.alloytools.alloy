@@ -46,7 +46,6 @@ public final class ExampleUsingTheAPI {
 
         // Chooses the Alloy4 options
         A4Options opt = new A4Options();
-        opt.solver = A4Options.SatSolver.SAT4J;
 
         // abstract sig A {}
         PrimSig A = new PrimSig("A", Attr.ABSTRACT);

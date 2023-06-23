@@ -28,7 +28,6 @@ public class ExampleCompilingFromSource {
             throw new ErrorAPI("Must specify exactly one command; number of commands found: " + commands.size());
         Command cmd = commands.get(0);
         A4Options opt = new A4Options();
-        opt.solver = A4Options.SatSolver.SAT4J;
 
         // solve
         A4Solution sol = TranslateAlloyToKodkod.execute_command(rep, world.getAllSigs(), cmd, opt);

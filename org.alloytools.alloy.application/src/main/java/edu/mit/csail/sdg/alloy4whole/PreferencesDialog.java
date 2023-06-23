@@ -73,7 +73,7 @@ import edu.mit.csail.sdg.alloy4.A4Preferences.Pref;
 import edu.mit.csail.sdg.alloy4.OurBorder;
 import edu.mit.csail.sdg.alloy4.OurUtil;
 import edu.mit.csail.sdg.alloy4.OurUtil.GridBagConstraintsBuilder;
-import edu.mit.csail.sdg.translator.A4Options.SatSolver;
+import kodkod.engine.satlab.SATFactory;
 
 /**
  * @modified [electrum] only log when debugging; load electrod binary
@@ -194,7 +194,8 @@ public class PreferencesDialog extends JFrame {
         }
 
         @Override
-        public void setValueIsAdjusting(boolean b) {}
+        public void setValueIsAdjusting(boolean b) {
+        }
 
         @Override
         public boolean getValueIsAdjusting() {
@@ -254,24 +255,12 @@ public class PreferencesDialog extends JFrame {
     public PreferencesDialog(SwingLogPanel log, String binary) {
         this.log = log;
         if (log != null && binary != null) {
-            List<SatSolver> solvers = testSolvers();
-            Solver.setChoices(solvers, SatSolver.SAT4J);
+            List<SATFactory> solvers = SATFactory.getSolvers();
+            Solver.setChoices(solvers, SATFactory.DEFAULT);
             log.log("Available solvers on " + System.getProperty("os.name") + ":" + System.getProperty("os.arch") + "\n");
             solvers.forEach(s -> log.log(s.toString() + "\n"));
         }
         initUI();
-    }
-
-    protected List<SatSolver> testSolvers() {
-        List<SatSolver> satChoices = SatSolver.values();
-        satChoices.removeIf(solver -> !solver.present());
-
-        SatSolver now = Solver.get();
-        if (!satChoices.contains(now)) {
-            Solver.set(SatSolver.SAT4J);
-        }
-
-        return satChoices;
     }
 
 
@@ -321,7 +310,7 @@ public class PreferencesDialog extends JFrame {
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                boolean enableCore = Solver.get() == SatSolver.MiniSatProverJNI;
+                boolean enableCore = Solver.get().prover();
                 pref2comp.get(CoreGranularity).setEnabled(enableCore);
                 pref2comp.get(CoreMinimization).setEnabled(enableCore);
             }
@@ -451,7 +440,8 @@ public class PreferencesDialog extends JFrame {
                 String val = jtf.getText();
                 try {
                     pref.set(Integer.parseInt(val));
-                } catch (NumberFormatException ex) {}
+                } catch (NumberFormatException ex) {
+                }
             }
         });
         return OurUtil.makeH(pref.title + ": ", jtf);

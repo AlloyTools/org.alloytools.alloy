@@ -70,8 +70,6 @@ public final class ExampleUsingTheCompiler {
             // commands
             A4Options options = new A4Options();
 
-            options.solver = A4Options.SatSolver.SAT4J;
-
             for (Command command : world.getAllCommands()) {
                 // Execute the command
                 System.out.println("============ Command " + command + ": ============");
