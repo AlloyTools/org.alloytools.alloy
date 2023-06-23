@@ -2,6 +2,7 @@
 -buildpath: \
 	org.alloytools.alloy.application;version=latest,\
 	org.alloytools.alloy.core;version=latest,\
+    org.alloytools.pardinus.core,\
 	org.eclipse.lsp4j,\
 	org.eclipse.lsp4j.jsonrpc,\
 	com.google.gson,\

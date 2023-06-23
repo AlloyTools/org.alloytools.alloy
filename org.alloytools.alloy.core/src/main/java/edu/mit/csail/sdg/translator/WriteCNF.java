@@ -68,16 +68,22 @@ final class WriteCNF implements SATSolver {
     public static final SATFactory factory(final String filename) {
         return new SATFactory() {
 
+            private static final long serialVersionUID = 1L;
+
             /** {@inheritDoc} */
             @Override
             public SATSolver instance() {
                 return new WriteCNF(filename);
             }
 
-            /** {@inheritDoc} */
             @Override
-            public boolean incremental() {
-                return false;
+            public String id() {
+                return "writecnf";
+            }
+
+            @Override
+            public String type() {
+                return "synthetic";
             }
         };
     }

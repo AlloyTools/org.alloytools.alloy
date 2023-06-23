@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
-import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorAPI;
 import edu.mit.csail.sdg.alloy4.ErrorFatal;
@@ -346,7 +345,7 @@ public final class A4SolutionWriter {
     /**
      * Write the metamodel as &lt;instance&gt;..&lt;/instance&gt; in XML format.
      */
-    public static void writeMetamodel(ConstList<Sig> sigs, String originalFilename, PrintWriter out) throws Err {
+    public static void writeMetamodel(List<Sig> sigs, String originalFilename, PrintWriter out) throws Err {
         try {
             new A4SolutionWriter(null, null, sigs, 4, 4, 1, 1, 1, 0, "show metamodel", originalFilename, out, null, 0);
         } catch (Throwable ex) {

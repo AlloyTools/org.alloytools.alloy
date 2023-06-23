@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.Optional;
 
 import aQute.lib.io.IO;
+import kodkod.solvers.api.NativeCode;
 
 /**
  * This class is the main class for the JAR. Its name is the name shown in the
@@ -40,13 +42,8 @@ public class Alloy {
 
         @Override
         protected String findLibrary(String libname) {
-            String mappedName = System.mapLibraryName(libname);
-            File f = NativeCode.findexecutable(mappedName);
-            if (f != null) {
-                return f.getAbsolutePath();
-            }
-
-            return null;
+            Optional<File> f = NativeCode.platform.getLibrary(libname);
+            return f.map(File::getAbsolutePath).orElse(null);
         }
 
         @Override

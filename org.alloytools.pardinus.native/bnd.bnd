@@ -2,4 +2,4 @@
     native=native, \
     LICENSES=LICENSES, \
     META-INF/services=services
--buildpath: org.alloytools.pardinus
+-buildpath: org.alloytools.pardinus.core

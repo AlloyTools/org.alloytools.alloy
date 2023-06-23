@@ -16,13 +16,9 @@
 package edu.mit.csail.sdg.translator;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BooleanSupplier;
 
-import org.alloytools.alloy.core.infra.NativeCode;
+import kodkod.engine.satlab.SATFactory;
 
-import edu.mit.csail.sdg.alloy4.ErrorAPI;
 
 /**
  * Mutable; this class encapsulates the customizable options of the
@@ -34,175 +30,6 @@ import edu.mit.csail.sdg.alloy4.ErrorAPI;
 
 public final class A4Options implements Serializable {
 
-    /** This enum defines the set of possible SAT solvers. */
-    public static final class SatSolver implements Serializable {
-
-        /** This ensures the class can be serialized reliably. */
-        private static final long            serialVersionUID = 0;
-        /** List of all existing SatSolver values. */
-        private static final List<SatSolver> values           = new ArrayList<SatSolver>();
-        /**
-         * This is a unique String for this value; it should be kept consistent in
-         * future versions.
-         */
-        private final String                 id;
-        /**
-         * This is the label that the toString() method will return.
-         */
-        private final String                 toString;
-        /**
-         * If not null, this is the external command-line solver to use.
-         */
-        private final String                 external;
-        /**
-         * If not null, this is the set of options to use with the command-line solver.
-         */
-        private final String[]               options;
-
-        transient final BooleanSupplier      present;
-        public final String                  libname;
-
-        /** Constructs a new SatSolver value. */
-        private SatSolver(String id, String toString, String external, String[] options, boolean add, String libname, BooleanSupplier present) {
-            this.id = id;
-            this.toString = toString;
-            this.external = external;
-            this.libname = libname;
-            this.present = present;
-            this.options = new String[options != null ? options.length : 0];
-            for (int i = 0; i < this.options.length; i++)
-                this.options[i] = options[i];
-            if (add) {
-                synchronized (SatSolver.class) {
-                    values.add(this);
-                }
-            }
-        }
-
-        /**
-         * Constructs a new SatSolver value that uses a command-line solver; throws
-         * ErrorAPI if the ID is already in use.
-         */
-        public static SatSolver make(String id, String toString, String external, String[] options) throws ErrorAPI {
-            if (id == null || toString == null || external == null)
-                throw new ErrorAPI("NullPointerException in SatSolver.make()");
-            SatSolver ans = new SatSolver(id, toString, external, options, false, null, null);
-            synchronized (SatSolver.class) {
-                for (SatSolver x : values)
-                    if (x.id.equals(id))
-                        throw new ErrorAPI("The SatSolver id \"" + id + "\" is already in use.");
-                values.add(ans);
-            }
-            return ans;
-        }
-
-        /**
-         * Constructs a new SatSolver value that uses a command-line solver; throws
-         * ErrorAPI if the ID is already in use.
-         */
-        public static SatSolver make(String id, String toString, String external) throws ErrorAPI {
-            return make(id, toString, external, null);
-        }
-
-        /**
-         * Returns the executable for the external command-line solver to use (or null
-         * if this solver does not use an external commandline solver)
-         */
-        public String external() {
-            return external;
-        }
-
-        /**
-         * Returns the options for the external command-line solver to use (or empty
-         * array if this solver does not use an external commandline solver)
-         */
-        public String[] options() {
-            if (external == null || options.length == 0)
-                return new String[0];
-            String[] ans = new String[options.length];
-            for (int i = 0; i < ans.length; i++)
-                ans[i] = options[i];
-            return ans;
-        }
-
-        /**
-         * Returns the unique String for this value; it will be kept consistent in
-         * future versions.
-         */
-        public String id() {
-            return id;
-        }
-
-        /** Returns a new list of SatSolver values. */
-        public static List<SatSolver> values() {
-            return new ArrayList<>(values);
-        }
-
-        /** Returns the human-readable label for this enum value. */
-        @Override
-        public String toString() {
-            return toString;
-        }
-
-        /** Ensures we can use == to do comparison. */
-        private Object readResolve() {
-            synchronized (SatSolver.class) {
-                for (SatSolver x : values)
-                    if (x.id.equals(id))
-                        return x;
-                values.add(this);
-            }
-            return this;
-        }
-
-        /**
-         * Given an id, return the enum value corresponding to it (if there's no match,
-         * then return SAT4J).
-         */
-        public static SatSolver parse(String id) {
-            synchronized (SatSolver.class) {
-                for (SatSolver x : values)
-                    if (x.id.equals(id))
-                        return x;
-            }
-            return SAT4J;
-        }
-
-        public static final SatSolver MiniSatJNI       = new SatSolver("minisat(jni)", "MiniSat", null, null, true, "minisat", () -> NativeCode.library("minisat"));
-        public static final SatSolver MiniSatX1JNI     = new SatSolver("minisatx1(jni)", "MiniSatX1", null, null, true, "minisatx1", () -> NativeCode.library("minisatx1"));
-        public static final SatSolver MiniSatProverJNI = new SatSolver("minisatprover(jni)", "MiniSat with Unsat Core", null, null, true, "minisatprover", () -> NativeCode.library("minisatsolver"));
-        public static final SatSolver LingelingJNI     = new SatSolver("lingeling(jni)", "Lingeling", null, null, true, "lingeling", () -> NativeCode.library("lingeling"));
-        public static final SatSolver GlucoseJNI       = new SatSolver("glucose(jni)", "Glucose", null, null, true, "glucose", () -> NativeCode.library("glucose"));
-        public static final SatSolver Glucose41JNI     = new SatSolver("glucose 4.1(jni)", "Glucose41", null, null, true, "glucose41", () -> NativeCode.library("glucose41"));
-        public static final SatSolver CryptoMiniSatJNI = new SatSolver("cryptominisat(jni)", "CryptoMiniSat", null, null, true, "cryptominisat", () -> NativeCode.library("cryptominisat"));
-        public static final SatSolver ZChaffMincost    = new SatSolver("zchaffmincost(jni)", "ZChaffMincost", null, null, true, "zchaffmincost", () -> NativeCode.library("zchaffmincost"));
-        public static final SatSolver SAT4J            = new SatSolver("sat4j", "SAT4J", null, null, true, null, () -> true);
-        public static final SatSolver ElectrodS        = new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", null, true, null, () -> NativeCode.executable("NuSMV").isPresent() && NativeCode.executable("electrod").isPresent());
-        public static final SatSolver ElectrodX        = new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", null, true, null, () -> NativeCode.executable("nuXmv").isPresent() && NativeCode.executable("electrod").isPresent());
-
-        public static final SatSolver electrodS(String[] opts) {
-            return new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", opts, true, null, null);
-        }
-
-        public static final SatSolver electrodX(String[] opts) {
-            return new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", opts, true, null, null);
-        }
-
-
-
-        /** Outputs the raw CNF file only */
-        public static final SatSolver CNF = new SatSolver("cnf", "Output CNF to file", null, null, true, null, () -> true);
-        /** Outputs the raw Kodkod file only */
-        public static final SatSolver KK  = new SatSolver("kodkod", "Output Kodkod to file", null, null, true, null, () -> true);
-
-        public boolean present() {
-            return present == null || present.getAsBoolean();
-        }
-
-
-
-    }
-
     /** This ensures the class can be serialized reliably. */
     private static final long serialVersionUID = 0;
 
@@ -212,7 +39,7 @@ public final class A4Options implements Serializable {
     public A4Options() {
     }
 
-    public boolean   inferPartialInstance = true;
+    public boolean    inferPartialInstance = true;
 
     /**
      * This option specifies the amount of symmetry breaking to do (when symmetry
@@ -228,7 +55,7 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is 20.
      */
-    public int       symmetry             = 20;
+    public int        symmetry             = 20;
 
     /**
      * This option specifies the maximum skolem-function depth.
@@ -236,7 +63,7 @@ public final class A4Options implements Serializable {
      * Default value is 0, which means it will only generate skolem constants, and
      * will not generate skolem functions.
      */
-    public int       skolemDepth          = 0;
+    public int        skolemDepth          = 0;
 
     /**
      * This option specifies the unsat core minimization strategy
@@ -244,13 +71,13 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is set to the fastest current strategy.
      */
-    public int       coreMinimization     = 2;
+    public int        coreMinimization     = 2;
 
     /**
      * Unsat core granularity, default is 0 (only top-level conjuncts are
      * considered), 3 expands all quantifiers
      */
-    public int       coreGranularity      = 0;
+    public int        coreGranularity      = 0;
 
     /**
      * This option specifies the SAT solver to use (SAT4J, MiniSatJNI,
@@ -258,19 +85,19 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is SAT4J.
      */
-    public SatSolver solver               = SatSolver.SAT4J;
+    public SATFactory solver               = SATFactory.DEFAULT;
 
     /**
      * When this.solver is external, and the solver filename is a relative filename,
      * then this option specifies the directory that the solver filename is relative
      * to.
      */
-    public String    solverDirectory      = "";
+    public String     solverDirectory      = "";
 
     /**
      * This specifies the directory where we may write temporary files to.
      */
-    public String    tempDirectory        = System.getProperty("java.io.tmpdir");
+    public String     tempDirectory        = System.getProperty("java.io.tmpdir");
 
     /**
      * This option tells the compiler the "original filename" that these AST nodes
@@ -279,7 +106,7 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is "".
      */
-    public String    originalFilename     = "";
+    public String     originalFilename     = "";
 
     /**
      * This option specifies whether the compiler should record the original Kodkod
@@ -287,26 +114,26 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is false.
      */
-    public boolean   recordKodkod         = false;
+    public boolean    recordKodkod         = false;
 
     /**
      * This option specifies whether the solver should report only solutions that
      * don't cause any overflows.
      */
-    public boolean   noOverflow           = false;
+    public boolean    noOverflow           = false;
 
     /**
      * This option constrols how deep we unroll loops and unroll recursive
      * predicate/function/macros (negative means it's disallowed)
      */
-    public int       unrolls              = (-1);
+    public int        unrolls              = (-1);
 
     /**
      * This option specifies the decompose strategy (0=Off 1=Hybrid 2=Parallel)
      * <p>
      * Default value is off.
      */
-    public int       decompose_mode       = 0;
+    public int        decompose_mode       = 0;
 
     /**
      * This option specifies the number of threads when following a decompose
@@ -314,7 +141,7 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is 4.
      */
-    public int       decompose_threads    = 4;
+    public int        decompose_threads    = 4;
 
     /** This method makes a copy of this Options object. */
     public A4Options dup() {

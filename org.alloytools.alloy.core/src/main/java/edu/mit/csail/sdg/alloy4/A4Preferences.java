@@ -29,7 +29,7 @@ import javax.swing.Action;
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.Icon;
 
-import edu.mit.csail.sdg.translator.A4Options.SatSolver;
+import kodkod.engine.satlab.SATFactory;
 
 /**
  *
@@ -643,6 +643,7 @@ public class A4Preferences {
                                                                      };
 
     public enum Decompose {
+
                            /** regular amalgamated strategy. */
                            OFF("0", "batch"),
                            /** hybrid strategy, competitive parallel vs amalgamated. */
@@ -679,65 +680,66 @@ public class A4Preferences {
     /**
      * The amount of memory (in M) to allocate for Kodkod and the SAT solvers.
      */
-    public static final IntChoicePref                SubMemory            = new IntChoicePref("SubMemory", "Maximum memory", Arrays.asList(768, 1024, 1536, 2048, 2560, 3072, 3584, 4096, 8192, 16384), 2084) {
+    public static final IntChoicePref                 SubMemory            = new IntChoicePref("SubMemory", "Maximum memory", Arrays.asList(768, 1024, 1536, 2048, 2560, 3072, 3584, 4096, 8192, 16384), 2084) {
 
-                                                                              @Override
-                                                                              public Object renderValueShort(Integer value) {
-                                                                                  return value.toString() + " MB";
-                                                                              }
-                                                                          };
+                                                                               @Override
+                                                                               public Object renderValueShort(Integer value) {
+                                                                                   return value.toString() + " MB";
+                                                                               }
+                                                                           };
 
     /**
      * The amount of stack (in K) to allocate for Kodkod and the SAT solvers.
      */
-    public static final IntChoicePref                SubStack             = new IntChoicePref("SubStack", "Maximum stack", Arrays.asList(1024, 2048, 4096, 8192, 16384, 32768, 65536), 8192) {
+    public static final IntChoicePref                 SubStack             = new IntChoicePref("SubStack", "Maximum stack", Arrays.asList(1024, 2048, 4096, 8192, 16384, 32768, 65536), 8192) {
 
-                                                                              @Override
-                                                                              public Object renderValueShort(Integer value) {
-                                                                                  return value.toString() + " k";
-                                                                              }
-                                                                          };
+                                                                               @Override
+                                                                               public Object renderValueShort(Integer value) {
+                                                                                   return value.toString() + " k";
+                                                                               }
+                                                                           };
 
     /**
      * The first file in Alloy Analyzer's "open recent" list.
      */
-    public static final StringPref                   Model0               = new StringPref("Model0");
+    public static final StringPref                    Model0               = new StringPref("Model0");
 
     /**
      * The second file in Alloy Analyzer's "open recent" list.
      */
-    public static final StringPref                   Model1               = new StringPref("Model1");
+    public static final StringPref                    Model1               = new StringPref("Model1");
 
     /**
      * The third file in Alloy Analyzer's "open recent" list.
      */
-    public static final StringPref                   Model2               = new StringPref("Model2");
+    public static final StringPref                    Model2               = new StringPref("Model2");
 
     /**
      * The fourth file in Alloy Analyzer's "open recent" list.
      */
-    public static final StringPref                   Model3               = new StringPref("Model3");
+    public static final StringPref                    Model3               = new StringPref("Model3");
 
     /** Automatically infer partial instance from model */
-    public static final BooleanPref                  InferPartialInstance = new BooleanPref("InferPartialInstance", "Infer partial instance");
+    public static final BooleanPref                   InferPartialInstance = new BooleanPref("InferPartialInstance", "Infer partial instance");
 
-    public static final DelayedChoicePref<SatSolver> Solver               = new DelayedChoicePref<SatSolver>("SatSolver2", "Solver", SatSolver.values(), SatSolver.SAT4J) {
+    public static final DelayedChoicePref<SATFactory> Solver               = new DelayedChoicePref<SATFactory>("SatSolver2", "Solver", SATFactory.getAllSolvers(), SATFactory.DEFAULT) {
 
-                                                                              @Override
-                                                                              protected String serialize(SatSolver value) {
-                                                                                  return value.id();
-                                                                              }
-                                                                          };
+                                                                               @Override
+                                                                               protected String serialize(SATFactory value) {
+                                                                                   return value.id();
+                                                                               }
+                                                                           };
 
-    public static final ChoicePref<Verbosity>        VerbosityPref        = new ChoicePref<Verbosity>("Verbosity", Verbosity.values(), Verbosity.DEFAULT) {
+    public static final ChoicePref<Verbosity>         VerbosityPref        = new ChoicePref<Verbosity>("Verbosity", Verbosity.values(), Verbosity.DEFAULT) {
 
-                                                                              @Override
-                                                                              protected String serialize(Verbosity value) {
-                                                                                  return value.id;
-                                                                              }
-                                                                          };
+                                                                               @Override
+                                                                               protected String serialize(Verbosity value) {
+                                                                                   return value.id;
+                                                                               }
+                                                                           };
 
     public enum Verbosity {
+
                            /** Level 0. */
                            DEFAULT("0", "low"),
                            /** Level 1. */

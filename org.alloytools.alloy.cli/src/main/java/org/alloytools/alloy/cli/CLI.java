@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -37,6 +38,7 @@ import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.A4SolutionWriter;
 import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
+import kodkod.engine.satlab.SATFactory;
 
 /**
  * 
@@ -48,19 +50,19 @@ public class CLI extends Env {
 	final A4Options options = new A4Options();
 
 	public enum OutputType {
-		none,plain, json, xml;
+		none, plain, json, xml;
 	}
 
-	InputStream stdin = new FilterInputStream(System.in) {
-		@Override
-		public void close() throws IOException {
-		}
-	};
-	PrintStream stdout = new PrintStream(new FilterOutputStream(System.out)) {
-		public void close() {
-			System.out.flush();
-		};
-	};
+	InputStream	stdin	= new FilterInputStream(System.in) {
+							@Override
+							public void close() throws IOException {
+							}
+						};
+	PrintStream	stdout	= new PrintStream(new FilterOutputStream(System.out)) {
+							public void close() {
+								System.out.flush();
+							};
+						};
 
 	/**
 	 * Show the list of solvers
@@ -92,7 +94,10 @@ public class CLI extends Env {
 		int depth(int n);
 
 		@Description("Symmetry breaking removes instances that are symmetric to other instances. The parameter indicates the amount of effort Alloy can spend. The default is 20.")
-		int symmetry(int n);
+		int ymmetry(int n);
+
+		@Description("Set the solver to use. You can get a list of solver names with the 'solvers' command. The default solver is SAT4J.")
+		String solver(String solver);
 
 		@Description("Be quiet with progress information")
 		boolean quiet();
@@ -115,6 +120,13 @@ public class CLI extends Env {
 		opt.unrolls = options.unrolls(opt.unrolls);
 		opt.skolemDepth = options.depth(opt.skolemDepth);
 		opt.symmetry = options.depth(opt.symmetry);
+
+		Optional<SATFactory> solver = SATFactory.find(options.solver("sat4j"));
+		if (!solver.isPresent()) {
+			error("No such solver %s. Use the `solvers` command to see the available solvers", options.solver(null));
+			return;
+		}
+		opt.solver = solver.get();
 
 		String filename = options._arguments().remove(0);
 		File file = IO.getFile(filename);
@@ -170,6 +182,8 @@ public class CLI extends Env {
 			CommandInfo info = new CommandInfo();
 			info.command = c;
 			info.durationInMs = TimeUnit.NANOSECONDS.toMillis(finish - start);
+			if (opt.solver == SATFactory.CNF || opt.solver == SATFactory.KK)
+				info.cnf = rep.output;
 			answers.put(info, s);
 
 		}
@@ -177,10 +191,17 @@ public class CLI extends Env {
 			stdout.println("no commands found " + cmd);
 		}
 
-		generate(world, answers, options.type(OutputType.plain), out);
+		if (opt.solver == SATFactory.CNF || opt.solver == SATFactory.KK) {
+			for (CommandInfo c : answers.keySet()) {
+				IO.copy(c.cnf, out);
+			}
 
-		if (options.evaluator() && !answers.isEmpty()) {
-			evaluator(world, answers);
+		} else {
+			generate(world, answers, options.type(OutputType.plain), out);
+
+			if (options.evaluator() && !answers.isEmpty()) {
+				evaluator(world, answers);
+			}
 		}
 	}
 
@@ -192,7 +213,7 @@ public class CLI extends Env {
 				stdout.flush();
 				Evaluator e = new Evaluator(world, sol, stdin, stdout);
 				String lastCommand = e.loop();
-				if ( lastCommand.equals("/exit"))
+				if (lastCommand.equals("/exit"))
 					break;
 			}
 		}
@@ -249,7 +270,9 @@ public class CLI extends Env {
 			default:
 			case none:
 				return;
+
 			case plain:
+
 				Table overall = new Table(s.size() * 2, 1, 0);
 				int n = 0;
 				for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {

@@ -1,5 +1,6 @@
 package org.alloytools.alloy.cli;
 
+import java.io.File;
 import java.io.IOException;
 
 import aQute.lib.env.Env;
@@ -16,6 +17,7 @@ class SimpleReporter extends A4Reporter {
 	}
 
 	Env cli;
+	File output;
 
 	public SimpleReporter(Env cli) throws IOException {
 		this.cli = cli;
@@ -63,6 +65,8 @@ class SimpleReporter extends A4Reporter {
 
 	@Override
 	public void resultCNF(String filename) {
+		cli.trace("received cnf file %s", filename);
+		output = new File(filename);
 	}
 
 	@Override

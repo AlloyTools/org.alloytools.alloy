@@ -3,10 +3,10 @@
 
 -buildpath: \
 	lib/apple-osx-ui.jar;version=file,\
-	org.alloytools.pardinus.core,\
 	org.alloytools.alloy.core;version=latest,\
 	aQute.libg,\
-	org.alloytools.api
+	org.alloytools.api,\
+	org.alloytools.pardinus.core
 -testpath: \
 	biz.aQute.wrapper.junit, \
 	biz.aQute.wrapper.hamcrest, \

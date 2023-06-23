@@ -77,7 +77,6 @@ import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.sim.SimTupleset;
-import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.Decl;
@@ -345,7 +344,7 @@ public final class A4Solution {
         this.maxtrace = maxtrace;
         this.mintrace = mintrace;
         // [electrum] test whether unbounded solver
-        if (maxtrace == Integer.MAX_VALUE && !(opt.solver.external() != null && opt.solver.external().equals("electrod")))
+        if (maxtrace == Integer.MAX_VALUE && !(!opt.solver.unbounded()))
             throw new ErrorAPI("Bounded engines do not support open bounds on steps.");
         if (bitwidth < 0)
             throw new ErrorSyntax("Cannot specify a bitwidth less than 0.");
@@ -420,58 +419,15 @@ public final class A4Solution {
         } else {
             solver_opts.setRunDecomposed(false);
         }
-        // solver.options().setFlatten(false); // added for now, since
-        // multiplication and division circuit takes forever to flatten
-        // [electrum] pushed solver creation further below as solver choice is needed for initialization
-        if (opt.solver.id().equals(A4Options.SatSolver.ElectrodS.id())) {
-            String[] nopts = new String[opt.solver.options().length + 2];
-            System.arraycopy(opt.solver.options(), 0, nopts, 2, opt.solver.options().length);
-            nopts[0] = "-t";
-            nopts[1] = "NuSMV";
-            solver_opts.setSolver(SATFactory.electrod(nopts));
-        } else if (opt.solver.id().equals(A4Options.SatSolver.ElectrodX.id())) {
-            String[] nopts = new String[opt.solver.options().length + 2];
-            System.arraycopy(opt.solver.options(), 0, nopts, 2, opt.solver.options().length);
-            nopts[0] = "-t";
-            nopts[1] = "nuXmv";
-            solver_opts.setSolver(SATFactory.electrod(nopts));
-        } else if (opt.solver.external() != null) {
-            String ext = opt.solver.external();
-            if (opt.solverDirectory.length() > 0 && ext.indexOf(File.separatorChar) < 0)
-                ext = opt.solverDirectory + File.separatorChar + ext;
-            try {
-                File tmp = File.createTempFile("tmp", ".cnf", new File(opt.tempDirectory));
-                tmp.deleteOnExit();
-                solver_opts.setSolver(SATFactory.externalFactory(ext, tmp.getAbsolutePath(), false, false, opt.solver.options()));
-                // solver.options().setSolver(SATFactory.externalFactory(ext,
-                // tmp.getAbsolutePath(), opt.solver.options()));
-            } catch (IOException ex) {
-                throw new ErrorFatal("Cannot create temporary directory.", ex);
-            }
-        } else if (opt.solver.equals(A4Options.SatSolver.LingelingJNI)) {
-            solver_opts.setSolver(SATFactory.Lingeling);
-        } else if (opt.solver.equals(A4Options.SatSolver.GlucoseJNI)) {
-            solver_opts.setSolver(SATFactory.Glucose);
-            // TODO cleanup, there was a mismatch between the source repo of Pardinus and the bundles
-            //        } else if (opt.solver.equals(A4Options.SatSolver.Glucose41JNI)) {
-            //            solver_opts.setSolver(SATFactory.Glucose41);
-        } else if (opt.solver.equals(A4Options.SatSolver.CryptoMiniSatJNI)) {
-            solver_opts.setSolver(SATFactory.CryptoMiniSat);
-        } else if (opt.solver.equals(A4Options.SatSolver.MiniSatJNI)) {
-            solver_opts.setSolver(SATFactory.MiniSat);
-        } else if (opt.solver.equals(A4Options.SatSolver.MiniSatProverJNI)) {
-            sym = 20;
-            solver_opts.setSolver(SATFactory.MiniSatProver);
-            solver_opts.setLogTranslation(2);
-            solver_opts.setCoreGranularity(opt.coreGranularity);
-        } else {
-            // Even for "KK" and "CNF", we choose SAT4J here; later, just before solving, we'll change it to a Write2CNF solver
-            solver_opts.setSolver(SATFactory.DefaultSAT4J);
-        }
+
+        solver_opts.setCoreGranularity(opt.coreGranularity);
         solver_opts.setSymmetryBreaking(sym);
         solver_opts.setSkolemDepth(opt.skolemDepth);
         solver_opts.setBitwidth(bitwidth > 0 ? bitwidth : (int) Math.ceil(Math.log(atoms.size())) + 1);
         solver_opts.setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);
+
+        solver_opts.setSolver(opt.solver.doOptions(solver_opts));
+
         // [electrum] create unique readable name, allows some traceability at backend level
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
         String file = "untitled";
@@ -1639,7 +1595,7 @@ public final class A4Solution {
             }
 
         });
-        if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples) { // try book examples
+        if (!opt.solver.equals(SATFactory.CNF) && !opt.solver.equals(SATFactory.KK) && tryBookExamples) { // try book examples
             A4Reporter r = "yes".equals(System.getProperty("debug")) ? rep : null;
             try {
                 sol = BookExamples.trial(r, this, fgoal, (AbstractKodkodSolver) solver.solver, cmd.check);
@@ -1655,14 +1611,14 @@ public final class A4Solution {
         } // Without this, kodkod refuses to grow unmentioned relations
         fgoal = Formula.and(formulas);
         // Now pick the solver and solve it!
-        if (opt.solver.equals(SatSolver.KK)) {
+        if (opt.solver.equals(SATFactory.KK)) {
             File tmpCNF = File.createTempFile("tmp", ".java", new File(opt.tempDirectory));
             String out = tmpCNF.getAbsolutePath();
             Util.writeAll(out, debugExtractKInput());
             rep.resultCNF(out);
             return null;
         }
-        if (opt.solver.equals(SatSolver.CNF)) {
+        if (opt.solver.equals(SATFactory.CNF)) {
             File tmpCNF = File.createTempFile("tmp", ".cnf", new File(opt.tempDirectory));
             String out = tmpCNF.getAbsolutePath();
             solver.options().setSolver(WriteCNF.factory(out));
@@ -1711,7 +1667,7 @@ public final class A4Solution {
         // To ensure no more output during SolutionEnumeration
         solver.options().setReporter(oldReporter);
         // If unsatisfiable, then retrieve the unsat core if desired
-        if (inst == null && solver.options().solver() == SATFactory.MiniSatProver) {
+        if (inst == null && solver.options().solver().prover()) {
             try {
                 lCore = new LinkedHashSet<Node>();
                 Proof p = sol.proof();

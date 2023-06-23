@@ -285,7 +285,7 @@ final class BookExamples {
             SATFactory sat = solver.options().solver();
             Solution sol;
             try {
-                solver.options().setSolver(SATFactory.DefaultSAT4J);
+                solver.options().setSolver(SATFactory.DEFAULT);
                 sol = solver.solve(f, b);
             } finally {
                 solver.options().setSolver(sat);
