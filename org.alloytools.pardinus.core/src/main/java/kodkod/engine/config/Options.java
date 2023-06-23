@@ -51,7 +51,7 @@ import kodkod.util.ints.Ints;
 // [HASLab] model finding hierarchy, copy constructor
 public class Options implements Cloneable, BoundedOptions { 
 	private Reporter reporter = new AbstractReporter(){};
-	private SATFactory solver = SATFactory.DefaultSAT4J;
+	private SATFactory solver = SATFactory.DEFAULT;
 	private int symmetryBreaking = 20;
 	private IntEncoding intEncoding = IntEncoding.TWOSCOMPLEMENT;
 	private int bitwidth = 4;

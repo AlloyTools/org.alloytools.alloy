@@ -22,400 +22,368 @@
  */
 package kodkod.engine.satlab;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
-import org.sat4j.minisat.SolverFactory;
+import org.slf4j.LoggerFactory;
+
+import kodkod.engine.config.ExtendedOptions;
+import kodkod.solvers.LightSat4JRef;
+import kodkod.solvers.PMaxSAT4JRef;
+import kodkod.solvers.SAT4JRef;
+import kodkod.solvers.api.NativeCode;
 
 /**
- * A factory for generating SATSolver instances of a given type.
- * Built-in support is provided for many solvers, including 
- * <a href="http://www.sat4j.org/">SAT4J</a> 
- * and the <a href="http://www.cs.chalmers.se/Cs/Research/FormalMethods/MiniSat/">MiniSat</a> 
- * solver by Niklas E&eacute;n and Niklas S&ouml;rensson.
- * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] syrup
- * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
+ * Alloy Native code
+ * 
+ * The actual SAT solvers are abstracted through a SATFactory, who can create
+ * instances of SATSolvers.
+ * 
+ * SATFactory objects are used to indicate what solver should be used. They can
+ * be used as identity for the solver. That is, these objects can be used to
+ * provide dynamic list of available solvers. Therefore, a SATFactory must
+ * always return the same type of solver. Alloy serializes the SATFactory when
+ * it creates a process to run the solver in.
+ *
+ * There are a number of static methods that can provide the list of standard
+ * SATFactorys. This the {@link SATFactory#getAllSolvers()} returns a list of
+ * all SATFactory available. Since numerous solvers depend on external and
+ * native code, these are generally filters in {@link #getSolvers()}. The
+ * {@link #find(String)} and {@link #get(String)} methods provide direct access
+ * to get/find a SATFactory.
+ * 
+ * There are a number of ways a SATFactory can be included in the
+ * {@link #getAllSolvers()}.
+ * 
+ * <ul>
+ * <li>Using the Service Loader. This requires a JAR on the class path to have a
+ * META-INF/services/kodkod.engine.satlab.SATFactory file. This file can contain
+ * a list of classes that must implement/extend the SATFactory.
+ * <li>The {@link #extensions} variables is a list that will always be included.
+ * Different parts of the system can add a SATFactory at startup.
+ * </ul>
  */
-public abstract class SATFactory { 
-	
+public abstract class SATFactory implements Serializable, Comparable<SATFactory> {
+	private final static org.slf4j.Logger	log					= LoggerFactory.getLogger(SATFactory.class);
+	private static final long				serialVersionUID	= 1L;
+	protected static final String[]					EMPTY				= new String[0];
+
 	/**
-	 * Constructs a new instance of SATFactory.
+	 * Any SATFactory objects added to this list will be included in the
+	 * {@link #getAllSolvers()} list. Can be used to add experimental or custom
+	 * solvers.
 	 */
-	protected SATFactory() {}
-	
+	public static List<SATFactory>			extensions			= new ArrayList<>();
+	public static final SATFactory			DEFAULT				= SAT4JRef.INSTANCE;
+
 	/**
-	 * Returns true iff the given factory generates solvers that 
-	 * are available for use on this system.
-	 * @return true iff the given factory generates solvers that 
-	 * are available for use on this system.
+	 * A special SATFactory, will indicate output of the KodKod/Pardinus code to
+	 * a file
 	 */
-	public static final boolean available(SATFactory factory) {
+	public final static SATFactory			KK					= new SAT4JRef() {
+																	private static final long serialVersionUID = 1L;
+
+																	@Override
+																	public String id() {
+																		return "KK";
+																	}
+
+																	@Override
+																	public Optional<String> getDescription() {
+																		return Optional.of(
+																				"KK is the KodKod debug output format");
+																	}
+																	
+																	public String type() {
+																		return "synthetic";
+																	}
+																	
+																	@Override
+																	public boolean incremental() {
+																		return false;
+																	}
+
+																};
+
+	/**
+	 * A special SATFactory, will indicate output of the CNF DIMACS file
+	 */
+	public final static SATFactory			CNF					= new SAT4JRef() {
+																	private static final long serialVersionUID = 1L;
+
+																	@Override
+																	public String id() {
+																		return "CNF";
+																	}
+
+																	@Override
+																	public Optional<String> getDescription() {
+																		return Optional.of(
+																				"CNF stands for Conjunctive Normal Form. It is specified by DIMACS. This is a standardized way of representing Boolean algebra expressions for processing by SAT solvers.");
+																	}
+
+																	public String toString() {
+																		return id();
+																	}
+
+																	public String type() {
+																		return "synthetic";
+																	}
+																	@Override
+																	public boolean incremental() {
+																		return false;
+																	}
+
+																};
+
+	static {
+		extensions.add(DEFAULT);
+		extensions.add(KK);
+		extensions.add(CNF);
+		extensions.add(LightSat4JRef.INSTANCE);
+		extensions.add(PMaxSAT4JRef.INSTANCE);
+	}
+
+	protected SATFactory() {
+	}
+
+	/**
+	 * Return the identity of this solver. No two SATFactory objects should have
+	 * the same id.
+	 */
+	public abstract String id();
+
+	/**
+	 * Check if the SATSolver is available. Return null if so, otherwise a
+	 * reason why it is not available is returned.
+	 */
+
+	public String check() {
+		if (!isPresent())
+			return "cannot be found";
+
 		SATSolver solver = null;
 		try {
-			solver = factory.instance();
+			solver = instance();
 			solver.addVariables(1);
-			solver.addClause(new int[]{1});
-			return solver.solve();
-		} catch (RuntimeException|UnsatisfiedLinkError t) {	
-			return false;
+			solver.addClause(new int[] { 1 });
+			if (solver.solve())
+				return null;
+			;
+			return "could not solve trivial problem";
+		} catch (Exception t) {
+			return t.toString();
+		} catch (UnsatisfiedLinkError t) {
+			return "unsatisfied linking: " + t.getMessage();
 		} finally {
-			if (solver!=null) {
+			if (solver != null) {
 				solver.free();
 			}
 		}
-	}
-	
-	/**
-	 * The factory that produces instances of the default sat4j solver.
-	 * @see org.sat4j.core.ASolverFactory#defaultSolver()
-	 */
-	public static final SATFactory DefaultSAT4J = new SATFactory() { 
-		public SATSolver instance() { 
-			return new SAT4J(SolverFactory.instance().defaultSolver()); 
-		}
-		public String toString() { return "DefaultSAT4J"; }
-	};
-	
-	/**
-	 * The factory that produces instances of the default PMax-SAT sat4j solver.
-	 * @see org.sat4j.maxsat.SolverFactory#newDefault()
-	 */
-	// [HASLab]
-	public static final SATFactory PMaxSAT4J = new SATFactory() { 
-		public SATSolver instance() { 
-			return new PMaxSAT4J(org.sat4j.maxsat.SolverFactory.newDefault()); 
-		}
-		public boolean maxsat() { return true; }
-		public String toString() { return "PMaxSAT4J"; }
-	};
-	
-	/**
-	 * The factory that produces instances of the "light" sat4j solver.  The
-	 * light solver is suitable for solving many small instances of SAT problems.
-	 * @see org.sat4j.core.ASolverFactory#lightSolver()
-	 */
-	public static final SATFactory LightSAT4J = new SATFactory() {
-		public SATSolver instance() { 
-			return new SAT4J(SolverFactory.instance().lightSolver()); 
-		}
-		public String toString() { return "LightSAT4J"; }
-	};
-	
-	/**
-	 * The factory that produces instances of Niklas E&eacute;n and Niklas S&ouml;rensson's
-	 * MiniSat solver.
-	 */
-	public static final SATFactory MiniSat = new SATFactory() {
-		public SATSolver instance() {
-			return new MiniSat();
-		}
-		public String toString() { return "MiniSat"; }
-	};
-	
-	// [HASLab] get from kodkod
-	public static final SATFactory CryptoMiniSat = null;
-	
-	/**
-	 * The factory the produces {@link SATProver proof logging} 
-	 * instances of the MiniSat solver.  Note that core
-	 * extraction can incur a significant time overhead during solving,
-	 * so if you do not need this functionality, use the {@link #MiniSat} factory
-	 * instead.
-	 */
-	public static final SATFactory MiniSatProver = new SATFactory() {
-		public SATSolver instance() { 
-			return new MiniSatProver(); 
-		}
-		@Override
-		public boolean prover() { return true; }
-		public String toString() { return "MiniSatProver"; }
-	};
-	
-	/**
-	 * The factory that produces instances of Gilles Audemard and Laurent Simon's 
-	 * Glucose solver.
-	 */
-	public static final SATFactory Glucose = new SATFactory() {
-		public SATSolver instance() {
-			return new Glucose();
-		}
-		public String toString() { return "Glucose"; }
-	};
-	
-	/**
-	 * The factory that produces instances of Armin Biere's
-	 * Lingeling solver.
-	 */
-	public static final SATFactory Lingeling = new SATFactory() {
-		public SATSolver instance() {
-			return new Lingeling();
-		}
-		public boolean incremental() { return false; }
-		public String toString() { return "Lingeling"; }
-	};
-	
-	/**
-	 * Returns a SATFactory that produces SATSolver wrappers for Armin Biere's Plingeling
-	 * solver.  This is a parallel solver that is invoked as an external program rather than 
-	 * via the Java Native Interface.  As a result, it cannot be used incrementally.  Its
-	 * external factory manages the creation and deletion of temporary files automatically.
-	 * A statically compiled version of plingeling is assumed to be available in a
-	 * java.library.path directory.  The effect of this method is the same as calling
-	 * {@link #plingeling(Integer, Boolean) plingeling(null, null)}.
-	 * @return  SATFactory that produces SATSolver wrappers for the Plingeling solver
-	 */
-	public static final SATFactory plingeling() {
-		return plingeling(null, null);
-	}
-	
-	/**
-	 * Returns a SATFactory that produces SATSolver wrappers for Armin Biere's Plingeling
-	 * solver.  This is a parallel solver that is invoked as an external program rather than 
-	 * via the Java Native Interface.  As a result, it cannot be used incrementally.  Its
-	 * external factory manages the creation and deletion of temporary files automatically.
-	 * A statically compiled version of plingeling is assumed to be available in a
-	 * java.library.path directory.  
-	 * 
-	 * <p>Plingeling takes as input two optional parameters: {@code threads}, specifying how
-	 * many worker threads to use, and {@code portfolio}, specifying whether the threads should
-	 * run in portfolio mode (no sharing of clauses) or sharing mode. If {@code threads}
-	 * is null, the solver uses one worker per core.  If {@code portfolio} is null, it is set to 
-	 * true by default.</p>
-	 * 
-	 * @requires threads != null => numberOfThreads > 0
-	 * 
-	 * @return  SATFactory that produces SATSolver wrappers for the Plingeling solver
-	 */
-	public static final SATFactory plingeling(Integer threads, Boolean portfolio) {
-		
-		final List<String> opts = new ArrayList<String>(3);
-		if (threads!=null) {
-			if (threads < 1)
-				throw new IllegalArgumentException("Number of threads must be at least 1: numberOfThreads=" + threads);
-			opts.add("-t");
-			opts.add(threads.toString());
-		}
-		if (portfolio!=null && portfolio)
-			opts.add("-p");
-		
-		final String executable = findStaticLibrary("plingeling");
-		return externalFactory(executable==null ? "plingeling" : executable, 
-				null, false, false, opts.toArray(new String[opts.size()]));
-	
-	}
-	
-	/**
-	 * Returns a SATFactory that produces SATSolver wrappers for Syrup. This is
-	 * a parallel solver that is invoked as an external program rather than via
-	 * the Java Native Interface. As a result, it cannot be used incrementally.
-	 */
-	// [HASLab]
-	public static final SATFactory syrup() {
-		final String executable = findStaticLibrary("glucose-syrup");
-		return externalFactory(executable==null ? "glucose-syrup" : executable, 
-				null, false, false, "-verb=0");
+
 	}
 
-	// [HASLab]
-	public static final SATFactory electrod(String ...opts) {
-		final String executable = findStaticLibrary("electrod");
-		return externalFactory(executable==null ? "electrod" : executable, 
-				null, true, true, opts);
-	}
-
-//	/**
-//	 * The factory that produces instances of the yices solver.
-//	 */
-//	// [HASLab]
-//	public static final SATFactory Yices = new SATFactory() {
-//		public SATSolver instance() {
-//			return new Yices();
-//		}
-//		public String toString() { return "Yices"; }
-//	};
-//
-//	/**
-//	 * The factory that produces instances of the default PMax-SAT yices solver.
-//	 */
-//	// [HASLab]	
-//	public static final SATFactory PMaxYices = new SATFactory() {
-//		public SATSolver instance() {
-//			return new PMaxYicesNative();
-//		}
-//		public boolean maxsat() { return true; }
-//		public String toString() { return "PMaxYicesNative"; }
-//	};
-
-	/**
-	 * The factory that produces instances of the default PMax-SAT yices solver
-	 * as an external program (rather than through JNI).
-	 */
-	// [HASLab]	
-	public static final SATFactory yicesExternal() {
-		final String executable = findStaticLibrary("yices");
-		return externalPMaxYices(executable==null ? "yices" : executable, null, 2000, "-d","-e","-ms","-mw",""+2000);
-	}
-	
-	/**
-	 * Searches the {@code java.library.path} for an executable with the given name. Returns a fully 
-	 * qualified path to the first found executable.  Otherwise returns null.
-	 * @return a fully qualified path to an executable with the given name, or null if no executable 
-	 * is found.
-	 */
-	private static String findStaticLibrary(String name) { 
-		final String[] dirs = System.getProperty("java.library.path").split(System.getProperty("path.separator"));
-		
-		for(int i = dirs.length-1; i >= 0; i--) {
-			final File file = new File(dirs[i]+File.separator+name);
-			if (file.canExecute())
-				return file.getAbsolutePath();
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * Returns a SATFactory that produces instances of the specified
-	 * SAT4J solver.  For the list of available SAT4J solvers see
-	 * {@link org.sat4j.core.ASolverFactory#solverNames() org.sat4j.core.ASolverFactory#solverNames()}.
-	 * @requires solverName is a valid solver name
-	 * @return a SATFactory that returns the instances of the specified
-	 * SAT4J solver
-	 * @see org.sat4j.core.ASolverFactory#solverNames()
-	 */
-	public static final SATFactory sat4jFactory(final String solverName) {
-		return new SATFactory() {
-			@Override
-			public SATSolver instance() {
-				return new SAT4J(SolverFactory.instance().createSolverByName(solverName));
-			}
-			public String toString() { return solverName; }
-		};
-	}
-	
-	/**
-	 * Returns a SATFactory that produces SATSolver wrappers for the external
-	 * SAT solver specified by the executable parameter.  The solver's input
-	 * and output formats must conform to the 
-	 * <a href="http://www.satcompetition.org/2011/rules.pdf">SAT competition standards</a>.  The solver
-	 * will be called with the specified options, and it is expected to write properly formatted
-	 * output to standard out.  If the {@code cnf} string is non-null,  it will be 
-	 * used as the file name for generated CNF files by all solver instances that the factory generates.  
-	 * If {@code cnf} null, each solver instance will use an automatically generated temporary file, which 
-	 * will be deleted when the solver instance is garbage-collected. The {@code cnf} file, if provided, is not 
-	 * automatically deleted; it is the caller's responsibility to  delete it when no longer needed.  
-	 * External solvers are never incremental.
-	 * @return  SATFactory that produces SATSolver wrappers for the specified external
-	 * SAT solver
-	 */
-	// [HASLab] unbounded info
-	public static final SATFactory externalFactory(final String executable, final String cnf, final boolean incremental, final boolean unbounded, final String... options) {
-		return new SATFactory() {
-
-			@Override
-			public SATSolver instance() {
-				if (cnf != null) {
-					return new ExternalSolver(executable, cnf, false, options);
-				} else {
-					try {
-						return new ExternalSolver(executable, 
-								File.createTempFile("kodkod", String.valueOf(executable.hashCode())).getAbsolutePath(), 
-								true, options);
-					} catch (IOException e) {
-						throw new SATAbortedException("Could not create a temporary file.", e);
-					}
-				}
-			}
-			
-			@Override
-			public boolean incremental() {
-				return incremental; // [HASLab]
-			}
-			
-			@Override
-			// [HASLab]
-			public boolean unbounded() {
-				return unbounded;
-			}
-			
-			public String toString() {
-				return (new File(executable)).getName();
-			}
-		};
-	}
-	
-	/**
-	 * Returns a SATFactory that produces  SATSolver wrappers for the external
-	 * Yices SAT solver, since it does not follow standard WCNF output format.
-	 * @return  SATFactory that produces SATSolver wrappers for Yices
-	 */
-	// [HASLab]
-	public static final SATFactory externalPMaxYices(final String executable, final String cnf, final int max, final String... options) {
-		return new SATFactory() {
-			@Override
-			public WTargetSATSolver instance() {
-				if (cnf != null) {
-					return new PMaxYicesExternal(executable, cnf, false, max, options);
-				} else {
-					try {
-						return new PMaxYicesExternal(executable, 
-								File.createTempFile("kodkod", String.valueOf(executable.hashCode())).getAbsolutePath(), 
-								false, max, options);
-					} catch (IOException e) {
-						throw new SATAbortedException("Could not create a temporary file.", e);
-					}
-				}
-			}
-			public boolean maxsat() { return true; }
-			public boolean incremental() { return false; }
-			public String toString() {
-				return (new File(executable)).getName();
-			}
-		};
-	}
-	
 	/**
 	 * Returns an instance of a SATSolver produced by this factory.
+	 * 
 	 * @return a SATSolver instance
 	 */
 	public abstract SATSolver instance();
-	
+
 	/**
 	 * Returns true if the solvers returned by this.instance() are
-	 * {@link SATProver SATProvers}.  Otherwise returns false.
+	 * {@link SATProver SATProvers}. Otherwise returns false.
+	 * 
 	 * @return true if the solvers returned by this.instance() are
-	 * {@link SATProver SATProvers}.  Otherwise returns false.
+	 *         {@link SATProver SATProvers}. Otherwise returns false.
 	 */
 	public boolean prover() {
 		return false;
 	}
-	
+
 	/**
 	 * Returns true if the solvers returned by this.instance() are incremental;
 	 * i.e. if clauses/variables can be added to the solver between multiple
 	 * calls to solve().
+	 * 
 	 * @return true if the solvers returned by this.instance() are incremental
 	 */
 	public boolean incremental() {
-		return true;
+		return false;
 	}
-	
-	// [HASLab]
+
+	/**
+	 * Returns true if the solvers returned by this.instance() are unbounded.
+	 * 
+	 * @return true if the solvers returned by this.instance() are incremental
+	 */
 	public boolean unbounded() {
 		return false;
 	}
-	
+
 	/**
 	 * Returns true if the solvers returned by this.instance() are Max-SAT,
 	 * i.e., soft clauses and weights can added to the solver.
+	 * 
 	 * @return true if the solvers returned by this.instance() are Max-SAT
 	 */
-	// [HASLab]
 	public boolean maxsat() {
 		return false;
 	}
 
+	/**
+	 * Return a human readable description of this solver.
+	 */
+	public Optional<String> getDescription() {
+		return Optional.empty();
+	};
+
+	/**
+	 * Return a list of all SATFactory that are found on this platform.
+	 */
+	public static List<SATFactory> getSolvers() {
+		return getAllSolvers().stream().filter(SATFactory::isPresent).collect(Collectors.toList());
+	}
+
+	/**
+	 * Return all solvers on this platform in a sorted list by {@link #id()}.
+	 * This contains:
+	 * <ul>
+	 * <li>the SATFactory's in {@link #extensions}
+	 * <li>{@link #DEFAULT}
+	 * <li>{@link #KK}
+	 * <li>{@link #CNF}
+	 * <li>All SATFactory's that can be found with the Service Loader.
+	 * </ul>
+	 */
+	public static List<SATFactory> getAllSolvers() {
+		ServiceLoader<SATFactory> loader = ServiceLoader.load(SATFactory.class,
+				SATFactory.class.getClassLoader());
+		List<SATFactory> result = new ArrayList<>(extensions);
+		for (SATFactory r : loader) {
+			result.add(r);
+		}
+		Collections.sort(result);
+		return result;
+	}
+
+	/**
+	 * Check if the SATFactory is present
+	 */
+	public boolean isPresent() {
+		try {
+			instance();
+			for (String library : getLibraries()) {
+				if (!NativeCode.platform.getLibrary(library).isPresent())
+					return false;
+			}
+			for (String executable : getExecutables()) {
+				if (!NativeCode.platform.getExecutable(executable).isPresent())
+					return false;
+			}
+			return true;
+		} catch (java.lang.UnsatisfiedLinkError e) {
+			log.debug("lib {} gave error {}", id(), e.getMessage());
+		}
+		return false;
+	}
+
+	/**
+	 * Get a list of executable names. These executable names must be generic,
+	 * without suffix. For Unix/MacOS this is just the name of the executable.
+	 * For windows, it must be without .exe.
+	 */
+	public String[] getExecutables() {
+		return EMPTY;
+	}
+
+	/**
+	 * Get a list of library names. These library names must be generic, without
+	 * suffix. For Unix this is libNAME.so, for MacOS this is libNAME.dylib, and
+	 * for windows this is NAME.dll.
+	 */
+	public String[] getLibraries() {
+		return EMPTY;
+	}
+
+	/**
+	 * This must be called before the solver is used so that the solver can
+	 * influence the options.
+	 * 
+	 * @param options
+	 *            the options
+	 */
+	public SATFactory doOptions(ExtendedOptions options) {
+		return this;
+	}
+
+	/**
+	 * Find a SAT Factory by name.
+	 * 
+	 * @param solver
+	 *            the solver name
+	 */
+	public static Optional<SATFactory> find(String solver) {
+		return getSolvers().stream().filter(s -> s.id().equalsIgnoreCase(solver)).findFirst();
+	}
+
+	/**
+	 * Get a SAT Factory by name. If not found, throw an
+	 * IllegalArgumentException.
+	 * 
+	 * @param solver
+	 *            the solver name
+	 */
+	public static SATFactory get(String solver) {
+		return find(solver)
+				.orElseThrow(
+						() -> new IllegalArgumentException("no solver " + solver + ", available are " + getSolvers()));
+	}
+
+	@Override
+	public int compareTo(SATFactory o) {
+		return id().compareTo(o.id());
+	}
+
+	/**
+	 * Two SATFactory objects are equal if their id is equal.
+	 */
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof SATFactory))
+			return false;
+
+		return id().equals(((SATFactory) o).id());
+	}
+
+	/**
+	 * Two SATFactory objects are equal if their id is equal.
+	 */
+	@Override
+	public int hashCode() {
+		return id().hashCode();
+	}
+
+	public String toString() {
+		return id();
+	}
+
+	public abstract String type();
+
+	public String attributes() {
+		List<String> attrs = new ArrayList<>();
+        if (incremental())
+            attrs.add("incr");
+        if (maxsat())
+            attrs.add("max");
+        if (prover())
+            attrs.add("prover");
+
+        return attrs.stream().collect(Collectors.joining(","));
+	}
 }

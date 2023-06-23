@@ -29,7 +29,7 @@ import java.io.File;
  * 
  * @author Emina Torlak
  */
-abstract class NativeSolver implements SATSolver {
+public abstract class NativeSolver implements SATSolver {
 	/**
 	 * The memory address of the native instance wrapped by this wrapper.
 	 */
@@ -41,7 +41,7 @@ abstract class NativeSolver implements SATSolver {
 	 * Constructs a new wrapper for the given 
 	 * instance of the native solver.
 	 */
-	NativeSolver(long peer) {
+	protected NativeSolver(long peer) {
 		this.peer = peer;
 		this.clauses = this.vars = 0;
 		this.sat = null;
@@ -55,7 +55,7 @@ abstract class NativeSolver implements SATSolver {
 	 * where suffix ranges over the path-separator delimited list obtained by
 	 * calling System.getProperty("kodkod." + library.getSimpleName().toLowerCase()).
 	 */
-	static void loadLibrary(Class<? extends NativeSolver> library) {
+	protected static void loadLibrary(Class<? extends NativeSolver> library) {
 		final String name = library.getSimpleName().toLowerCase();
 		try {
 			System.loadLibrary(name);
@@ -99,7 +99,7 @@ abstract class NativeSolver implements SATSolver {
 	 * @ensures adjusts the internal clause so that the next call to {@linkplain #numberOfClauses()}
 	 * will return the given value.
 	 */
-	final void adjustClauseCount(int clauseCount) {
+	public void adjustClauseCount(int clauseCount) {
 		assert clauseCount >= 0;
 		clauses = clauseCount;
 	}
@@ -140,7 +140,7 @@ abstract class NativeSolver implements SATSolver {
 	 * Returns a pointer to the C++ peer class (the native instance wrapped by this object).
 	 * @return a pointer to the C++ peer class (the native instance wrapped by this object).
 	 */
-	final long peer() { return peer; }
+	public final long peer() { return peer; }
 	
 	/**
 	 * Returns the current sat of the solver.
@@ -148,7 +148,7 @@ abstract class NativeSolver implements SATSolver {
 	 * call to solve() yielded SAT, and FALSE if the last call to
 	 * solve() yielded UNSAT.
 	 */
-	final Boolean status() { return sat; }
+	public final Boolean status() { return sat; }
 		
 	/**
 	 * {@inheritDoc}
@@ -168,7 +168,7 @@ abstract class NativeSolver implements SATSolver {
 	 * Otherwise does nothing.
 	 * @throws IllegalArgumentException  variable !in this.variables
 	 */
-	final void validateVariable(int variable) {
+	public void validateVariable(int variable) {
 		if (variable < 1 || variable > vars)
 			throw new IllegalArgumentException(variable + " !in [1.." + vars+"]");
 	}
@@ -214,14 +214,14 @@ abstract class NativeSolver implements SATSolver {
 	 * @ensures releases the resources associated
 	 * with the given native peer
 	 */
-	abstract void free(long peer);
+	public abstract void free(long peer);
 	
 	/**
 	 * Adds the specified number of variables to the given native peer.
 	 * @ensures increases the vocabulary of the given native peer by 
 	 * the specified number of variables
 	 */
-	abstract void addVariables(long peer, int numVariables);
+	public abstract void addVariables(long peer, int numVariables);
 
 	/**
 	 * Ensures that the given native peer logically contains the
@@ -232,14 +232,14 @@ abstract class NativeSolver implements SATSolver {
 	 * @ensures ensures that the given native peer logically contains the specified clause
 	 * @return true if the peer's clause database changed as a result of the call; a negative integer if not.
 	 */
-	abstract boolean addClause(long peer, int[] lits);
+	public abstract boolean addClause(long peer, int[] lits);
 	
 	/**
 	 * Calls the solve method on the given native peer.
 	 * @return true if the clauses in the solver are SAT;
 	 * otherwise returns false.
 	 */
-	abstract boolean solve(long peer);
+	public abstract boolean solve(long peer);
 	
 	/**
 	 * Returns the assignment for the given literal
@@ -247,6 +247,6 @@ abstract class NativeSolver implements SATSolver {
 	 * @requires the last call to {@link #solve(long) solve(peer)} returned SATISFIABLE
 	 * @return the assignment for the given literal
 	 */
-	abstract boolean valueOf(long peer, int literal);
+	public abstract boolean valueOf(long peer, int literal);
 
 }

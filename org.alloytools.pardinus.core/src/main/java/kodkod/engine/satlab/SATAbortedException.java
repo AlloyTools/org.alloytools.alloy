@@ -38,21 +38,21 @@ public final class SATAbortedException extends RuntimeException {
 	/**
 	 * Constructs an aborted exception with the given message.
 	 */
-	SATAbortedException(String message) {
+	public SATAbortedException(String message) {
 		super(message);
 	}
 
 	/**
 	 * Constructs an aborted exception with the given cause.
 	 */
-	SATAbortedException(Throwable cause) {
+	public SATAbortedException(Throwable cause) {
 		super(cause);
 	}
 
 	/**
 	 * Constructs an aborted exception with the given message and cause.
 	 */
-	SATAbortedException(String message, Throwable cause) {
+	public SATAbortedException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
