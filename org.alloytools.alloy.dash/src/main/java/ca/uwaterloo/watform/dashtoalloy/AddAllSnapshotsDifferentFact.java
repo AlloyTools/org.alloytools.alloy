@@ -45,7 +45,7 @@ public class AddAllSnapshotsDifferentFact {
         for (int i = 0; i <= d.getMaxDepthParams(); i++) {
             body.add(createEquals(curConf(i),nextConf(i)));
             // s.scopesUsedi = sn.scopesUsedi
-            if (d.hasConcurrency())
+            //if (d.hasConcurrency())
                 body.add(createEquals(curScopesUsed(i),nextScopesUsed(i)));
             body.add(createEquals(curTransTaken(i),nextTransTaken(i)));
             if (d.hasInternalEventsAti(i))
@@ -53,6 +53,13 @@ public class AddAllSnapshotsDifferentFact {
         }
         if (d.hasConcurrency())
             body.add(createEquals(curStable(),nextStable()));
+        List<String> allVarsAndBuffers = d.getAllVarNames();
+        allVarsAndBuffers.addAll(d.getAllBufferNames());
+        for (String v: allVarsAndBuffers) {
+            body.add(createEquals(curJoinExpr(createVar(translateFQN(v))), nextJoinExpr(createVar(translateFQN(v)))));
+        }
+
+        //TODO: have to add something for all dynamic variables !!!!
         e = createAll(curNextDecls(), createImplies(createAndList(body), createEquals(curVar(), nextVar())));
         body = new ArrayList<Expr>();
         body.add(e);
