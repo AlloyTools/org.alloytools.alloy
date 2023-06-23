@@ -1,0 +1,39 @@
+Copyright (c) 2010 - 2013, Armin Biere, Johannes Kepler University.
+
+Permission is hereby granted, free of charge, to use this software for
+evaluation and research purposes.
+
+This license does not allow this software to be used in a commercial context.
+
+It is further prohibited to use this software or a substantial portion of it
+in a competition or a similar competetive event, such as the SAT, SMT or QBF
+competitions or evaluations, without explicit written permission by the
+copyright holder.
+
+However, competition organizers are allowed to use this software as part of
+the evaluation process of a particular competition, evaluation or
+competetive event, if the copyright holder of this software submitted this
+software to this particular competition, evaluation or event explicitly.
+
+This permission of using the software as part of a submission by the
+copyright holder to a competition, evaluation or competive event is only
+granted for one year and only for one particular instance of the competition
+to which this software was submitted by the copyright holder.
+
+If a competition, evaluation or competetive event has multiple tracks,
+categories or sub-competitions, this license is only granted for the tracks
+respectively categories or sub-competitions, to which the software was
+explicitly submitted by the copyright holder.
+
+All other usage is reserved.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.

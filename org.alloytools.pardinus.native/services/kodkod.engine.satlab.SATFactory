@@ -1,0 +1,10 @@
+org.alloytools.solvers.natv.glucose.GlucoseRef
+org.alloytools.solvers.natv.lingeling.LingelingRef
+org.alloytools.solvers.natv.lingeling.PlingelingRef
+org.alloytools.solvers.natv.minisat.MiniSatRef
+org.alloytools.solvers.natv.minisatprover.MiniSatProverRef
+org.alloytools.solvers.natv.yices.YicesRef
+org.alloytools.solvers.natv.yices.YicesExternalRef
+org.alloytools.solvers.natv.electrod.ElectrodSRef
+org.alloytools.solvers.natv.electrod.ElectrodXRef
+org.alloytools.solvers.natv.gini.GiniRef
