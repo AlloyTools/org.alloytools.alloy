@@ -384,6 +384,7 @@ public class CompModuleHelper extends CompModule {
         StringJoiner sj = new StringJoiner("\n" + tab);   
         for (Expr e: eList) {
             //ExprToString eToString = new ExprToString(false);
+            //System.out.println(ppExpr(e));
             sj.add(ppExpr(e));
         }
         s += sj.toString();

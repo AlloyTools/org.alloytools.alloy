@@ -121,9 +121,13 @@ public class ExprHelper  {
             DashErrors.getSubNotUnary(e.getClass().getName()); return null; 
         }
     }
-    public static ExprBinary.Op getOp(Expr e) {
+    public static ExprBinary.Op getBinaryOp(Expr e) {
         assert(e instanceof ExprBinary);
         return ((ExprBinary) e).op;
+    }
+    public static ExprUnary.Op getUnaryOp(Expr e) {
+        assert(e instanceof ExprUnary);
+        return ((ExprUnary) e).op;
     }
     public static Expr getCond(Expr e) {
         assert(e instanceof ExprITE);

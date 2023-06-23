@@ -36,6 +36,7 @@ import ca.uwaterloo.watform.core.DashStrings;
     .brk(int spacesifnotbroken, int spacestoaddorsubtractfromindentifbroken)
     .brk(x) = .brk(x,0) 
     .brk() = .brk(1,0)
+    .close() - finish the string
 
     consistent block means if break required then all have breaks
     inconsistent block means put as much as possible on a line
@@ -131,26 +132,8 @@ public class ExprToString {
     */
     private void ExprBinaryToOut(ExprBinary expr) {
         if (DashRef.isDashRef(expr)) {
-            //   Root/A/B[exp1, exp2]/v1
-            /*
-            String v = DashRef.getName(expr);
-            String n = DashFQN.chopNameFromFQN(v);
-            String prefix = DashFQN.chopPrefixFromFQN(v);
-            //TODO: should do proper pretty printing for these!
-            String s = prefix;
-            s += "[";
-            List<String> el = new ArrayList<String>();
-            List<String> paramValues = 
-                DashRef.getParamValues(expr).stream()
-                .map(i -> i.toString())
-                .collect(Collectors.toList());
-            Collections.reverse(paramValues);
-            s += DashUtilFcns.strCommaList(paramValues);
-            s += "]/" + v;
-            */
             out.print(expr.toString());
-        }
-        else if (expr.op == ExprBinary.Op.ISSEQ_ARROW_LONE) {
+        } else if (expr.op == ExprBinary.Op.ISSEQ_ARROW_LONE) {
             out.print("seq ");
             out.beginC(2);
             ExprToOut(expr.right);
@@ -159,58 +142,31 @@ public class ExprToString {
         } else if (expr.op == ExprBinary.Op.JOIN) {
             // there are really long join expressions
             //out.beginI(2);
-            addBracketsIfNeededNoBlocks(getLeft(expr));
+            addBracketsIfNeeded(getLeft(expr));
             //out.brk(1,0);
             out.print(expr.op);
             //out.brk(1,0);
-            addBracketsIfNeededNoBlocks(getRight(expr));  
+            addBracketsIfNeeded(getRight(expr));  
             //out.end();  
         } else {
             out.beginI(2);
             addBracketsIfNeeded(getLeft(expr));
-            //out.brk(1,0);
-            out.print(" ");
+            out.brk(1,0);
             out.print(expr.op);
             out.brk(1,0);
             addBracketsIfNeeded(getRight(expr));  
-            out.end();                 
-
-        /*
-        } else if (expr.op == ExprBinary.Op.IMPLIES) {
-            ExprToOut(expr.left);
-            out.print(" => ").print("{ ");
-            ExprToOut(expr.right);
-            out.print(" } ");
+            out.end();     
         }
-        
-        // This used to ensure that binary expressions have proper braces around them
-        } else if ( isBinary(expr.right) || isBinary(expr.left)  ) {    
-            if ( isBinary(expr.left) && !(exprOp(expr.left) == exprOp(expr)) && !(exprOp(expr.left) == ExprBinary.Op.JOIN)) {  
-                out.print('{').print(' ');
-                ExprToOut(expr.left);
-                out.print(' ').print("}").print(' ').print(expr.op).print(' ');
-            } else {
-                ExprToOut(expr.left);
-                out.print(' ').print(expr.op).print(' ');
-            }
-            if (isBinary(expr.right)  && !({exprOp}(expr.right) == exprOp(expr)) && !(exprOp(expr.right) == ExprBinary.Op.JOIN)){   
-                out.print('{').print(' ');
-                ExprToOut(expr.right);
-                out.print(' ').print("}");
-            } else {
-                ExprToOut(expr.right);
-            }
-        }
-        else {
-            ExprToOut(expr.left);
-            out.print(' ').print(expr.op).print(' ');
-            ExprToOut(expr.right);
-        */
-        }
-        
     }
 
+/*
     private void addBracketsIfNeededNoBlocks(Expr expr) {
+        Boolean bracketNotNeeded = 
+            isExprVar(expr) || 
+                (isExprUnary(expr) && 
+                    !isExprCard(expr)&& 
+                    !isExprRClosure(expr) && 
+                    !isExprClosure(expr));
         if (!(isExprVar(expr) || (isExprUnary(expr) && !isExprCard(expr) ))) {
             //out.beginC(2);
             out.print("(");      
@@ -221,24 +177,27 @@ public class ExprToString {
             //out.end();
         }            
     } 
+*/
 
     private void addBracketsIfNeeded(Expr expr) {
-        if (!(isExprVar(expr) || 
+        Boolean bracketsNotNeeded = 
+            isExprVar(expr) || 
                 (isExprUnary(expr) && 
                     !isExprCard(expr)&& 
                     !isExprRClosure(expr) && 
-                    !isExprClosure(expr)))) {
-            out.beginC(2);
-            out.print("(");      
-        }    
+                    !isExprClosure(expr));
+        if (!bracketsNotNeeded) {
+            //out.beginC(2);
+            out.print("(");
+        }
+        //System.out.println("---- class: " + expr.getClass().toString());  
+        //if (isExprUnary(expr)) System.out.println(getUnaryOp(expr).toString());  
+        //System.out.println("bracketsNotNeeded: " + bracketsNotNeeded.toString());
+        //System.out.println(expr.toString());
         ExprToOut(expr);
-        if (!(isExprVar(expr) || 
-                (isExprUnary(expr) && 
-                    !isExprCard(expr) && 
-                    !isExprRClosure(expr) && 
-                    !isExprClosure(expr)) )) {
+        if (!bracketsNotNeeded) {
             out.print(")");
-            out.end();
+            //out.end();
         }            
     }  
 
@@ -247,32 +206,6 @@ public class ExprToString {
         out.print('.');
         addBracketsIfNeeded(expr.right);
     }
-    
-    /*
-    private void ExprBinaryJoinToOut(ExprBinary expr) {
-        // The Alloy resolve dot joins (this) to a variable reference in a variable. We should not bring the ("this")
-        // We also do not print (Snapshot <: ...)
-        boolean clean = (expr.left.toString().equals("this") && isAfterAlloyResolveAll);
-
-        if (expr.right.toString().charAt(0) == '(') {
-            if (!clean) {
-                ExprToOut(expr.left);
-                out.print(expr.op);
-            }
-            ExprToOut(expr.right);
-        }
-        else {
-            if (!clean) {
-                ExprToOut(expr.left);
-                out.print(expr.op).print(' ').print('(');
-            }
-            ExprToOut(expr.right);
-            if (!clean) {
-                out.print(")");
-            }
-        }
-    }
-    */
 
     private void ExprCallToOut(ExprCall expr) {
         out.print(cleanLabel(expr.fun.label));
@@ -327,7 +260,16 @@ public class ExprToString {
     }
 
     private void ExprLetToOut(ExprLet expr) {
-        out.print("(let ").print(cleanLabel(expr.var.label)).print("= ").print(expr.toString()).print(" | ");
+        out.print("(let");
+        out.brk(1,0);
+        out.print(cleanLabel(expr.var.label));
+        out.brk(1,0);
+        out.print("=");
+        out.brk(1,0);
+        ExprToOut(expr.expr); 
+        out.brk(1,0);
+        out.print("|");
+        out.brk(1,0);
         out.beginC(2);
         ExprToOut(expr.sub);
         out.end();
@@ -465,7 +407,8 @@ public class ExprToString {
                 addBracketsIfNeeded(expr.sub);
                 break;
             case NOOP :
-                ExprToOut(expr.sub);
+                // { expr } is parsed as NOOP (expr)
+                addBracketsIfNeeded(expr.sub);
                 break;
             default :
                 // many operators print okay
@@ -477,19 +420,6 @@ public class ExprToString {
 
     }
 
-    /*
-    private void ExprVarToOut(ExprVar expr) {
-        out.print(cleanLabel(expr.label));
-    }
-
-    private void SigToOut(Sig sig) {
-        out.print(cleanLabel(sig.label));
-    }
-
-    private void FieldToOut(Field field) {
-        out.print("(").print(cleanLabel(field.label)).print(")");
-    }
-    */
 
     // Helper method to print a list of declarations
     private void DeclsToOut(List<Decl> decls) {
@@ -515,12 +445,6 @@ public class ExprToString {
        if (decl.disjoint != null) {
             out.print("disj").print(" ");
         }
-        //StringJoiner namesJoiner = new StringJoiner(",");
-        //decl.names.forEach(name -> namesJoiner.add(cleanLabel(name.label)));
-        //if (!first) {
-        //    out.print(",");
-        //}
-        //first = false;
         if (decl.isVar != null) {
             out.print(DashStrings.varName + " ");
         }
@@ -543,12 +467,5 @@ public class ExprToString {
         return label;
     }
 
-    /*
-    private ExprBinary.Op exprOp (Expr expr) {
-        if (expr instanceof ExprBinary)
-            return ((ExprBinary) expr).op;
-        return null;
-    }
-    */
 
 }
