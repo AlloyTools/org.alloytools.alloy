@@ -17,7 +17,7 @@
     @${repo;org.alloytools.alloy.application}, \
     @${repo;org.alloytools.alloy.core}, \
     @${repo;org.alloytools.alloy.extra}, \
-    @${repo;org.alloytools:pardinus.core}, \
+    @${repo;org.alloytools.pardinus.core}, \
     @${repo;org.alloytools:pardinus.nativesat}, \
     @${repo;org.sat4j.core}, \
     @${repo;org.sat4j.maxsat}, \

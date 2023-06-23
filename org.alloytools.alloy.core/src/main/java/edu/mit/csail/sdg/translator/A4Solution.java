@@ -452,8 +452,9 @@ public final class A4Solution {
             solver_opts.setSolver(SATFactory.Lingeling);
         } else if (opt.solver.equals(A4Options.SatSolver.GlucoseJNI)) {
             solver_opts.setSolver(SATFactory.Glucose);
-        } else if (opt.solver.equals(A4Options.SatSolver.Glucose41JNI)) {
-            solver_opts.setSolver(SATFactory.Glucose41);
+            // TODO cleanup, there was a mismatch between the source repo of Pardinus and the bundles
+            //        } else if (opt.solver.equals(A4Options.SatSolver.Glucose41JNI)) {
+            //            solver_opts.setSolver(SATFactory.Glucose41);
         } else if (opt.solver.equals(A4Options.SatSolver.CryptoMiniSatJNI)) {
             solver_opts.setSolver(SATFactory.CryptoMiniSat);
         } else if (opt.solver.equals(A4Options.SatSolver.MiniSatJNI)) {
