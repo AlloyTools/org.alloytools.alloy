@@ -71,7 +71,7 @@ import kodkod.solvers.api.NativeCode;
 public abstract class SATFactory implements Serializable, Comparable<SATFactory> {
 	private final static org.slf4j.Logger	log					= LoggerFactory.getLogger(SATFactory.class);
 	private static final long				serialVersionUID	= 1L;
-	protected static final String[]					EMPTY				= new String[0];
+	protected static final String[]			EMPTY				= new String[0];
 
 	/**
 	 * Any SATFactory objects added to this list will be included in the
@@ -98,11 +98,11 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 																		return Optional.of(
 																				"KK is the KodKod debug output format");
 																	}
-																	
+
 																	public String type() {
 																		return "synthetic";
 																	}
-																	
+
 																	@Override
 																	public boolean incremental() {
 																		return false;
@@ -134,6 +134,7 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 																	public String type() {
 																		return "synthetic";
 																	}
+
 																	@Override
 																	public boolean incremental() {
 																		return false;
@@ -377,13 +378,13 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 
 	public String attributes() {
 		List<String> attrs = new ArrayList<>();
-        if (incremental())
-            attrs.add("incr");
-        if (maxsat())
-            attrs.add("max");
-        if (prover())
-            attrs.add("prover");
+		if (incremental())
+			attrs.add("incr");
+		if (maxsat())
+			attrs.add("max");
+		if (prover())
+			attrs.add("prover");
 
-        return attrs.stream().collect(Collectors.joining(","));
+		return attrs.stream().collect(Collectors.joining(","));
 	}
 }
