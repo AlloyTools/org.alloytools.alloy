@@ -12,6 +12,8 @@ public class DashtoTLA
         StringBuilder things = new StringBuilder();
 
         List<String> trans = d.getAllTransNames();
+        System.out.println("translength:"+trans.size());
+        //System.out.print(d.getRootName());
         things.append("\nTransitions:");
         for(String s : trans)things.append("\n----\n").append(s);
 

@@ -198,6 +198,7 @@ public class Dash {
                         System.out.println(d.toStringAlloy());
                     } else if(translateTLA)
                     {
+                        d = MainFunctions.resolveDash(d, rep);
                         String comment = "\\* Modification History\n\\* Translated from Dash at "+System.currentTimeMillis()+" EPOCH";
                         String moduleName = f.getFileName().toString();
                         String header = "------------------------------- MODULE "+moduleName.substring(0, moduleName.length()-4)+" -------------------------------";
