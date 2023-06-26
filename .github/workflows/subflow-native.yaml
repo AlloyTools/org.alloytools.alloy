@@ -17,18 +17,10 @@ jobs:
 
       - name: Run Shell Script
         run: |
+          export HOMEBREW_NO_INSTALL_CLEANUP=true
           brew install docker
           colima start
           ./gradlew --parallel compileJava
-          while true; do
-            colima status &>/dev/null
-            if [[ \$? -eq 0 ]]; then
-              break;
-            fi
-
-            colima start
-            sleep 5
-          done
           make -C org.alloytools.pardinus.native/satsolvers install
           colima stop
 
