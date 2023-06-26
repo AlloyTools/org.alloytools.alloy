@@ -17,6 +17,7 @@ jobs:
 
       - name: Run Shell Script
         run: |
+          brew install docker
           colima start
           ./gradlew --parallel compileJava
           while true; do
