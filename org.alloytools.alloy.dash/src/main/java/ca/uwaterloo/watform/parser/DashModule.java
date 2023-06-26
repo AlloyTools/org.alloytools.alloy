@@ -307,6 +307,9 @@ public class DashModule extends CompModuleHelper {
 		return stateTable.getAllParamsInOrder();
 	}
 
+	public List<String> getAllStateNames() {
+		return stateTable.getAllStateNames();
+	}
 
 	//stuff about states (some of these are to expose the stateTable for testing)
 	public boolean isLeaf(String s) {

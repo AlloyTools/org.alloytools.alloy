@@ -50,11 +50,22 @@ public class Dash {
                 } catch (Exception e) {
                     DashUtilFcns.handleException(e);
                 }
-                if (ans.satisfiable()) {
-                    System.out.println("Result: SAT");
+                if (ans.satisfiable()) {                  
+                    if (cmd.expects == 1) 
+                        System.out.println("Result: SAT (CORRECT)");
+                    else if (cmd.expects == 0)
+                        System.out.println("Result: SAT (INCORRECT)");
+                    else
+                        System.out.println("Result: SAT (nothing expected)");
                 } else {
-                    System.out.println("Result: UNSAT");
+                    if (cmd.expects == 0) 
+                        System.out.println("Result: UNSAT (CORRECT)");
+                    else if (cmd.expects == 1)
+                        System.out.println("Result: UNSAT (INCORRECT)");
+                    else
+                        System.out.println("Result: UNSAT (nothing expected)");
                 }
+
             }
             i++;
         }
