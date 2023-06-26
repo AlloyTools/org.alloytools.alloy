@@ -17,7 +17,7 @@ jobs:
 
       - name: Run Shell Script
         run: |
-          make -C satsolvers install
+          make -C org.alloytools.pardinus.native/satsolvers install
 
       - name: Commit and Push Changes
         run: |
