@@ -29,7 +29,7 @@ public class GiniRef extends SATFactory {
 
     @Override
     public SATSolver instance() {
-        return new ExternalSolver("gini", null, true, "model");
+        return new ExternalSolver("gini", null, true, "-model");
     }
 
     @Override

@@ -1,0 +1,60 @@
+name: Native Code
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'org.alloytools.solvers.natv/satsolvers/**'
+  pull_request:
+    paths:
+      - 'org.alloytools.solvers.natv/satsolvers/**'
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Install GMP
+        run: brew install gmp
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Run Shell Script
+        run: |
+          make -C satsolvers install
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No changes to commit. Skipping pull request creation."
+            echo "::set-output name=has_changes::false"
+          else
+            echo "Changes detected. Proceeding with pull request creation."
+            echo "::set-output name=has_changes::true"
+          fi
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@galloytools.org
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v3
+        if: steps.changes.outputs.has_changes == 'true'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Native code update"
+          title: "Native code update"
+          branch: native-code
+          base: master
+
+      - name: Push the commit
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          git checkout -B native-code
+          git add .
+          git commit -m "Native code update"
+          git push --set-upstream origin my-branch

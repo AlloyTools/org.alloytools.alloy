@@ -195,7 +195,7 @@ public class NativeCode {
 				Files.copy(url.openStream(), to, StandardCopyOption.REPLACE_EXISTING);
 				return true;
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Failed to extract native code from the jar. name=%s, file=%s: %s", actualName, file, e,e);
 				return false;
 			}
 		}
