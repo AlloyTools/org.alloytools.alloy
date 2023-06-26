@@ -9,5 +9,5 @@ on:
 
 jobs:
   call-native:
-    uses: .github/workflows/subflow-native.yaml
+    uses: ./.github/workflows/subflow-native.yaml
     secrets: inherit
