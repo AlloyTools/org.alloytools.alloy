@@ -31,9 +31,7 @@ set(LIB_SOURCES
 
 add_library(lingeling-lib SHARED ${LIB_SOURCES})
 
-add_executable(lingeling ${LIB_SOURCES} repo/lglmain.c)
 add_executable(plingeling ${LIB_SOURCES} repo/plingeling.c)
-target_link_libraries(lingeling PRIVATE m)
 target_link_libraries(plingeling PRIVATE ${CMAKE_THREAD_LIBS_INIT}  m)
 
 set_target_properties(lingeling-lib

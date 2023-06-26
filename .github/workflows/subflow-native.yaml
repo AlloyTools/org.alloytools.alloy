@@ -31,7 +31,6 @@ jobs:
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v3
-        if: steps.changes.outputs.has_changes == 'true'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Native code update request"

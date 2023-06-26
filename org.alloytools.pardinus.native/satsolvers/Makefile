@@ -91,7 +91,6 @@ native/darwin/amd64/liblingeling.dylib : $(REPOS_PATHS) native headers
 		cmake -DJNI_INCLUDE=../jni/darwin/amd64 -DOSX_ARCH=x86_64 -Bbuild lingeling
 		make -C build
 		cp build/liblingeling.dylib native/darwin/amd64/liblingeling.dylib
-		cp build/lingeling native/darwin/amd64/lingeling
 		cp build/plingeling native/darwin/amd64/plingeling
 
 native/darwin/arm64/liblingeling.dylib: $(REPOS_PATHS) native headers
@@ -99,7 +98,6 @@ native/darwin/arm64/liblingeling.dylib: $(REPOS_PATHS) native headers
 		cmake -DJNI_INCLUDE=../jni/darwin/arm64 -DOSX_ARCH=arm64 -Bbuild lingeling
 		make -C build
 		cp build/liblingeling.dylib native/darwin/arm64/liblingeling.dylib
-		cp build/lingeling native/darwin/arm64/lingeling
 		cp build/plingeling native/darwin/arm64/plingeling
 
 
@@ -135,7 +133,6 @@ build_linux_inner:
 	cmake -DJNI_INCLUDE=../jni/linux/amd64 -Bbuild lingeling
 	make -C build
 	cp build/liblingeling.so native/linux/amd64/liblingeling.so
-	cp build/lingeling native/linux/amd64/lingeling
 	cp build/plingeling native/linux/amd64/plingeling
 
 
