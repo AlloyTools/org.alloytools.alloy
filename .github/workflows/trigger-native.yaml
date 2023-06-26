@@ -1,0 +1,11 @@
+name: Native code branch changed
+
+on:
+  push:
+    branches:
+      - native
+
+jobs:
+  call-native:
+    uses: subflow-native.yaml
+    secrets: inherit

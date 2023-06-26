@@ -1,0 +1,36 @@
+name: Native Code
+
+on:
+  workflow_call:
+
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Install GMP
+        run: brew install gmp
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Run Shell Script
+        run: |
+          make -C satsolvers install
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@galloytools.org
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v3
+        if: steps.changes.outputs.has_changes == 'true'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Native code update request"
+          title: "Native code update"
+          delete-branch: true
+          branch: native-code
+          base: master
