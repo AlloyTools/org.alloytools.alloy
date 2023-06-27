@@ -18,6 +18,7 @@ package edu.mit.csail.sdg.alloy4;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -46,6 +47,7 @@ import javax.swing.text.BoxView;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyledEditorKit;
+import javax.swing.text.Utilities;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 
@@ -140,17 +142,70 @@ public final class OurSyntaxWidget {
 
             @Override
             public void keyTyped(KeyEvent e) {
+                System.out.println("key typed " + Integer.toHexString(e.getExtendedKeyCode()));
                 module = null;
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
+                System.out.println("key released " + Integer.toHexString(e.getExtendedKeyCode()));
                 module = null;
             }
 
             @Override
             public void keyPressed(KeyEvent e) {
+                System.out.println("key pressed " + Integer.toHexString(e.getExtendedKeyCode()));
                 module = null;
+            }
+        });
+        int modifier = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, modifier), "line.begin");
+        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, modifier + InputEvent.SHIFT_DOWN_MASK), "line.begin");
+        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK), "line.begin");
+        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK), "line.begin");
+        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, modifier), "line.end");
+        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, modifier + InputEvent.SHIFT_DOWN_MASK), "line.end");
+        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK), "line.end");
+        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK), "line.end");
+
+        this.pane.getActionMap().put("line.begin", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    int caretPosition = pane.getSelectionEnd();
+                    int startOfLine = Utilities.getRowStart(pane, caretPosition);
+                    if (isShifted(e)) {
+
+                        pane.setSelectionEnd(caretPosition);
+                        pane.setSelectionStart(startOfLine);
+                    } else {
+                        pane.setCaretPosition(startOfLine);
+                    }
+                } catch (Exception ee) {
+                    // ignore
+                }
+            }
+
+        });
+
+        this.pane.getActionMap().put("line.end", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    int caretPosition = pane.getSelectionStart();
+                    int endOfLine = Utilities.getRowEnd(pane, caretPosition);
+                    if (isShifted(e)) {
+
+                        pane.setSelectionEnd(endOfLine);
+                        pane.setSelectionStart(caretPosition);
+                    } else {
+                        pane.setCaretPosition(endOfLine);
+                    }
+                } catch (Exception ee) {
+                    // ignore
+                }
             }
         });
         this.parent = parent;
@@ -881,5 +936,42 @@ public final class OurSyntaxWidget {
         return pane;
     }
 
+    /**
+     * Expand the selection to the next block in the code.
+     */
+    public void doExpandSelection() {
+        String text = pane.getText();
+        JTextPane textPane = getTextPane();
+        int start = Math.max(textPane.getSelectionStart() - 1, 0);
+        int end = Math.min(textPane.getSelectionEnd() + 1, text.length());
+        if (start == end)
+            return;
 
+        CompModule module = getModule();
+        if (module == null)
+            return;
+
+
+        if (start > 0 && start == end)
+            start--;
+        if (end < text.length() && start == end)
+            end++;
+
+        Pos pos = Pos.toPos(text, start, end);
+        Expr expr = module.find(pos);
+        if (expr instanceof ExprBad) {
+            return;
+        }
+
+        if (expr != null) {
+            int[] foo = expr.pos.toStartEnd(text);
+            textPane.setSelectionStart(foo[0]);
+            textPane.setSelectionEnd(foo[1]);
+        }
+    }
+
+
+    private boolean isShifted(ActionEvent e) {
+        return (e.getModifiers() & ActionEvent.SHIFT_MASK) == ActionEvent.SHIFT_MASK;
+    }
 }

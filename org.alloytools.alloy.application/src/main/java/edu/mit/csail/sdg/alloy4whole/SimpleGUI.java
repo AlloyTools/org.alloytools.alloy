@@ -875,27 +875,15 @@ public final class SimpleGUI implements ComponentListener, Listener {
             menuItem(editmenu, "Previous File", VK_PAGE_UP, VK_PAGE_UP, doGotoPrevFile(), text.count() > 1);
             menuItem(editmenu, "Next File", VK_PAGE_DOWN, VK_PAGE_DOWN, doGotoNextFile(), text.count() > 1);
             editmenu.addSeparator();
-            menuItem(editmenu, "Find/Replace...", 'F', 'F', new Runner() {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void run() {
-                    findReplace.find();
-                }
-            });
-            menuItem(editmenu, "Find Next", 'G', 'G', new Runner() {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void run() {
-                    findReplace.findNext();
-                }
-            });
+            menuItem(editmenu, "Select All", 'A', () -> text.get().getTextPane().selectAll());
+            menuItem(editmenu, "Expand Selection", 'D', () -> text.get().doExpandSelection());
             editmenu.addSeparator();
-            if (!Util.onMac())
+            menuItem(editmenu, "Find/Replace...", 'F', findReplace::find);
+            menuItem(editmenu, "Find Next", 'G', findReplace::findNext);
+            if (!Util.onMac()) {
+                editmenu.addSeparator();
                 menuItem(editmenu, "Preferences", 'P', 'P', doPreferences());
+            }
         } finally {
             wrap = false;
         }

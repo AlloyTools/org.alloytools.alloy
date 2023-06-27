@@ -67,7 +67,8 @@ public final class OurUtil {
      * This constructor is private, since this utility class never needs to be
      * instantiated.
      */
-    private OurUtil() {}
+    private OurUtil() {
+    }
 
     /**
      * Assign the given attributes to the given JComponent, then return the
@@ -485,6 +486,18 @@ public final class OurUtil {
      *            <p>
      *            If an Icon x is supplied, we call setIcon(x)
      */
+    public static JMenuItem menuItem(JMenu parent, String label, char shortcut, Runnable r) {
+        return menuItem(parent, label, shortcut, shortcut, new Runner() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void run() {
+                r.run();
+            }
+        });
+    }
+
     public static JMenuItem menuItem(JMenu parent, String label, Object... attrs) {
         JMenuItem m = new JMenuItem(label, null);
         int accelMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();

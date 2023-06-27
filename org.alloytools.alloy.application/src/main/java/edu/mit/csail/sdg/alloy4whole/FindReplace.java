@@ -4,24 +4,32 @@ package edu.mit.csail.sdg.alloy4whole;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractAction;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 
 import aQute.libg.glob.Glob;
 
@@ -42,6 +50,89 @@ public class FindReplace {
     boolean                                     active;
 
 
+    static class ReverseString implements CharSequence {
+
+        final CharSequence source;
+        final int          start;
+        final int          end;
+
+        public ReverseString(CharSequence source, int start, int end) {
+            this.source = source;
+            this.start = start;
+            this.end = end;
+        }
+
+        public ReverseString(CharSequence source) {
+            this.source = source;
+            this.start = 0;
+            this.end = source.length();
+        }
+
+        @Override
+        public int length() {
+            return this.end - this.start;
+        }
+
+        @Override
+        public char charAt(int index) {
+            return source.charAt(translate(index));
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return new ReverseString(source, translate(end) + 1, translate(start) + 1);
+        }
+
+        public int translate(int n) {
+            return this.end - 1 - n;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder(source.subSequence(start, end));
+            sb.reverse();
+            return sb.toString();
+        }
+    }
+
+    static class Search {
+
+        final JTextPane source;
+        final boolean   reverse;
+        public int      start;
+        public int      end;
+
+        Search(JTextPane source, int start, int end, boolean reverse) {
+            this.source = source;
+            this.start = start;
+            this.end = end;
+            this.reverse = reverse;
+        }
+
+        public Point find(Pattern pattern) {
+
+            String text = source.getText();
+            if (end < 0)
+                end = text.length();
+
+            CharSequence domain = reverse ? new ReverseString(text, start, end) : text.subSequence(start, end);
+
+            Matcher matcher = pattern.matcher(domain);
+            if (matcher.find()) {
+
+                int xstart = matcher.start() + start;
+                int xend = matcher.end() + start;
+                if (reverse) {
+                    xstart = end - matcher.end();
+                    xend = end - matcher.start();
+                }
+                return new Point(xstart, xend);
+            }
+            return null;
+        }
+
+    }
+
     public class FindReplaceDialog extends JDialog {
 
         private static final long serialVersionUID = 1L;
@@ -58,6 +149,7 @@ public class FindReplace {
         final JPanel              panel;
         final JLabel              messageField;
         final JButton             replaceFindButton;
+        final JCheckBox           backwardCheckBox;
 
         FindReplaceDialog(Window window) {
             super(window);
@@ -116,11 +208,17 @@ public class FindReplace {
             constraints.gridwidth = 1;
             panel.add(wholeWordCheckBox, constraints);
 
-            allPanesCheckBox = new JCheckBox("Search tabs");
+            allPanesCheckBox = new JCheckBox("All tabs");
             constraints.gridx = 3;
             constraints.gridy = row;
             constraints.gridwidth = 1;
             panel.add(allPanesCheckBox, constraints);
+
+            backwardCheckBox = new JCheckBox("Backward");
+            constraints.gridx = 4;
+            constraints.gridy = row;
+            constraints.gridwidth = 1;
+            panel.add(backwardCheckBox, constraints);
 
             row++;
 
@@ -130,17 +228,17 @@ public class FindReplace {
             constraints.gridwidth = 1;
             panel.add(findButton, constraints);
 
-            replaceButton = new JButton("Replace");
+            replaceFindButton = new JButton("Replace>Find");
             constraints.gridx = 1;
             constraints.gridy = row;
             constraints.gridwidth = 1;
-            panel.add(replaceButton, constraints);
+            panel.add(replaceFindButton, constraints);
 
-            replaceFindButton = new JButton("Replace>Find");
+            replaceButton = new JButton("Replace");
             constraints.gridx = 2;
             constraints.gridy = row;
             constraints.gridwidth = 1;
-            panel.add(replaceFindButton, constraints);
+            panel.add(replaceButton, constraints);
 
             replaceAllButton = new JButton("Replace All");
             constraints.gridx = 3;
@@ -172,45 +270,33 @@ public class FindReplace {
             wrapSearchCheckBox.setSelected(true);
             caseSensitiveCheckBox.setSelected(true);
 
-            findButton.addActionListener(new ActionListener() {
+            findField.addActionListener(e -> find());
+            replaceField.addActionListener(e -> {
+                if (find())
+                    replace();
+            });
+
+            findButton.addActionListener(e -> find());
+            replaceButton.addActionListener(e -> replace());
+            replaceFindButton.addActionListener(e -> replaceFind());
+            replaceAllButton.addActionListener(e -> replaceAll());
+            closeButton.addActionListener(e -> {
+                FindReplaceDialog.this.setVisible(false);
+                active = false;
+            });
+
+            KeyStroke findKey = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.META_DOWN_MASK);
+            KeyStroke findNextKey = KeyStroke.getKeyStroke(KeyEvent.VK_G, KeyEvent.META_DOWN_MASK);
+            InputMap inputMap = panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+            inputMap.put(findKey, "find");
+            inputMap.put(findNextKey, "find");
+            panel.getActionMap().put("find", new AbstractAction() {
+
+                private static final long serialVersionUID = 1L;
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     find();
-                }
-            });
-
-            replaceButton.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    replace();
-                }
-            });
-
-            replaceFindButton.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    replaceFind();
-                }
-            });
-
-            replaceAllButton.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    replaceAll();
-                }
-            });
-
-            closeButton.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    FindReplaceDialog.this.setVisible(false);
-                    save();
-                    active = false;
                 }
             });
 
@@ -222,28 +308,36 @@ public class FindReplace {
 
         boolean find() {
             messageField.setText("");
-            int tab = 0;
-            JTextPane textPane = pane.apply(0).orElse(null);
-            String findText = findField.getText();
-            String currentText = textPane.getText();
-            int startIndex = textPane.getSelectionEnd();
+            CharSequence findText = findField.getText();
+            JTextPane firstPane = pane.apply(0).orElse(null);
 
-            do {
-                Matcher m = getMatcher(findText, currentText.substring(startIndex));
-                if (m.find()) {
-                    int start = m.start() + startIndex, end = m.end() + startIndex;
-                    return foundMatch(textPane, start, end);
+            List<Search> l = new ArrayList<>();
+            boolean reversed = backwardCheckBox.isSelected();
+            l.add(new Search(firstPane, firstPane.getSelectionEnd(), -1, reversed));
+            if (allPanesCheckBox.isSelected()) {
+                int tab = 1;
+                while (true) {
+                    JTextPane textPane = pane.apply(tab).orElse(null);
+                    if (textPane == null)
+                        break;
+                    l.add(new Search(textPane, 0, -1, reversed));
+                    tab++;
                 }
-                startIndex = 0;
-                textPane = pane.apply(++tab).orElse(null);
             }
-            while (allPanesCheckBox.isSelected() && textPane != null);
+            l.add(new Search(firstPane, 0, reversed ? firstPane.getSelectionStart() : -1, reversed));
+            if (reversed) {
+                Collections.reverse(l);
+                findText = new ReverseString(findText);
+            }
 
-            if (wrapSearchCheckBox.isSelected()) {
-                textPane = pane.apply(0).orElse(null);
-                Matcher m = getMatcher(findText, currentText.substring(0, textPane.getSelectionEnd()));
-                if (m.find(0)) {
-                    return foundMatch(textPane, m.start(), m.end());
+            Pattern pattern = getPattern(findText);
+
+            for (Search search : l) {
+                Point d;
+                if ((d=search.find(pattern))!=null) {
+                    JTextPane pane = search.source;
+                    foundMatch(pane, d.x, d.y);
+                    return true;
                 }
             }
             return missedMatch("Reached end of text, text not found");
@@ -262,29 +356,29 @@ public class FindReplace {
         private boolean foundMatch(JTextPane textPane, int start, int end) {
             textPane.setSelectionStart(start);
             textPane.setSelectionEnd(end);
+            select.accept(textPane);
             replaceButton.setEnabled(true);
             replaceAllButton.setEnabled(true);
             replaceFindButton.setEnabled(true);
-            select.accept(textPane);
             return true;
         }
 
-        private Matcher getMatcher(String target, String source) {
+        private Pattern getPattern(CharSequence target) {
             String glob;
             int flags = Pattern.MULTILINE;
-            if (caseSensitiveCheckBox.isSelected()) {
+            if (!caseSensitiveCheckBox.isSelected()) {
                 flags |= Pattern.CASE_INSENSITIVE;
             }
             if (wholeWordCheckBox.isSelected()) {
                 target = "\\b" + target + "\\b";
             }
-            glob = Glob.toPattern(target, flags).toString();
+            glob = Glob.toPattern(target.toString(), flags).toString();
 
 
             String RELUCTANT_WILDCARD = ".*?";
             glob = glob.replaceAll("(?<!\\\\)\\.\\*", RELUCTANT_WILDCARD);
             System.out.println(glob);
-            return Pattern.compile(glob, flags).matcher(source);
+            return Pattern.compile(glob, flags);
         }
 
         private boolean replace() {
@@ -296,7 +390,7 @@ public class FindReplace {
             int endIndex = textPane.getSelectionEnd();
             if (startIndex != endIndex) {
                 String selectedText = currentText.substring(startIndex, endIndex);
-                Matcher m = getMatcher(findText, selectedText);
+                Matcher m = getPattern(findText).matcher(selectedText);
                 if (m.lookingAt()) {
                     textPane.replaceSelection(replace(m, replaceText));
                     return true;
@@ -324,7 +418,7 @@ public class FindReplace {
                 String findText = findField.getText();
                 String replaceText = replaceField.getText();
                 String currentText = textPane.getText();
-                Matcher m = getMatcher(findText, currentText);
+                Matcher m = getPattern(findText).matcher(currentText);
                 StringBuffer sb = new StringBuffer();
                 while (m.find()) {
                     m.appendReplacement(sb, replace(m, replaceText));
@@ -333,8 +427,6 @@ public class FindReplace {
                 m.appendTail(sb);
 
                 textPane.setText(sb.toString());
-                if (!allPanesCheckBox.isSelected())
-                    break;
 
                 tab++;
                 textPane = getPane(tab);
@@ -369,19 +461,6 @@ public class FindReplace {
             }
             return sb.toString();
         }
-
-        void load() {
-            caseSensitiveCheckBox.setSelected(caseSensitive);
-            findField.setText(find);
-            replaceField.setText(replace);
-        }
-
-        void save() {
-            caseSensitive = caseSensitiveCheckBox.isSelected();
-            find = findField.getText();
-            replace = replaceField.getText();
-        }
-
     }
 
     public FindReplace(JFrame frame, Function<Integer,Optional<JTextPane>> currentPane, Consumer<JTextPane> select) {

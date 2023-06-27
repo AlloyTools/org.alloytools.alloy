@@ -255,10 +255,12 @@ public final class OurTabbedSyntaxWidget {
             component.add(tabBarScroller, BorderLayout.NORTH);
         tabs.get(me).addTo(component, BorderLayout.CENTER);
         component.repaint();
-        tabs.get(me).requestFocusInWindow();
         tabBar.scrollRectToVisible(new Rectangle(0, 0, 0, 0)); // Forces
                                                               // recalculation
         tabBar.scrollRectToVisible(new Rectangle(tabs.get(me).obj2.getX(), 0, tabs.get(me).obj2.getWidth() + 200, 1));
+        tabs.get(me).requestFocusInWindow();
+        tabs.get(me).getTextPane().grabFocus();
+
         listeners.fire(this, Event.STATUS_CHANGE);
     }
 
@@ -590,6 +592,6 @@ public final class OurTabbedSyntaxWidget {
      * @return the widget or null
      */
     public OurSyntaxWidget findByTextPane(JTextPane p) {
-        return tabs.stream().filter(oswp -> oswp.getTextPane().equals(p)).findAny().orElse(null);
+        return tabs.stream().filter(oswp -> oswp.getTextPane() == p).findAny().orElse(null);
     }
 }
