@@ -266,14 +266,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
     /** The scrollpane containing the "message panel". */
     private JScrollPane           logpane;
 
-    /** The last "find" that the user issued. */
-    private String                lastFind               = "";
-
-    /** The last find is case-sensitive or not. */
-    private boolean               lastFindCaseSensitive  = true;
-
-    /** The last find is forward or not. */
-    private boolean               lastFindForward        = true;
+    final FindReplace             findReplace;
 
     /** The icon for a "checked" menu item. */
     private static final Icon     iconYes                = OurUtil.loadIcon("images/menu1.gif");
@@ -882,8 +875,24 @@ public final class SimpleGUI implements ComponentListener, Listener {
             menuItem(editmenu, "Previous File", VK_PAGE_UP, VK_PAGE_UP, doGotoPrevFile(), text.count() > 1);
             menuItem(editmenu, "Next File", VK_PAGE_DOWN, VK_PAGE_DOWN, doGotoNextFile(), text.count() > 1);
             editmenu.addSeparator();
-            menuItem(editmenu, "Find...", 'F', 'F', doFind());
-            menuItem(editmenu, "Find Next", 'G', 'G', doFindNext());
+            menuItem(editmenu, "Find/Replace...", 'F', 'F', new Runner() {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void run() {
+                    findReplace.find();
+                }
+            });
+            menuItem(editmenu, "Find Next", 'G', 'G', new Runner() {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void run() {
+                    findReplace.findNext();
+                }
+            });
             editmenu.addSeparator();
             if (!Util.onMac())
                 menuItem(editmenu, "Preferences", 'P', 'P', doPreferences());
@@ -930,54 +939,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (!wrap && lastFocusIsOnEditor)
             text.get().paste();
         return wrapMe();
-    }
-
-    /** This method performs Edit->Find. */
-    private Runner doFind() {
-        if (wrap)
-            return wrapMe();
-        JTextField x = OurUtil.textfield(lastFind, 30);
-        x.selectAll();
-        JCheckBox c = new JCheckBox("Case Sensitive?", lastFindCaseSensitive);
-        c.setMnemonic('c');
-        JCheckBox b = new JCheckBox("Search Backward?", !lastFindForward);
-        b.setMnemonic('b');
-        if (!OurDialog.getInput(frame, "Find", "Text:", x, " ", c, b))
-            return null;
-        if (x.getText().length() == 0)
-            return null;
-        lastFind = x.getText();
-        lastFindCaseSensitive = c.getModel().isSelected();
-        lastFindForward = !b.getModel().isSelected();
-        doFindNext();
-        return null;
-    }
-
-    /** This method performs Edit->FindNext. */
-    private Runner doFindNext() {
-        if (wrap)
-            return wrapMe();
-        if (lastFind.length() == 0)
-            return null;
-        OurSyntaxWidget t = text.get();
-        String all = t.getText();
-        int i = Util.indexOf(all, lastFind, t.getCaret() + (lastFindForward ? 0 : -1), lastFindForward, lastFindCaseSensitive);
-        if (i < 0) {
-            i = Util.indexOf(all, lastFind, lastFindForward ? 0 : (all.length() - 1), lastFindForward, lastFindCaseSensitive);
-            if (i < 0) {
-                log.logRed("The specified search string cannot be found.");
-                return null;
-            }
-            log.logRed("Search wrapped.");
-        } else {
-            log.clearError();
-        }
-        if (lastFindForward)
-            t.moveCaret(i, i + lastFind.length());
-        else
-            t.moveCaret(i + lastFind.length(), i);
-        t.requestFocusInWindow();
-        return null;
     }
 
     /** This method performs Edit->Preferences. */
@@ -2019,9 +1980,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
         UIManager.put("ToolTip.font", new FontUIResource("Courier New", Font.PLAIN, 14));
 
-        // Register an exception handler for uncaught exceptions
-        MailBug.setup(frame);
-
         // Enable better look-and-feel
         if (Util.onMac() || Util.onWindows()) {
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Alloy");
@@ -2091,7 +2049,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 }
             }
         }
-
+        findReplace = new FindReplace(frame, n -> text.selectModulo(n).map(w -> w.getTextPane()), pane -> {
+            text.select(pane);
+        });
         if (width < 500)
             width = 500;
         if (height < 500)
@@ -2458,5 +2418,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 r.run();
             }
         };
+    }
+
+    private FindReplace getOrderedTab() {
+        return null;
     }
 }

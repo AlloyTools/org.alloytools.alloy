@@ -877,5 +877,9 @@ public final class OurSyntaxWidget {
         return null;
     }
 
+    public JTextPane getTextPane() {
+        return pane;
+    }
+
 
 }

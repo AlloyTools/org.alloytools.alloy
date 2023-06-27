@@ -27,12 +27,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
 
 import edu.mit.csail.sdg.alloy4.Listener.Event;
@@ -148,6 +150,8 @@ public final class OurTabbedSyntaxWidget {
                                                                                      ((JLabel) (t.obj1)).setText("  " + n + (t.modified() ? " *  " : "  "));
                                                                                  }
                                                                                  listeners.fire(me, Event.STATUS_CHANGE);
+                                                                                 break;
+                                                                             default :
                                                                                  break;
                                                                          }
                                                                      return true;
@@ -385,16 +389,14 @@ public final class OurTabbedSyntaxWidget {
 
     public void enableLineNumbers(boolean flag) {
         lineNumbers = flag;
-        for ( OurSyntaxWidget t : tabs) {
+        for (OurSyntaxWidget t : tabs) {
             t.enableLineNumbers(flag);
         }
     }
 
     /** Returns the JTextArea of the current text buffer. */
     public OurSyntaxWidget get() {
-        return (me >= 0 && me < tabs.size()) ? tabs.get(me) :
-                new OurSyntaxWidget(this,
-                    syntaxHighlighting, "", fontName, fontSize, tabSize, lineNumbers, null, null);
+        return (me >= 0 && me < tabs.size()) ? tabs.get(me) : new OurSyntaxWidget(this, syntaxHighlighting, "", fontName, fontSize, tabSize, lineNumbers, null, null);
     }
 
     /**
@@ -534,5 +536,60 @@ public final class OurTabbedSyntaxWidget {
 
     public JFrame getParent() {
         return parent;
+    }
+
+    /**
+     * Return the tab by an index that assumes the current tab is 0. I.e. the tab is
+     * (me+n) % tabs.size(). If n >= size, return empty.
+     *
+     * @param n the tab number, must be less than tabs
+     */
+    public Optional<OurSyntaxWidget> selectModulo(int n) {
+        if (n >= tabs.size())
+            return Optional.empty();
+
+        int tab = (me + n) % tabs.size();
+        return Optional.ofNullable(tabs.get(tab));
+    }
+
+    /**
+     * Select the tab with the given textpane
+     *
+     * @param p the text pane
+     * @return true if the text pane was found and is now the current tab
+     */
+    public boolean select(JTextPane p) {
+        OurSyntaxWidget osw = findByTextPane(p);
+        if (osw == null)
+            return false;
+
+        select(osw);
+        return true;
+    }
+
+    /**
+     * Select the given OurSyntaxWidget as the current tab
+     *
+     * @param osw the widget to select
+     * @return true if this is now the current tab
+     */
+    private boolean select(OurSyntaxWidget osw) {
+        int tab = tabs.indexOf(osw);
+        if (tab < 0)
+            return false;
+        if (tab == me)
+            return false;
+        select(tab);
+        return true;
+    }
+
+    /**
+     * Find the OurSyntaxWidget with the given textpane p
+     *
+     * @param p the text pane we want
+     * @return the widget or null
+     */
+    public OurSyntaxWidget findByTextPane(JTextPane p) {
+        return tabs.stream().filter(oswp -> oswp.getTextPane().equals(p)).findAny().orElse(null);
     }
 }
