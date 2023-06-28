@@ -240,7 +240,7 @@ public final class Pos implements Serializable {
      * Convert a start/end position to a Pos
      */
     public static Pos toPos(String text, int start, int end) {
-        return toPos(text, start, end, 4);
+        return toPos(text, start, end, 1);
     }
 
     /**
@@ -265,11 +265,12 @@ public final class Pos implements Serializable {
 
         int row2 = 0, col2 = 0;
         int row = 0, col = 0;
-
+        boolean set = false;
         for (int n = 0; n < end - 1; n++) {
             if (n == start) {
                 row = row2;
                 col = col2;
+                set = true;
             }
 
             char c = text.charAt(n);
@@ -280,6 +281,11 @@ public final class Pos implements Serializable {
                 col2 = adjust(col2, c, tabs);
         }
 
+        if (!set) {
+            row = row2;
+            col = col2;
+            set = true;
+        }
         return new Pos("", col + 1, row + 1, col2 + 1, row2 + 1);
 
     }
