@@ -28,7 +28,9 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import javax.swing.AbstractAction;
@@ -142,19 +144,16 @@ public final class OurSyntaxWidget {
 
             @Override
             public void keyTyped(KeyEvent e) {
-                System.out.println("key typed " + Integer.toHexString(e.getExtendedKeyCode()));
                 module = null;
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                System.out.println("key released " + Integer.toHexString(e.getExtendedKeyCode()));
                 module = null;
             }
 
             @Override
             public void keyPressed(KeyEvent e) {
-                System.out.println("key pressed " + Integer.toHexString(e.getExtendedKeyCode()));
                 module = null;
             }
         });
@@ -940,34 +939,38 @@ public final class OurSyntaxWidget {
      * Expand the selection to the next block in the code.
      */
     public void doExpandSelection() {
-        String text = pane.getText();
         JTextPane textPane = getTextPane();
-        int start = Math.max(textPane.getSelectionStart() - 1, 0);
-        int end = Math.min(textPane.getSelectionEnd() + 1, text.length());
-        if (start == end)
-            return;
-
+        String text = textPane.getText();
+        int start = Math.max(textPane.getSelectionStart(), 0);
+        int end = Math.min(textPane.getSelectionEnd(), text.length());
+        if (start == end) {
+            end++;
+        }
         CompModule module = getModule();
         if (module == null)
             return;
 
+        Pos pos = Pos.toPos(text, start, end, 1 /* edu.mit.csail.sdg.alloy4.A4Preferences.TabSize.get() */);
+        System.out.println("looking for " + pos);
+        List<Expr> list = module.locate(pos);
+        Collections.reverse(list);
+        Expr found;
+        while (true) {
+            if (list.isEmpty())
+                return;
 
-        if (start > 0 && start == end)
-            start--;
-        if (end < text.length() && start == end)
-            end++;
+            found = list.remove(0);
+            Pos span = found.span();
+            if (span.x == pos.x && span.y == pos.y && span.x2 == pos.x2 && span.y2 == pos.y2)
+                continue;
 
-        Pos pos = Pos.toPos(text, start, end);
-        Expr expr = module.find(pos);
-        if (expr instanceof ExprBad) {
-            return;
+            break;
         }
 
-        if (expr != null) {
-            int[] foo = expr.pos.toStartEnd(text);
-            textPane.setSelectionStart(foo[0]);
-            textPane.setSelectionEnd(foo[1]);
-        }
+
+        int[] range = found.span().toStartEnd(text);
+        textPane.setSelectionStart(range[0]);
+        textPane.setSelectionEnd(range[1]);
     }
 
 

@@ -13,12 +13,12 @@
 	slf4j.api
 
 -testpath: \
-	biz.aQute.wrapper.junit, \
-	biz.aQute.wrapper.hamcrest, \
-    src/main/resources;version=file, \
-    slf4j.api, \
-    org.sat4j.core, \
-
+	biz.aQute.wrapper.junit,\
+	biz.aQute.wrapper.hamcrest,\
+	src/main/resources;version=file,\
+	slf4j.api,\
+	org.sat4j.core,\
+	assertj-core
 Export-Package: \
 	edu.mit.csail.sdg.alloy4,\
 	edu.mit.csail.sdg.ast,\

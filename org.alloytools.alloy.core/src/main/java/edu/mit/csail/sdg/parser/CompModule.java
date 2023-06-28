@@ -2593,6 +2593,12 @@ public final class CompModule extends Browsable implements Module {
     }
 
 
+    /**
+     * Find the lowest level expr that encompasses pos and that has a reference
+     *
+     * @param pos the position
+     * @return the matchin expr or null
+     */
     public Expr find(Pos pos) {
         if (pos == null)
             return null;
@@ -2630,6 +2636,36 @@ public final class CompModule extends Browsable implements Module {
         });
 
         return holder.expr;
+    }
+
+    public List<Expr> locate(Pos target) {
+        List<Expr> list = new ArrayList<>();
+        if (target == null)
+            return list;
+
+        visitExpressionsResilient(new VisitQueryOnce<Object>() {
+
+            @Override
+            public boolean visited(Expr expr) {
+                boolean visited = super.visited(expr);
+                if (visited)
+                    return visited;
+
+                Pos span = expr.span();
+                if (span == null || span == Pos.UNKNOWN)
+                    return visited;
+
+
+
+                if (span.includes(target)) {
+                    list.add(expr);
+                    return false;
+                } else
+                    return true;
+            }
+        });
+
+        return list;
     }
 
     @Override

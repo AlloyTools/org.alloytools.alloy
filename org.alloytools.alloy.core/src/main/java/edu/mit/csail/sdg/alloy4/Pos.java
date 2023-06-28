@@ -173,9 +173,9 @@ public final class Pos implements Serializable {
     @Override
     public String toString() {
         if (filename.length() == 0)
-            return "line " + y + ", column " + x;
+            return "line " + y + ", column " + x + " (" + y2 + "," + x2 + ")";
         else
-            return "line " + y + ", column " + x + ", filename=" + filename;
+            return "line " + y + ", column " + x + " (" + y2 + "," + x2 + ")" + ", filename=" + filename;
     }
 
     public String toRangeString() {
@@ -200,13 +200,29 @@ public final class Pos implements Serializable {
         int ourStart = start();
         int ourEnd = end();
 
-        if(!filename.equals(pos.filename) && !"".equals(pos.filename))
+        if (!filename.equals(pos.filename) && !"".equals(pos.filename))
             return false;
-            
+
         if (ourStart > anchor)
             return false;
 
         if (ourEnd < anchor)
+            return false;
+
+        return true;
+    }
+
+    /*
+     * Check if the given pos is completely contained in this pos.
+     */
+    public boolean includes(Pos pos) {
+        if (!filename.equals(pos.filename) && !"".equals(pos.filename))
+            return false;
+
+        if (start() > pos.start())
+            return false;
+
+        if (end() < pos.end())
             return false;
 
         return true;
@@ -224,35 +240,56 @@ public final class Pos implements Serializable {
      * Convert a start/end position to a Pos
      */
     public static Pos toPos(String text, int start, int end) {
+        return toPos(text, start, end, 4);
+    }
+
+    /**
+     * Convert a buffer position to a Pos.
+     * <p>
+     * col and row start at 1, while the end (x2,y2) are inclusive. this is
+     * cumbersome since the whole of Java starts at 0 and the end is not inclusive.
+     * So you cannot express an empty selection.
+     *
+     * @param text the text to scan
+     * @param start the starting position
+     * @param end the ending position
+     * @param tabs the tabsize
+     * @return a Pos
+     */
+    public static Pos toPos(String text, int start, int end, int tabs) {
         if (end > text.length() || end == -1)
             end = text.length();
 
         if (start < 0 || start >= end || end < 0 || end > text.length())
             return null;
 
-        int row = 1, col = 1;
-        int n = 0;
-        while (n < start) {
-            if (text.charAt(n) == '\n') {
-                col = 1;
-                row++;
-            } else
-                col++;
-            n++;
-        }
+        int row2 = 0, col2 = 0;
+        int row = 0, col = 0;
 
-        int row2 = row, col2 = col - 1;
+        for (int n = 0; n < end - 1; n++) {
+            if (n == start) {
+                row = row2;
+                col = col2;
+            }
 
-        while (n < end) {
-            if (text.charAt(n) == '\n') {
-                col2 = 1;
+            char c = text.charAt(n);
+            if (c == '\n') {
+                col2 = 0;
                 row2++;
             } else
-                col2++;
-            n++;
+                col2 = adjust(col2, c, tabs);
         }
-        return new Pos("", col, row, col2, row2);
 
+        return new Pos("", col + 1, row + 1, col2 + 1, row2 + 1);
+
+    }
+
+    static int adjust(int column, char ch, int tabSize) {
+        if (ch == '\t') {
+            return column + tabSize - (column % tabSize);
+        } else {
+            return column + 1;
+        }
     }
 
     /*
@@ -260,6 +297,7 @@ public final class Pos implements Serializable {
      * Return null if this pos's span is outside the text. If the end of the span is
      * outside the length, cap it at the length.
      */
+
 
     public int[] toStartEnd(String text) {
         if (this == UNKNOWN)
@@ -318,7 +356,7 @@ public final class Pos implements Serializable {
         return this.filename.equals(pos.filename);
     }
 
-    public Pos withFilename(String filename){
+    public Pos withFilename(String filename) {
         return new Pos(filename, x, y, x2, y2);
     }
 }
