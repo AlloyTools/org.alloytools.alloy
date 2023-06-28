@@ -178,7 +178,7 @@ public final class A4Options implements Serializable {
         public static final SatSolver ZChaffMincost    = new SatSolver("zchaffmincost(jni)", "ZChaffMincost", null, null, true, "zchaffmincost", () -> NativeCode.library("zchaffmincost"));
         public static final SatSolver SAT4J            = new SatSolver("sat4j", "SAT4J", null, null, true, null, () -> true);
         public static final SatSolver ElectrodS        = new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", null, true, null, () -> NativeCode.executable("NuSMV").isPresent() && NativeCode.executable("electrod").isPresent());
-        public static final SatSolver ElectrodX        = new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", null, true, null, () -> NativeCode.executable("nuSMV").isPresent() && NativeCode.executable("electrod").isPresent());
+        public static final SatSolver ElectrodX        = new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", null, true, null, () -> NativeCode.executable("nuXmv").isPresent() && NativeCode.executable("electrod").isPresent());
 
         public static final SatSolver electrodS(String[] opts) {
             return new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", opts, true, null, null);
