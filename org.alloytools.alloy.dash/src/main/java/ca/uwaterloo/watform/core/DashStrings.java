@@ -1,4 +1,12 @@
- /* string names used in Dash and conversion to Alloy */
+/* string names used in Dash and conversion to Alloy */
+
+/* 
+  Because the DashModule depends on many of these strings
+  it is not easy (or useful) to separate these into a set
+  for 'core' and a set for 'dashtoalloy'.
+  Many internal reprn issues (loading util files etc) are
+  made during parsing 
+ */
 
 package ca.uwaterloo.watform.core;
 
