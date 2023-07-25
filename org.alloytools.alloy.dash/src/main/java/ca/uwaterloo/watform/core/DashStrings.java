@@ -90,6 +90,7 @@ public class DashStrings {
 	public static String smallStepName = dsh_prefix + "small_step";
 	public static String stableName = dsh_prefix + "stable";
 	public static String stutterName = dsh_prefix + "stutter";
+	public static String strongNoStutterName = dsh_prefix + "strong_no_stutter";
 	//public static String equalsName = "equals";
 	public static String isEnabled = dsh_prefix + "isEnabled";
 	public static String tracesFactName = dsh_prefix + "traces_fact";

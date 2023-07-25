@@ -111,7 +111,10 @@ public class AddSpaceSignatures {
         for (String child: d.getImmChildren(parent)) {
             //System.out.println(translateFQN(child)+" "+translateFQN(parent));
             // for scopes Used
-            if (d.hasConcurrency())
+            // Root node can be used for both conf and scopesUsed
+            // but o/w concurrent nodes are abstract for conf
+            // and one sigs for scopesUsed
+            if (d.hasConcurrency() && d.isAnd(child))
                 d.alloyString += d.addOneExtendsSigSimple(translateFQN(child)+DashStrings.scopeSuffix,DashStrings.scopeLabelName);
             // for conf
             if (!d.hasOnlyOneState()) {

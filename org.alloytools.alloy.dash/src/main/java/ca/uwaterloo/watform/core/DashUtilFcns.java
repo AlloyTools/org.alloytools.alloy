@@ -28,6 +28,9 @@ public class DashUtilFcns {
 		return duplicates;
 	}
 
+	public static <T> List<T> emptyList() {
+		return new ArrayList<T>();
+	}
 	public static <T> String strCommaList(List<T> ll) {
 		StringJoiner sj = new StringJoiner(", ");
         ll.forEach(n -> sj.add(n.toString()));
@@ -77,6 +80,10 @@ public class DashUtilFcns {
     	assert(x.size() == ll.size());
     	return x;
     }
+    public static <T> List<T> tail(List<T> ll) {
+    	assert(ll.size()>1);
+    	return ll.subList(1, ll.size());
+	}
 
     public static List<Integer> listOfInt(int start, int stop) {
     	assert(start <= stop);

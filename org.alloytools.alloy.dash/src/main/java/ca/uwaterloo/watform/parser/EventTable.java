@@ -69,7 +69,7 @@ public class EventTable {
 		else { table.put(efqn, new EventElement(k,prms,prmsIdx)); return true; }
 	}
 	public void resolveAllEventTable() {
-		// TODO
+
 	}
 	public boolean hasEvents() {
 		return (!table.keySet().isEmpty() );

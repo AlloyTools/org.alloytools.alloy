@@ -1,4 +1,8 @@
 state Root {
+	conc N [NID] {
+		direction: d
+		message : msg 
+		
 	trans t1 {
 		do {
 			one n: Node - this | { 
@@ -8,4 +12,5 @@ state Root {
 		}
 		}
 	}
+}
 }

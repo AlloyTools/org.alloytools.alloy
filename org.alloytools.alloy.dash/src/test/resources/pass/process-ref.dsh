@@ -1,5 +1,9 @@
 state Root {
+	conc Elevator [EID] {
+		env event direction {}
+
 	trans t1 {
 		on Elevator[e0]/direction 
 	}
+}
 }

@@ -7,7 +7,7 @@ state Root {
 	state S2 {
 		conc A [AID] {
 			conc B [BID] {
-				default state S3 {}
+				default state S3 { trans t2 { goto S4 }}
 				state S4 {}
 			}
 			conc C [CID] {

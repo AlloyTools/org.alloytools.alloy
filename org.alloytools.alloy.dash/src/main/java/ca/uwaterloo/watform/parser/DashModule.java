@@ -431,6 +431,7 @@ public class DashModule extends CompModuleHelper {
 	}
 	// stuff about both states and trans
 	public DashRef getScope(String tfqn) {
+		// this is not necessarily an AND scope
 		DashRef src = getTransSrc(tfqn);
 		DashRef dest = getTransDest(tfqn);
 		String sc = DashFQN.longestCommonFQN(src.getName(),dest.getName());
@@ -474,6 +475,12 @@ public class DashModule extends CompModuleHelper {
 		}
 		return DashRef.createStateDashRef (sc,scopeParams);
 	}
+	public DashRef getConcScope(String tfqn) {
+		DashRef scope = getScope(tfqn);
+		List<DashRef> aP = allPrefixDashRefs(scope);
+		List<DashRef> aPc = onlyConcPlusRoot(aP);
+		return lastElement(aPc); // might be the scope
+	}
 	// returns the list of states with params
 	// that are exited when taking trans t
 	public List<DashRef> exited(String tfqn) {
@@ -493,16 +500,37 @@ public class DashModule extends CompModuleHelper {
 	public List<DashRef> initialEntered() {
 		return stateTable.getRootLeafStatesEntered();
 	}
-	public List<DashRef> onlyConc(List<DashRef> dr) {
-		return dr.stream()
+	public List<DashRef> onlyConcPlusRoot(List<DashRef> dr) {
+		List <DashRef> c = emptyList();
+		c.add(DashRef.createStateDashRef(stateTable.getRoot(),emptyList()));
+		c.addAll(dr.stream()
 			.filter(x -> isAnd(x.getName()))
-			.collect(Collectors.toList());
+			.collect(Collectors.toList()));
+		return c;
+	}
+	public List<DashRef> ancesConcScopes(DashRef d) {
+		// includes d if it is a conc state
+		List<DashRef> aP = allPrefixDashRefs(d);
+		List<DashRef> aPc = onlyConcPlusRoot(aP);
+		return aPc;		
 	}
 	public List<DashRef> scopesUsed(String tfqn) {
-		DashRef scope = getScope(tfqn);
-		List<DashRef> aP = allPrefixDashRefs(scope);
-		List<DashRef> aPc = onlyConc(aP);
+		// includes Root only if that is the only scope
+		List<DashRef> aPc = ancesConcScopes(getConcScope(tfqn));
 		List<DashRef> r = new ArrayList<DashRef>();
+
+		if (aPc.size() == 1) {
+			// scope must be the root
+			// so add it
+			r.add(aPc.get(0));
+		} else {
+			// don't put the root in unless
+			// the root is the scope
+			r = DashUtilFcns.tail(aPc);
+			
+		}
+		return r;
+		/*
 		List<Expr> prms;
 		Expr e;
 		Expr p;
@@ -514,6 +542,7 @@ public class DashModule extends CompModuleHelper {
 			for (DashRef s: allButLast(aPc)) {
 				// if a prefix scope includes all param values, it really
 				// is the scope
+				// so we shouldn't need this
 				if (isAnd(s.getName()) && stateTable.hasParam(s.getName())) {
 					prms = new ArrayList<Expr>(allButLast(s.getParamValues()));
 					e = lastElement(s.getParamValues());
@@ -528,16 +557,18 @@ public class DashModule extends CompModuleHelper {
 			r.add(lastElement(aPc));
 		}
 		return r;
+		*/
 	}
 	public List<DashRef> nonOrthogonalScopesOf(String tfqn) {
-		DashRef scope = getScope(tfqn);
-		//System.out.println(allPrefixDashRefs(scope));
-		List<DashRef> aP = allPrefixDashRefs(scope);
+		List<DashRef> aPc = ancesConcScopes(getConcScope(tfqn));
 		// always needs to include Root
+		return aPc;
+		/*
 		List<DashRef> r = new ArrayList<DashRef>();
 		r.add(aP.get(0));
 		r.addAll(onlyConc(aP));
 		return r;
+		*/
 	}
 	// processes  ---------------------------------------
 

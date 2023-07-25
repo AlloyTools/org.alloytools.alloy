@@ -137,6 +137,7 @@ public class StateTable {
 	public String getRoot() {
 		return root;
 	}
+
 	public boolean isRoot(String s) {
 		return (s.equals(getRoot()));
 	}
@@ -452,6 +453,8 @@ public class StateTable {
 		return getLeafStatesEntered(DashRef.createStateDashRef(root,x));
 	}
 	public List<DashRef> allPrefixDashRefs(DashRef s) {
+		// resulting order is ancestors to descendants
+		// includes this DashRef itself at the end
 		List<String> allPrefixFQNs = DashFQN.allPrefixes(s.getName());
 		List<DashRef> r = new ArrayList<DashRef>();
 		int i = 0;

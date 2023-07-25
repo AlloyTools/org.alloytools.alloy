@@ -6,7 +6,7 @@ state Root {
 	}
 	state S2 {
 		conc A [AID] {
-			default state S3 {}
+			default state S3 { trans t1 {goto S4 }}
 			state S4 {}
 		}
 	}

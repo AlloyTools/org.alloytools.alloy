@@ -10,7 +10,7 @@ state Root {
 			default state S4 {}
 		}
 	}
-	state S3 {}
+	state S3 { trans t2 { goto S3 }}
 	trans t1 {
 		from Root/S3
 		goto Root/B/E/S2[e1]

@@ -1,5 +1,5 @@
 state Root {
-	event ev1 {}
+	env event ev1 {}
 	trans t1 {
 		on ev1
 	}

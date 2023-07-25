@@ -12,10 +12,24 @@ import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorFatal;
 import edu.mit.csail.sdg.ast.Expr;
 
+import ca.uwaterloo.watform.core.DashUtilFcns;
+
 public class DashErrors {
 
 	// syntax errors --------------------------------------------
 
+	public static String statesNotEnteredMsg = "The following states are not entered: ";
+	public static void statesNotEntered(List<String> statesNotEntered) {
+		throw new ErrorSyntax(statesNotEnteredMsg + DashUtilFcns.strCommaList(statesNotEntered));
+	}
+	public static String intEventsNotGeneratedMsg = "The following internal events are never generated: ";
+	public static void intEventsNotGenerated(List<String> intEventsNotGenerated) {
+		throw new ErrorSyntax(intEventsNotGeneratedMsg + DashUtilFcns.strCommaList(intEventsNotGenerated));
+	}
+	public static String envEventsNotUsedMsg = "The following environmental events are never used: ";
+	public static void envEventsNotUsed(List<String> envEventsNotUsed) {
+		throw new ErrorSyntax(envEventsNotUsedMsg + DashUtilFcns.strCommaList(envEventsNotUsed));
+	}
 	public static String onlyOneStateMsg = "Dash model can only have one 'state' section";
 	public static void onlyOneState(Pos o) throws Err {
 		throw new ErrorSyntax(o,onlyOneStateMsg);

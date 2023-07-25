@@ -81,7 +81,7 @@ public class DashModuleTests {
    public void noSrc2() {
       DashModule d = test("noSrc2");
       assertTrue(src(d,"Root/S1/t1").equals("Root/S1"));
-      assertTrue(dest(d,"Root/S1/t1").equals("Root/S2/S3/S4"));
+      assertTrue(dest(d,"Root/S1/t1").equals("Root/S2"));
    }
 
    @Test 

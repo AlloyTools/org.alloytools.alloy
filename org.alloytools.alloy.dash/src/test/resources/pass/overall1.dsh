@@ -1,5 +1,5 @@
 state Root {
-	event ev1 {}
+	env event ev1 {}
 	conc A [AID] {
 		conc B [BID] {
 			state S1 {}

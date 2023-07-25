@@ -371,6 +371,9 @@ public class ExprHelper  {
     public static ExprBinary createIn(Expr left,Expr right) {
         return (ExprBinary) ExprBinary.Op.IN.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
+    public static ExprBinary createNotIn(Expr left,Expr right) {
+        return (ExprBinary) ExprBinary.Op.NOT_IN.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
+    }
     // {x,y,z}
     // returns x -> (y -> z)
     public static Expr createArrowStringList(List<String> eList) {
