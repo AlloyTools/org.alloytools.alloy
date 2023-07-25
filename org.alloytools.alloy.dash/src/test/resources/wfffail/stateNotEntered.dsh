@@ -1,0 +1,7 @@
+state Root {
+	state A {}
+	trans t1 {
+		on ev1
+	}
+	state B {}
+}

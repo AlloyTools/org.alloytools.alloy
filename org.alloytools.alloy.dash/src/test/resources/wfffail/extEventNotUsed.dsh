@@ -1,0 +1,5 @@
+state {
+	// external event never used
+	env event e1 {}
+	trans t1 {}
+}

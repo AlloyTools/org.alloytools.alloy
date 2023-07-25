@@ -1,0 +1,7 @@
+state {
+	// internal event never generated
+	event e1 {}
+	trans t1 {
+		on e1
+	}
+}
