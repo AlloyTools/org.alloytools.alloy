@@ -39,24 +39,33 @@ public class AddTraces {
 		/*
 			open util/traces[Snapshot] as snapshot
 
-			fact traces { 
-				init[snapshot/first] and 
-				(all s: Snapshot | small_step[s, s. (snapshot/next)] ) 
+			fact dsh_traces_fact {
+			  DshSnapshot/first.dsh_initial
+			  (some DshSnapshot/back) =>
+				  (all s: DshSnapshot | (s.DshSnapshot/next).(s.dsh_small_step))
+			  else 
+				(all s:DshSnapshot - last | (s.DshSnapshot/next).(s.dsh_small_step))
 			}
 
-			Note: previously this was
-			(all s: one (Snapshot - snapshot/last) | small_step[s, s. (snapshot/next)]
-			but this is NOT correct because the next relation must hold for the loop back
-			to a previous state provided by the traces module
+			"back" is the DshSnapshot that is looped back to in the trace to
+			make it infinite
+			"next" is the "Next" relation in traces plus the loop.  If back is empty,
+			loop is empty and next=Next.  If back is a DshSnapshot, loop exists and 
+			next=Next+loop
+			To permit both infinite and finite traces we have to have
+			the two cases above.
+			If we only have the if-clause above, then the "last" Snapshot must have a next
+			forcing all traces to be infinite.
+
 		*/
 
 		assert(DashOptions.isTraces);
         List<Expr> body = new ArrayList<Expr>();
  
         Expr snapShotFirst = createVar(snapshotName + "/" + tracesFirstName);
-        //Expr snapShotLast = createVar(snapshotName + "/" + tracesLastName);
+        Expr snapShotLast = createVar(snapshotName + "/" + tracesLastName);
         Expr snapShotNext = createVar(snapshotName + "/" + tracesNextName);
-
+        Expr snapshotBack = createVar(snapshotName + "/" + tracesBackName);
         
 		List<Expr> args = new ArrayList<Expr>();
 		args.add(snapShotFirst);
@@ -65,11 +74,18 @@ public class AddTraces {
         args = new ArrayList<Expr>();
         args.add(curVar());
         args.add(curJoinExpr(snapShotNext));
-        
-        List<Decl> decls = new ArrayList<Decl>();
-        //decls.add((Decl) new DeclExt(curName, createOne(createDiff(createVar(snapshotName), snapShotLast))));
-        decls.add((Decl) new DeclExt(curName, createVar(snapshotName)));
-        body.add(createAll(decls,createPredCall(smallStepName,args)));
+
+        List<Decl> decls1 = new ArrayList<Decl>();
+        decls1.add((Decl) new DeclExt(curName, createVar(snapshotName)));
+
+        List<Decl> decls2 = new ArrayList<Decl>();
+        decls2.add((Decl) new DeclExt(curName, createOne(createDiff(createVar(snapshotName), snapShotLast))));
+
+        body.add(createITE(
+        	createSomeOf(snapshotBack),
+        	createAll(decls1,createPredCall(smallStepName,args)),
+        	createAll(decls2,createPredCall(smallStepName,args))
+        ));
 
         d.alloyString += d.addFactSimple(tracesFactName, body);
 

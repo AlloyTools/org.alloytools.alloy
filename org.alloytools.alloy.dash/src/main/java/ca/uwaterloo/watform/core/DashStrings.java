@@ -47,7 +47,8 @@ public class DashStrings {
 	public static String tracesFirstName = "first";
 	public static String tracesNextName = "next";
 	public static String tracesLastName = "last";
-
+	public static String tracesBackName = "back";
+	
 	public static String utilBufferName = "util/buffer";
 
 	public static String utilTcmcPathName = "util/tcmc";
