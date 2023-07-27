@@ -25,24 +25,34 @@ public class DashToAlloy {
         }
         if (d.hasConcurrency())
             AddTestIfNextStable.addTestIfNextStable(d);
-        AddStutter.addStutter(d);
+
         AddSmallStep.addSmallStep(d);
+
+        AddStutter.addStutter(d);
+        AddAllSnapshotsDifferentFact.addAllSnapshotsDifferentFact(d);
+        AddEnoughOperationsPred.addEnoughOperationsPred(d);
+        
         if (DashOptions.isTcmc) AddCompleteBigSteps.addCompleteBigSteps(d);
-        if (DashOptions.isTcmc) AddAllSnapshotsDifferentFact.addAllSnapshotsDifferentFact(d);
-        if (DashOptions.enoughOperations) 
-            AddEnoughOperationsPred.addEnoughOperationsPred(d);
+        
+
+            
         if (DashOptions.singleEventInput)
             AddSingleEventInputFact.addSingleEventInputFact(d);
-        if (DashOptions.isTcmc && DashOptions.reachability) 
+
+        if (DashOptions.isTcmc ) {
+            AddTcmc.addTcmcFact(d);
+            // other methods only consider reachable snapshots so no extra
+            // predicate is needed
             AddReachabilityPred.addReachabilityPred(d);
-        if (DashOptions.isTraces) {
+            AddTcmc.addStrongNoStutterPred(d);
+
+        } else if (DashOptions.isTraces) {
             AddTraces.addTracesFact(d);
-            AddTraces.addTracesStrongNoStutterPred(d);
-        }
-        else if (DashOptions.isTcmc)     
-            AddTcmcFact.addTcmcFact(d);
-        else if (DashOptions.isElectrum)
+            AddTraces.addStrongNoStutterPred(d);
+
+        } else if (DashOptions.isElectrum) {
             AddElectrumFact.addElectrumFact(d);
+        }
     }
 }
 

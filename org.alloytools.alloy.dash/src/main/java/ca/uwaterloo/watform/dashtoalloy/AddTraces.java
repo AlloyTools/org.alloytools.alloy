@@ -92,7 +92,7 @@ public class AddTraces {
     }
 
 
-    public static void addTracesStrongNoStutterPred(DashModule d) {
+    public static void addStrongNoStutterPred(DashModule d) {
 	    /* 
 	    	pred no_stutter {
 	    		all s:DshSnapshot |

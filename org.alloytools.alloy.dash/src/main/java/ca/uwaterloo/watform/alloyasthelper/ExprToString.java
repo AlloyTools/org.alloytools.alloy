@@ -98,6 +98,7 @@ public class ExprToString {
         } else if (expr instanceof ExprUnary){
             ExprUnaryToOut((ExprUnary)expr);
         } else if (expr instanceof ExprVar){
+            //System.out.println(((ExprVar) expr).label);
             out.print(cleanLabel(((ExprVar) expr).label));
         } else if (expr instanceof Sig){
             out.print(cleanLabel(((Sig) expr).label));
@@ -131,9 +132,12 @@ public class ExprToString {
     }
     */
     private void ExprBinaryToOut(ExprBinary expr) {
+        //System.out.println(expr.op);
         if (DashRef.isDashRef(expr)) {
+            // won't hit this case when outputting after translation to Alloy
             out.print(expr.toString());
         } else if (expr.op == ExprBinary.Op.ISSEQ_ARROW_LONE) {
+            //TODO: this seems odd
             out.print("seq ");
             out.beginC(2);
             ExprToOut(expr.right);
@@ -141,6 +145,7 @@ public class ExprToString {
             //out.print(")");
         } else if (expr.op == ExprBinary.Op.JOIN) {
             // there are really long join expressions
+            // so don't make it a block
             //out.beginI(2);
             addBracketsIfNeeded(getLeft(expr));
             //out.brk(1,0);
@@ -149,6 +154,7 @@ public class ExprToString {
             addBracketsIfNeeded(getRight(expr));  
             //out.end();  
         } else {
+            //System.out.println(expr.op);
             out.beginI(2);
             addBracketsIfNeeded(getLeft(expr));
             out.brk(1,0);
@@ -181,11 +187,13 @@ public class ExprToString {
 
     private void addBracketsIfNeeded(Expr expr) {
         Boolean bracketsNotNeeded = 
-            isExprVar(expr) || 
+            isExprVar(expr) /*||
+                removed b/c unary operators don't seem to always bind tightly
                 (isExprUnary(expr) && 
                     !isExprCard(expr)&& 
                     !isExprRClosure(expr) && 
-                    !isExprClosure(expr));
+                    !isExprClosure(expr)) */
+                    ;
         if (!bracketsNotNeeded) {
             //out.beginC(2);
             out.print("(");
@@ -277,13 +285,14 @@ public class ExprToString {
     }
 
     private void ExprListToOut(ExprList expr) {
+        //System.out.println(expr.op);
         if (expr.op == ExprList.Op.AND ) {
             String op = " &&";
             out.beginC(2);
             for (int i = 0; i < expr.args.size(); i++) {
                 if (i > 0)
                     out.print(op).brk(1,0);
-                ExprToOut(expr.args.get(i));
+                addBracketsIfNeeded(expr.args.get(i));
             }
             out.end();
         }
@@ -296,7 +305,7 @@ public class ExprToString {
                     out.print(op);
                     out.brk(1,0);
                 }
-                ExprToOut(expr.args.get(i));
+                addBracketsIfNeeded(expr.args.get(i));
             }
             out.end();
             out.print(" }");
@@ -310,7 +319,7 @@ public class ExprToString {
             for (int i = 0; i < expr.args.size(); i++) {
                 if (i > 0)
                     out.print(",").brk(1,0);
-                ExprToOut(expr.args.get(i));
+                addBracketsIfNeeded(expr.args.get(i));
             }
             out.brk(1,-indent);
             out.end();
@@ -336,7 +345,7 @@ public class ExprToString {
     }
 
     private void ExprUnaryToOut(ExprUnary expr) {
-        
+        //System.out.println(expr.op);
         switch (expr.op) {
             // special cases for the 
             // ones that the Alloy op.toString()
@@ -355,7 +364,6 @@ public class ExprToString {
                 break;
             case ONEOF :
                 out.print("one");
-
                 out.brk(1);
                 addBracketsIfNeeded(expr.sub);
                 break;
@@ -408,7 +416,7 @@ public class ExprToString {
                 break;
             case NOOP :
                 // { expr } is parsed as NOOP (expr)
-                addBracketsIfNeeded(expr.sub);
+                ExprToOut(expr.sub);
                 break;
             default :
                 // many operators print okay
