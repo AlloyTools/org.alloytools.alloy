@@ -18,7 +18,6 @@ package edu.mit.csail.sdg.alloy4viz;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -382,6 +381,7 @@ public final class VizGraphPanel extends JPanel {
                 diagramScrollPanels.get(i).validate();
             }
         }
+        split.setDividerLocation(split.getSize().height - split.getInsets().bottom - split.getDividerSize() - split.getRightComponent().getPreferredSize().height);
     }
 
     /** Changes the font. */
@@ -412,15 +412,6 @@ public final class VizGraphPanel extends JPanel {
      */
     public GraphViewer alloyGetViewer() {
         return viewer.get(0);
-    }
-
-    /**
-     * We override the paint method to auto-resize the divider.
-     */
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
-        split.setDividerLocation(split.getSize().height - split.getInsets().bottom - split.getDividerSize() - split.getRightComponent().getPreferredSize().height);
     }
 
     public void resetProjectionAtomCombos() {
