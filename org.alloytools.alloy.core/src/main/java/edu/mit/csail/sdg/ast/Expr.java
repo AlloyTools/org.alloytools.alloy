@@ -232,7 +232,7 @@ public abstract class Expr extends Browsable {
         if (type.size() > 0)
             return this;
         // else: error
-        String msg = "This must be a set or relation.\nInstead, it has the following possible type(s):\n" + type;
+        String msg = toString() + " This must be a set or relation.\nInstead, it has the following possible type(s):\n" + type;
         return NOOP.make(null, this, new ErrorType(span(), msg), 0);
     }
 

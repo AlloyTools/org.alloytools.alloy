@@ -37,7 +37,7 @@ public class DashToAlloy {
 
             
         if (DashOptions.singleEventInput)
-            AddSingleEventInputFact.addSingleEventInputFact(d);
+            AddSingleEventInputPred.addSingleEventInputPred(d);
 
         if (DashOptions.isTcmc ) {
             AddTcmc.addTcmcFact(d);

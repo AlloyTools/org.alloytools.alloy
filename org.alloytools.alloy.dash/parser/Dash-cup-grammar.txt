@@ -177,13 +177,16 @@ StateItem ::=
         // we don't support the full variations of declarations here
         // don't know what the pos should be for this one
            Names:n COLON:o Expr:b
+        // these expression are "types"
+        // so we have to deal with the weird ambiguity 
+        // covered by applying the "mult" method
         {: ArrayList<String> ll = new ArrayList<String>();
            for (ExprVar x: n) ll.add(x.label);
-           RESULT = new DashVarDecls(o, ll ,b, DashStrings.IntEnvKind.INT); :};
+           RESULT = new DashVarDecls(o, ll ,mult(b), DashStrings.IntEnvKind.INT); :};
 StateItem ::= ENV:o Names:n COLON Expr:b
         {: ArrayList<String> ll = new ArrayList<String>();
            for (ExprVar x: n) ll.add(x.label);
-           RESULT = new DashVarDecls(o, ll, b, DashStrings.IntEnvKind.ENV); :};
+           RESULT = new DashVarDecls(o, ll, mult(b), DashStrings.IntEnvKind.ENV); :};
 
 //buffer decls
 //we have to know the number of buffers for the open statements,
@@ -273,7 +276,7 @@ TransItemList ::= TransItemList:c TransItem:x
         {: c.add(x); RESULT = c; :};
 
 //Exprp is non-empty list of comma-separated Expr
-//Exprs could be empty ist of comma-separated Expr
+//Exprs could be empty list of comma-separated Expr
 
 // src/dest ---------------------
 TransItem ::= FROM:o Name:n  

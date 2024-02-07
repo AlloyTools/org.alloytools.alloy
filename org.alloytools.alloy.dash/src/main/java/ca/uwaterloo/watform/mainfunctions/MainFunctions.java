@@ -70,9 +70,9 @@ public class MainFunctions {
         if (c == null) {
             DashErrors.emptyModule();
         } else {
-            System.out.println("here1");
+            //System.out.println("here1");
             o = CompModule.resolveAll(rep,c);
-            System.out.println("here2");
+            //System.out.println("here2");
         }
         return o;
     }

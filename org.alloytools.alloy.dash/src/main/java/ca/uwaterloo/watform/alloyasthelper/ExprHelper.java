@@ -48,6 +48,9 @@ public class ExprHelper  {
     public static boolean isExprOne(Expr e) {
         return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.ONE));
     }
+    public static boolean isExprOneOf(Expr e) {
+        return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.ONEOF));
+    }
     public static boolean isExprLone(Expr e) {
         return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.LONE));
     }
@@ -225,6 +228,9 @@ public class ExprHelper  {
     }
     public static Expr createOne(Expr sub) {
         return (ExprUnary) ExprUnary.Op.ONE.make(Pos.UNKNOWN, sub);
+    }
+    public static Expr createOneOf(Expr sub) {
+        return (ExprUnary) ExprUnary.Op.ONEOF.make(Pos.UNKNOWN, sub);
     }
     public static Expr createLone(Expr sub) {
         return (ExprUnary) ExprUnary.Op.LONE.make(Pos.UNKNOWN, sub);
