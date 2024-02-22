@@ -48,7 +48,7 @@ public class AddSpaceSignatures {
  
         // abstract sig TransLabel {}
         d.alloyString += d.addAbstractSigSimple(DashStrings.transitionLabelName);
-        d.alloyString += d.addOneExtendsSigSimple(DashStrings.noTransName, DashStrings.transitionLabelName);
+        //d.alloyString += d.addOneExtendsSigSimple(DashStrings.noTransName, DashStrings.transitionLabelName);
         // add all transitions as one sig extensions of TransLabel
         for (String t : d.getAllTransNames()) {
             d.alloyString += d.addOneExtendsSigSimple(translateFQN(t), DashStrings.transitionLabelName);

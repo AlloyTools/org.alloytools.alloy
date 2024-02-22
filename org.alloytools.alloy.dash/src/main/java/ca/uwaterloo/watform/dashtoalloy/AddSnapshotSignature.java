@@ -113,7 +113,7 @@ public class AddSnapshotSignature {
                     d.alloyString += d.addVarSigSimple(translateFQN(v), ((ExprVar)translateExpr(getSub(typ),d,true)) );
                 } else if (isExprLone(typ) && isExprVar(getSub(typ))) {
                     d.alloyString += d.addVarLoneSigSimple(translateFQN(v), ((ExprVar)translateExpr(getSub(typ),d,true)) );
-                } else if (isExprOne(typ) && isExprVar(getSub(typ))) {
+                } else if (isExprOneOf(typ) && isExprVar(getSub(typ))) {
                     d.alloyString += d.addVarOneSigSimple(translateFQN(v), ((ExprVar) translateExpr(getSub(typ),d,true)) );
                 } else {
                     TranslationToAlloyErrors.Unsupported(typ);
@@ -125,7 +125,7 @@ public class AddSnapshotSignature {
             // but A has already been declared somewhere by the user
             // and we can't easily add a field to an existing signature in
             // Alloy module, so instead add one atom to model 
-            // one sig Variables {
+            // one sig DshVars {
             //     v1: typ1
             // }
             // and have to deal with this case in translation to Alloy

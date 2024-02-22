@@ -108,7 +108,7 @@ public class AddTraces {
         	// don't need to make this stronger than an Or
         	// b/c other parts of semantics will make sure only
         	// one transTaken is true
-            bigOr.add(createNotIn(createVar(noTransName), curTransTaken(i)));
+            bigOr.add(createNot(createEquals(curTransTaken(i),createNoneArrow(i))));
         }
         Expr ex = createOr(createEquals(curVar(), snapShotFirst), createOrList(bigOr));
         

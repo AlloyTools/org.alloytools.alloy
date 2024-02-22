@@ -187,7 +187,13 @@ public class ExprToString {
 
     private void addBracketsIfNeeded(Expr expr) {
         Boolean bracketsNotNeeded = 
-            isExprVar(expr) /*||
+            isExprVar(expr) ||
+            // 2024-02-20 NAD sig x { y: x -> (one k)} does not work
+            // must be sig x { y: x -> one k}
+            isExprUnary(expr) &&
+                !isExprCard(expr)
+
+            /*||
                 removed b/c unary operators don't seem to always bind tightly
                 (isExprUnary(expr) && 
                     !isExprCard(expr)&& 
@@ -198,10 +204,6 @@ public class ExprToString {
             //out.beginC(2);
             out.print("(");
         }
-        //System.out.println("---- class: " + expr.getClass().toString());  
-        //if (isExprUnary(expr)) System.out.println(getUnaryOp(expr).toString());  
-        //System.out.println("bracketsNotNeeded: " + bracketsNotNeeded.toString());
-        //System.out.println(expr.toString());
         ExprToOut(expr);
         if (!bracketsNotNeeded) {
             out.print(")");

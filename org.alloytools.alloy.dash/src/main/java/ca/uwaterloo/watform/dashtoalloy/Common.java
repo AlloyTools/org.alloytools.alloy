@@ -320,14 +320,17 @@ public class Common {
         return createJoinList(ll);
     }
 
-    //in Electrum - if we have a dynamic var (not buffer) with a non-var, non-one var, non-lone var, non-set var
-    // type, we have to handle is specially
+    //in Electrum - if we have a dynamic var (not buffer) with 
+    // a non-var, non-one var, non-lone var, non-set var, non-parametrized
+    // type, we have to handle it specially
     public static boolean isWeirdOne(String vfqn, DashModule d) {
         //System.out.println("Vqn: " + vfqn);
         if (d.hasVar(vfqn)) {
             Expr typ = d.getVarType(vfqn);
+            // Note the use of isExprOneOf rather than isExprOne here
             return (d.getVarBufferParams(vfqn).size() == 0 && 
-                    !((isExprOne(typ) && isExprVar(getSub(typ))) ||
+                    !(isExprVar(typ) || // could be just "Int" type
+                    (isExprOneOf(typ) && isExprVar(getSub(typ))) ||
                     (isExprLone(typ) && isExprVar(getSub(typ))) ||
                     (isExprSet(typ) && isExprVar(getSub(typ)))));
         } else {

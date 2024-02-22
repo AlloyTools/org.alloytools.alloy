@@ -27,32 +27,28 @@ public class DashToAlloy {
             AddTestIfNextStable.addTestIfNextStable(d);
 
         AddSmallStep.addSmallStep(d);
-
         AddStutter.addStutter(d);
-        AddAllSnapshotsDifferentFact.addAllSnapshotsDifferentFact(d);
-        AddEnoughOperationsPred.addEnoughOperationsPred(d);
-        
-        if (DashOptions.isTcmc) AddCompleteBigSteps.addCompleteBigSteps(d);
-        
-
             
-        if (DashOptions.singleEventInput)
-            AddSingleEventInputPred.addSingleEventInputPred(d);
-
         if (DashOptions.isTcmc ) {
             AddTcmc.addTcmcFact(d);
+            AddAllSnapshotsDifferentFact.addAllSnapshotsDifferentFact(d);
             // other methods only consider reachable snapshots so no extra
             // predicate is needed
-            AddReachabilityPred.addReachabilityPred(d);
             AddTcmc.addStrongNoStutterPred(d);
+            AddReachabilityPred.addReachabilityPred(d);
+            AddCompleteBigSteps.addCompleteBigSteps(d);
+            
 
         } else if (DashOptions.isTraces) {
             AddTraces.addTracesFact(d);
+            AddAllSnapshotsDifferentFact.addAllSnapshotsDifferentFact(d);
             AddTraces.addStrongNoStutterPred(d);
 
         } else if (DashOptions.isElectrum) {
             AddElectrumFact.addElectrumFact(d);
         }
+        AddEnoughOperationsPred.addEnoughOperationsPred(d);
+        AddSingleEventInputPred.addSingleEventInputPred(d);
     }
 }
 

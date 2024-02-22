@@ -79,7 +79,10 @@ public class AddTcmc {
 	    /* 
 	    	pred no_stutter {
 	    		all s:DshSnapshot |
-	        	s = tcmc/ks_s0 or NO_TRANS not in s.dsh_taken0
+	        	s = tcmc/ks_s0 or 
+	        	NO_TRANS not in s.dsh_taken0 or
+	        	all p:Identifiers | NO_TRANS not in s.(p.dsh_taken0)
+	        	... for all levels
 	    */
 		assert(DashOptions.isTcmc);
 		Expr snapShotFirst = createVar(tcmcInitialStateName);
@@ -91,12 +94,12 @@ public class AddTcmc {
         	// don't need to make this stronger than an Or
         	// b/c other parts of semantics will make sure only
         	// one transTaken is true
-            bigOr.add(createNotIn(createVar(noTransName), curTransTaken(i)));
+            bigOr.add(createNot(createEquals(curTransTaken(i), createNoneArrow(i))));
         }
         Expr ex = createOr(createEquals(curVar(), snapShotFirst), createOrList(bigOr));
         
         decls.add((Decl) new DeclExt(curName, createVar(snapshotName)));
-        body.add(createAll(decls,ex));
+		body.add(createAll(decls,ex));
 
         List<Decl> emptyDecls = new ArrayList<Decl>();
         d.alloyString += d.addPredSimple(strongNoStutterName, emptyDecls, body);

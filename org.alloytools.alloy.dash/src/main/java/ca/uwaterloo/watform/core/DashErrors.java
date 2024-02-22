@@ -208,9 +208,9 @@ public class DashErrors {
 	public static void wrongNumberParams(Pos pos, String expString) {
 		throw new ErrorSyntax(pos + " " + wrongNumberParamsMsg + expString);
 	}
-	public static String varPredOverlapMsg = "Same name used for dynamic variable and Dash predicate: ";
-	public static void varPredOverlap(List<String> s) {
-		throw new ErrorSyntax(varPredOverlapMsg + s);
+	public static String nameOverlapMsg = "Same name used for multiple purposes: ";
+	public static void nameOverlap(List<String> s) {
+		throw new ErrorSyntax(nameOverlapMsg + s);
 	}
 	// parts of the code that should be unreachable -------------
 

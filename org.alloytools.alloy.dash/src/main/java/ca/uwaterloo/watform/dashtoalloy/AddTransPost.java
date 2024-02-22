@@ -373,13 +373,25 @@ public class AddTransPost {
         List<DashRef> sU = d.scopesUsed(tfqn);
         DashRef ev = d.getTransSend(tfqn);
         for (int i=0; i <= d.getMaxDepthParams(); i++) {
-            //TODO could only have scopesUsedi for i that has scopesUsed
+            //TODO optimization: could only have scopesUsedi for i that has scopesUsed
             List<Expr> u = DashRef.hasNumParams(sU,i).stream()
                 .map(x -> translateDashRefToArrow(x))
                 .collect(Collectors.toList());
-            if (u.size() == 1) args.add(u.get(0));
-            else if (u.size() ==0 ) args.add(createNoneArrow(i));
-            else { DashErrors.createTestIfNextStableCallMultipleScopesAtSameLevel(); return null; }
+
+            if (u.size() ==0 ) args.add(createNoneArrow(i));
+            else {
+                // 2024-02-21 NAD: these need to be all in one set that goes in one argument!!
+                // sc1 + sc2 + sc3 
+                Expr e = u.get(0); 
+                for (int k=1; k < u.size(); k++) {
+                   e = createUnion(e, u.get(k));  
+                }
+                args.add(e);
+            }
+            // 2024-02-20 NAD there can be multiple scopes that are used with the same number or args
+            // this is common in models with no parameters
+            // if (u.size() == 1) args.add(u.get(0));
+            // else { DashErrors.createTestIfNextStableCallMultipleScopesAtSameLevel(); return null; }
             if (d.hasEventsAti(i)) {
                 if (ev != null && ev.getParamValues().size() == i) args.add(translateDashRefToArrow(ev));
                 else args.add(createNoneArrow(i));

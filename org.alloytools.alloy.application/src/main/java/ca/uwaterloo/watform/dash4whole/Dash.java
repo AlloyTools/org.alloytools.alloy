@@ -178,7 +178,7 @@ public class Dash {
 
             
             System.out.println("Reading: " + filename );
-            System.out.println("Method: " + method +"\n");
+            
             A4Reporter rep = new A4Reporter();
 
             if (filename.endsWith(".als")) {
@@ -203,6 +203,7 @@ public class Dash {
                         System.out.println("Resolved Dash"); 
                         CompModule c = MainFunctions.translate(d, rep);
                         System.out.println("Translated Dash to Alloy"); 
+                        System.out.println("Method: " + method +"\n");
                         // if problem exception would be raised 
                         if (translateOnly) {
                             String outfilename = filename.substring(0,filename.length()-4) + "-" + method + ".als";

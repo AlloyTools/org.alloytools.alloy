@@ -59,14 +59,9 @@ public class AddInit {
                 body.add(createEquals(
                     curScopesUsed(i),
                     createNoneArrow(i)));
-            if (i == 0 )
-                body.add(createEquals(
-                    curTransTaken(i),
-                    createVar(DashStrings.noTransName)));
-            else 
-                body.add(createEquals(
-                    curTransTaken(i),
-                    createNoneArrow(i)));
+            body.add(createEquals(
+                curTransTaken(i),
+                createNoneArrow(i)));
             // no limits on initial set of events except that they must be environmental
             //s.events1 :> internalEvents = none -> none
             if (d.hasInternalEventsAti(i))

@@ -47,9 +47,17 @@ public class AddEnoughOperationsPred {
 
         for (String tfqn: d.getAllTransNames()) {
             String tout = translateFQN(tfqn); 
-            body.add(createSome(
-                curNextParamsDecls(d.getTransParamsIdx(tfqn),d.getTransParams(tfqn)),
-                createPredCall(tout,curNextParamVars(d.getTransParamsIdx(tfqn),d.getTransParams(tfqn)))));
+            if (d.getTransParamsIdx(tfqn).size() == 0) {
+                if (DashOptions.isElectrum) {
+                    List<Expr> elist = new ArrayList<Expr>();
+                    body.add(createPredCall(tout, elist));
+                } else 
+                    body.add(createSome(curNextDecls(),createPredCall(tout,curNextVars())));
+            } else {
+                body.add(createSome(
+                    curNextParamsDecls(d.getTransParamsIdx(tfqn),d.getTransParams(tfqn)),
+                    createPredCall(tout,curNextParamVars(d.getTransParamsIdx(tfqn),d.getTransParams(tfqn)))));
+            }
         }
         ArrayList<Decl> nodecls = new ArrayList<Decl>();
         d.alloyString += d.addPredSimple(DashStrings.enoughOperationsName,nodecls, body);

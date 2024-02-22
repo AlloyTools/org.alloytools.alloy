@@ -35,8 +35,8 @@ public class AddTransIsEnabledAfterStep {
             s:Snapshot,s':Snapshot,  
             pParam0: Param0, 
             ...
-            scopes0: StateLabel,
-            scopes1: Identifiers -> StateLabel,
+            scopesUsed0: StateLabel,
+            scopesUsed1: Identifiers -> StateLabel,
             ...
             genEvents0:EventLabel,
             genEvents1: Identifiers -> EventLabel,
@@ -46,11 +46,11 @@ public class AddTransIsEnabledAfterStep {
         some (src_state_t1 & s'.confi) // where i is depth of src_state, 
         guard_cond_t1[s'] 
         (s.stable = True) =>
-            o1: forall i. not(t1_nonOrthScopei in scopesi) 
-            ev1: t1_on  in (s.eventsi :> EnvEvents) + genEventsi // if t1_on is internal this is false
+            (o1 in code below) forall i:Ids. not(t1_nonOrthScopes(i) in scopesUsedi) 
+            (ev1) t1_on  in (s.eventsi :> EnvEvents) + genEventsi // if t1_on is internal event this is false
         else {
-            o2: forall i. not(t1_nonOrthScopei in scopesi + s'.scopesUsedi) 
-            ev2: t1_on  in s.eventsi  + genEventsi
+            (o2) forall i:Ids. not(t1_nonOrthScopes(i) in scopesi + s'.scopesUsedi) 
+            (ev2) t1_on  in s.eventsi  + genEventsi
         }
     }
     */

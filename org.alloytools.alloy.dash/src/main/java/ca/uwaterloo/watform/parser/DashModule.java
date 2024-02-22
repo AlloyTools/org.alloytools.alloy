@@ -516,9 +516,10 @@ public class DashModule extends CompModuleHelper {
 	}
 	public List<DashRef> scopesUsed(String tfqn) {
 		// includes Root only if that is the only scope
-		List<DashRef> aPc = ancesConcScopes(getConcScope(tfqn));
+		List<DashRef> aPc = ancesConcScopes(getScope(tfqn));
 		List<DashRef> r = new ArrayList<DashRef>();
 
+		// System.out.println(aPc);
 		if (aPc.size() == 1) {
 			// scope must be the root
 			// so add it
@@ -628,14 +629,36 @@ public class DashModule extends CompModuleHelper {
 			transTable.resolve(stateTable, eventTable, varTable, predTable);
 			varTable.resolve(stateTable, eventTable, predTable);
 
-			// varTable and predTable names cannot overlap
 
-			if (!Collections.disjoint(varTable.getAllVarNames() , predTable.getAllNames())) {
-				List<String> x = varTable.getAllVarNames();
-				x.retainAll(predTable.getAllNames());
-				DashErrors.varPredOverlap(x);
-			}
-			// TODO check for other overlaps??
+			/*
+				2024-02-21 NAD
+				Do not allow any overlaps between namespaces: state, trans, event, var, buffers
+				because in Electrum items from multiple of these categories can end up in the same
+				Alloy namespace such as:
+				
+				one sig X extends Transitions {}
+				var sig X in Typ {}
+
+				If we tried to prefix names with trans_ or state_, FQNs would get VERY long
+				Also, we want to be consistent with names across all methods (traces, tcmc, Electrum)
+			*/
+			
+			// varTable and predTable names cannot overlap
+			disj(getAllVarNames(),predTable.getAllNames());
+
+			disj(getAllVarNames(),getAllStateNames());
+			disj(getAllVarNames(),getAllTransNames());
+			disj(getAllVarNames(),getAllEventNames());
+			disj(getAllVarNames(),getAllBufferNames());
+
+			disj(getAllTransNames(),getAllStateNames() );
+			disj(getAllTransNames(),getAllEventNames() );
+			disj(getAllTransNames(),getAllBufferNames() );
+
+			disj(getAllStateNames(), getAllEventNames());
+			disj(getAllStateNames(),getAllBufferNames());
+
+			disj(getAllEventNames(), getAllBufferNames());
 
 			maxDepthParams = stateTable.getMaxDepthParams();
 
@@ -644,6 +667,14 @@ public class DashModule extends CompModuleHelper {
 			//debug("Root/S1/t1");
 		}
 		status = Status.RESOLVED_DASH;
+	}
+
+	public void disj(List<String> alist, List<String> blist) {
+		if (!Collections.disjoint(alist , blist)) {
+			List<String> x = alist;
+			x.retainAll(blist);
+			DashErrors.nameOverlap(x);
+		}
 	}
 
 	public List<DashRef> primedDashRefs(Expr exp) {
@@ -667,7 +698,9 @@ public class DashModule extends CompModuleHelper {
     }
 
 
-
+    public List<String> getAllEventNames() {
+    	return eventTable.getAllEventNames();
+    }
 	public List<String> getAllInternalEventNames() {
 		//assert(hasInternalEvents());
 		return eventTable.getAllInternalEvents();

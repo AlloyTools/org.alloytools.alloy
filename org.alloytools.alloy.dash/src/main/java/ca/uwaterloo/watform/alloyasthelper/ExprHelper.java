@@ -48,6 +48,7 @@ public class ExprHelper  {
     public static boolean isExprOne(Expr e) {
         return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.ONE));
     }
+    // used for types as in x: one Y
     public static boolean isExprOneOf(Expr e) {
         return ((e instanceof ExprUnary) && ((ExprUnary) e).op.equals(ExprUnary.Op.ONEOF));
     }
