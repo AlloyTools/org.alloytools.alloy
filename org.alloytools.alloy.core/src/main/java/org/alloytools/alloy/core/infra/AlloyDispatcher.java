@@ -2,6 +2,8 @@ package org.alloytools.alloy.core.infra;
 
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -21,7 +24,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.alloytools.alloy.context.api.AlloyContext;
-import org.alloytools.alloy.core.infra.NativeCode.Platform;
 import org.alloytools.alloy.infrastructure.api.AlloyMain;
 import org.alloytools.util.table.Table;
 import org.slf4j.Logger;
@@ -34,12 +36,17 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.justif.Justif;
+import aQute.lib.strings.Strings;
 import aQute.libg.parameters.Attributes;
 import aQute.libg.parameters.ParameterMap;
 import aQute.service.reporter.Reporter;
 import edu.mit.csail.sdg.alloy4.A4Preferences;
 import edu.mit.csail.sdg.alloy4.A4Preferences.Pref;
-import edu.mit.csail.sdg.translator.A4Options.SatSolver;
+import kodkod.engine.satlab.ExternalSolver;
+import kodkod.engine.satlab.SATFactory;
+import kodkod.engine.satlab.SATSolver;
+import kodkod.solvers.api.NativeCode;
+import kodkod.solvers.api.NativeCode.Platform;
 
 /**
  * Since the Alloy code is used for many different situations, we do not assume
@@ -48,11 +55,14 @@ import edu.mit.csail.sdg.translator.A4Options.SatSolver;
  * distribution jar.
  *
  */
-@Description("The Alloy command line interpreter" )
+@Description("The Alloy dispatcher" )
 public class AlloyDispatcher extends Env {
 
-    PrintStream          out = System.out;
-    PrintStream          err = System.err;
+    final static Logger  logger = LoggerFactory.getLogger("alloy");
+    static final Justif  justif = new Justif(60, 0, 10, 20, 30);
+
+    PrintStream          out    = System.out;
+    PrintStream          err    = System.err;
     AlloyContext         context;
     Optional<Manifest>   manifest;
     Logger               log;
@@ -111,6 +121,9 @@ public class AlloyDispatcher extends Env {
 
         CommandLine cl = options._command();
         AlloyContext context = getContext(options);
+
+        loadExtensions(new File(context.getHome(), "extensions/sat"));
+
         mains = getMains(context, cl);
         try {
             List<String> arguments = options._arguments();
@@ -179,11 +192,17 @@ public class AlloyDispatcher extends Env {
 
     private AlloyContext getContext(BaseOptions options) {
         if (context == null) {
+            File home = IO.getFile("~/.alloy");
             context = new AlloyContext() {
 
                 @Override
                 public boolean isDebug() {
                     return options.debug();
+                }
+
+                @Override
+                public File getHome() {
+                    return home;
                 }
             };
         }
@@ -242,11 +261,11 @@ public class AlloyDispatcher extends Env {
             out.printf("Java platform     %s/%s/%n", System.getProperty("os.name"), System.getProperty("os.arch"), System.getProperty("os.version"));
         }
 
-        List<SatSolver> list = SatSolver.values();
+        List<SATFactory> list = SATFactory.getSolvers();
         if (!options.unlinked())
-            list = list.stream().filter(SatSolver::present).collect(Collectors.toList());
+            list = list.stream().filter(SATFactory::isPresent).collect(Collectors.toList());
 
-        BiConsumer<Integer,SatSolver> set;
+        BiConsumer<Integer,SATFactory> set;
         if (options.list()) {
             set = (row, ss) -> {
                 if (row >= 0)
@@ -254,39 +273,27 @@ public class AlloyDispatcher extends Env {
             };
         } else {
             Table table = new Table(list.size() + 1, 5, 1);
-            table.set(0, 0, "id");
-            table.set(0, 1, "libname");
-            table.set(0, 2, "external");
-            table.set(0, 3, "description");
-            table.set(0, 4, "exception");
+            table.set(0, 0, "id", "description", "type", "attributes", "diagnostic");
             set = (row, ss) -> {
                 if (row < 0)
                     System.out.println(table);
                 else {
                     table.set(row, 0, ss.id());
-                    if (ss.libname != null) {
-                        table.set(row, 1, ss.libname);
-                        String mapLibraryName = System.mapLibraryName(ss.libname);
-                        File exec = NativeCode.findexecutable(mapLibraryName);
-                        if (exec != null) {
-                            if (ss.libname != null)
-                                try {
-                                    System.loadLibrary(ss.libname);
-                                } catch (java.lang.UnsatisfiedLinkError ee) {
-                                    table.set(row, 4, ee.toString());
-                                }
-                        }
-                    }
-                    if (ss.external() != null)
-                        table.set(row, 2, ss.external());
-                    table.set(row, 3, ss.toString());
+                    table.set(row, 1, wrap(ss.getDescription().orElse("")));
+                    List<String> attrs = new ArrayList<>();
+                    table.set(row, 2, ss.type());
+                    table.set(row, 3, ss.attributes());
+
+                    String check = ss.check();
+                    if (check != null)
+                        table.set(row, 4, wrap(check));
                 }
             };
         }
 
         int r = 1;
-        for (SatSolver o : list) {
-            boolean available = o.present();
+        for (SATFactory o : list) {
+            boolean available = o.isPresent();
             if (options.unlinked() || available) {
                 set.accept(r, o);
                 r++;
@@ -294,6 +301,15 @@ public class AlloyDispatcher extends Env {
         }
         set.accept(-1, null);
     }
+
+    private String wrap(String description) {
+        if (description == null)
+            return "";
+        StringBuilder sb = new StringBuilder(description);
+        justif.wrap(sb);
+        return sb.toString();
+    }
+
 
     @Arguments(
                arg = {} )
@@ -304,30 +320,67 @@ public class AlloyDispatcher extends Env {
 
     @Description("Show all the native solvers for all supported platforms" )
     public void _natives(NativeOptions options) {
-        Table table = new Table(SatSolver.values().size() + 1, NativeCode.platforms.length + 1, 1);
-        int r, c = 1;
+        List<SATFactory> allSolvers = SATFactory.getAllSolvers();
+        int FIXED = 4;
+        Table table = new Table(allSolvers.size() + 1, NativeCode.platforms.length + FIXED, 1);
+        int r, c;
+
+        c = table.set(0, 0, "id", "description", "type", "attributes");
+
         for (Platform p : NativeCode.platforms) {
-            table.set(0, c++, p.toString());
+            table.set(0, c, p.toString() + (NativeCode.platform == p ? "**" : ""));
+            c++;
         }
+
         r = 1;
-        for (SatSolver solver : SatSolver.values()) {
-            table.set(r, 0, solver.toString());
-            c = 1;
-            for (Platform p : NativeCode.platforms) {
+        for (SATFactory solver : allSolvers) {
+            c = table.set(r, 0, solver.id(), wrap(solver.getDescription().orElse(null)), solver.type(), solver.attributes());
+
+            String libraries[] = solver.getLibraries();
+            String executables[] = solver.getExecutables();
+
+            for (Platform platform : NativeCode.platforms) {
+                NativeCode.clearCache();
                 StringBuilder sb = new StringBuilder();
-                if (solver.libname != null) {
-                    String mapLibraryName = p.mapLibrary(solver.libname);
-                    File exec = NativeCode.findexecutable(p, mapLibraryName);
-                    if (exec != null && exec.isFile()) {
-                        table.set(r, c, mapLibraryName);
+                String del = "";
+                boolean foundOne = false;
+                for (String library : libraries) {
+                    Optional<File> libFile = platform.getLibrary(library);
+                    if (libFile.isPresent()) {
+                        sb.append(del).append(libFile.get().getName());
+                        del = "\n";
+                        foundOne = true;
                     }
                 }
-                if (solver.external() != null) {
-                    String mapExeName = p.mapExe(solver.external());
-                    File exec = NativeCode.findexecutable(p, mapExeName);
-                    if (exec != null && exec.isFile()) {
-                        table.set(r, c, mapExeName);
+                if (foundOne) {
+                    for (String library : libraries) {
+                        Optional<File> libFile = platform.getLibrary(library);
+                        if (!libFile.isPresent()) {
+                            sb.append(del).append(library).append(" [missing]");
+                        }
                     }
+                }
+                foundOne = false;
+                for (String executable : executables) {
+                    Optional<File> exeFile = platform.getExecutable(executable);
+                    if (exeFile.isPresent()) {
+                        sb.append(del).append(exeFile.get().getName());
+                        del = "\n";
+                        foundOne = true;
+                    }
+                }
+                if (foundOne) {
+                    for (String executable : executables) {
+                        Optional<File> exeFile = platform.getExecutable(executable);
+                        if (!exeFile.isPresent()) {
+                            sb.append(del).append(executable).append(" [missing]");
+                        }
+                    }
+                }
+
+                if (sb.toString().length() > 0) {
+                    justif.wrap(sb);
+                    table.set(r, c, sb);
                 }
                 c++;
             }
@@ -472,4 +525,104 @@ public class AlloyDispatcher extends Env {
                 }
             }
     }
+
+    /**
+     * Load the extensions from the home directory
+     *
+     * @param hom
+     */
+
+    void loadExtensions(File extensions) {
+        if (!extensions.isDirectory())
+            return;
+
+        for (File f : extensions.listFiles()) {
+            Properties p = new Properties();
+            String name = f.getName().replaceAll("\\..*", "");
+            try (FileInputStream in = new FileInputStream(f)) {
+                p.load(in);
+                ExternalFactory externalFactory = new ExternalFactory(name, p);
+                String check = externalFactory.check();
+                if (check == null) {
+                    SATFactory.extensions.add(externalFactory);
+                } else {
+                    error("cannot load extension at %s: %s", f, check);
+                }
+            } catch (FileNotFoundException e) {
+                // can't happen
+                e.printStackTrace();
+            } catch (Exception e) {
+                logger.error("failed to load extension {}, {}", f.getAbsolutePath(), e, e);
+            }
+        }
+    }
+
+    public static class ExternalFactory extends SATFactory {
+
+        static final long serialVersionUID = 1L;
+        final String      id;
+        final String      executable;
+        final String      description;
+        final String      cnf;
+        final boolean     maxsat;
+        final boolean     prover;
+        final String[]    options;
+
+        public ExternalFactory(String id, Properties p) {
+            this.id = id;
+
+            String executable = p.getProperty("executable");
+            if (executable.indexOf(File.separatorChar) >= 0) {
+                this.executable = IO.getFile(executable).getAbsolutePath();
+            } else {
+                this.executable = executable;
+            }
+            cnf = p.getProperty("cnf", null);
+            description = p.getProperty("description");
+            maxsat = p.getProperty("maxsat") != null;
+            prover = p.getProperty("prover") != null;
+            String options = p.getProperty("options");
+            if (options != null) {
+                this.options = Strings.splitQuoted(options, " \t\n").toArray(EMPTY);
+            } else {
+                this.options = EMPTY;
+            }
+        }
+
+        @Override
+        public String id() {
+            return id;
+        }
+
+        @Override
+        public SATSolver instance() {
+            return new ExternalSolver(this.executable, this.cnf, true, this.options);
+        }
+
+        @Override
+        public boolean prover() {
+            return prover;
+        }
+
+        @Override
+        public boolean maxsat() {
+            return maxsat;
+        }
+
+        @Override
+        public Optional<String> getDescription() {
+            return Optional.ofNullable(description);
+        }
+
+        @Override
+        public String toString() {
+            return id() + "[extension=" + executable + "]";
+        }
+
+        @Override
+        public String type() {
+            return "extension";
+        }
+    }
+
 }

@@ -62,8 +62,11 @@ public class Table implements Cell {
         return h + 1; // add bottom border
     }
 
-    public void set(int r, int c, Object label) {
-        cells[r][c] = new StringCell("" + label);
+    public int set(int r, int c, Object... label) {
+        for (int i = 0; i < label.length; i++) {
+            cells[r][c + i] = new StringCell("" + label[i]);
+        }
+        return c + label.length;
     }
 
     public void set(int r, int c, Cell table) {

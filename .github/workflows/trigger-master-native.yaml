@@ -1,0 +1,13 @@
+name: Native Code on master branch
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'org.alloytools.solvers.natv/satsolvers/**'
+
+jobs:
+  call-native:
+    uses: ./.github/workflows/subflow-native.yaml
+    secrets: inherit

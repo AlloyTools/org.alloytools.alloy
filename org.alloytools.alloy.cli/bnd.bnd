@@ -5,26 +5,10 @@
 	org.alloytools.alloy.core,\
 	org.alloytools.alloy.application,\
 	org.alloytools.alloy.extra,\
-	org.alloytools:pardinus.nativesat,\
 	jline,\
 	jline,\
-	org.alloytools.api
+	org.alloytools.api,\
+	org.alloytools.pardinus.core
 	
 -includepackage org.alloytools.alloy.cli
--conditionalpackage: *
-
--includeresource: \
-    @${repo;org.alloytools.alloy.application}, \
-    @${repo;org.alloytools.alloy.core}, \
-    @${repo;org.alloytools.alloy.extra}, \
-    @${repo;org.alloytools:pardinus.core}, \
-    @${repo;org.alloytools:pardinus.nativesat}, \
-    @${repo;org.sat4j.core}, \
-    @${repo;org.sat4j.maxsat}, \
-    @${repo;org.sat4j.pb},\
-    @${repo;slf4j.simple}
-    
-    
-Main-Class          org.alloytools.alloy.cli.CLI
-JPM-Command         alloy
 
