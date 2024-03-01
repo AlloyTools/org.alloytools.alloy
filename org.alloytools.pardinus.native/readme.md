@@ -17,7 +17,7 @@ requires an amd64 or arm64 mac. We therefore require that the code is build on a
 
 The JAR that we build with bnd has the following layout:
 
-* `native/...` – Contains the native directories in `os/arch/lib|exe` format.
+* `satsolvers/native/...` – Contains the native directories in `os/arch/lib|exe` format.
 * `services/kodkod.engine.satlab.SATFactory` – Contains a list of all the SATFactory classes in this bundle
 * `org/alloytools/solvers/natv/...` – The class files for the included SATFactory's
 * `LICENSE` – The licenses for the included files
