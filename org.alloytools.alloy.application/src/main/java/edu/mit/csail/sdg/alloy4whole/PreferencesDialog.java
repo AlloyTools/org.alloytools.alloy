@@ -252,9 +252,15 @@ public class PreferencesDialog extends JFrame {
     private final Map<Pref< ? >,JComponent> pref2comp = new HashMap<Pref< ? >,JComponent>();
     private final SwingLogPanel             log;
 
+
+    @Deprecated  // binary no longer used
     public PreferencesDialog(SwingLogPanel log, String binary) {
+        this(log);
+    }
+
+    public PreferencesDialog(SwingLogPanel log) {
         this.log = log;
-        if (log != null && binary != null) {
+        if (log != null) {
             List<SATFactory> solvers = SATFactory.getSolvers();
             Solver.setChoices(solvers, SATFactory.DEFAULT);
             log.log("Available solvers on " + System.getProperty("os.name") + ":" + System.getProperty("os.arch") + "\n");

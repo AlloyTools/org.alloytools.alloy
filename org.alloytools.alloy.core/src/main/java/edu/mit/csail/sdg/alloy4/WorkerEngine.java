@@ -29,6 +29,9 @@ import java.io.Serializable;
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import org.alloytools.alloy.core.AlloyCore;
+import org.alloytools.alloy.core.infra.Alloy;
+
+import kodkod.solvers.api.NativeCode;
 
 /**
  * This class allows you to execute tasks in a subprocess, and receive its
@@ -258,7 +261,7 @@ public final class WorkerEngine {
      * @throws IOException - if an error occurred in launching a sub JVM or talking
      *             to it
      */
-    public static void run(final WorkerTask task, int newmem, int newstack, String jniPath, String classPath, final WorkerCallback callback) throws IOException {
+    public static void run(final WorkerTask task, int newmem, int newstack, String classPath, final WorkerCallback callback) throws IOException {
         String java = "java";
         String javahome = System.getProperty("java.home");
         if (javahome == null)
@@ -299,15 +302,11 @@ public final class WorkerEngine {
                     java = f.getAbsolutePath();
 
                 String debug = AlloyCore.isDebug() ? "yes" : "no";
+                String main = Alloy.class.getName();
 
-                if (jniPath != null && jniPath.length() > 0)
-                    sub = Runtime.getRuntime().exec(new String[] {
-                                                                  java, "-Xmx" + newmem + "m", "-Xss" + newstack + "k", "-Djava.library.path=" + jniPath, "-Ddebug=" + debug, "-cp", classPath, WorkerEngine.class.getName(), Version.buildDate(), "" + Version.buildNumber()
-                    });
-                else
-                    sub = Runtime.getRuntime().exec(new String[] {
-                                                                  java, "-Xmx" + newmem + "m", "-Xss" + newstack + "k", "-Ddebug=" + debug, "-cp", classPath, WorkerEngine.class.getName(), Version.buildDate(), "" + Version.buildNumber()
-                    });
+                sub = Runtime.getRuntime().exec(new String[] {
+                                                              java, "-Xmx" + newmem + "m", "-Xss" + newstack + "k", "-Djava.library.path=" + NativeCode.getLibraryPath(), "-Ddebug=" + debug, "-cp", classPath, WorkerEngine.class.getName(), Version.buildDate(), "" + Version.buildNumber()
+                });
                 latest_sub = sub;
             } else {
                 sub = latest_sub;

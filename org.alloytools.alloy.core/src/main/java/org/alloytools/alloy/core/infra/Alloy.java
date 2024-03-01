@@ -24,7 +24,7 @@ public class Alloy {
 
     static ClassLoader old = Alloy.class.getClassLoader();
 
-    static class AlloyClassLoader extends ClassLoader {
+    static class AlloyClassLoader extends ClassLoader implements AutoCloseable {
 
         AlloyClassLoader() {
             super(null);
@@ -60,13 +60,17 @@ public class Alloy {
             }
         }
 
+        @Override
+        public void close() throws Exception {
+        }
+
     }
 
     public static void main(String args[]) throws Exception {
-        AlloyClassLoader l1 = new AlloyClassLoader();
-
-        Class< ? > dispatcher = l1.loadClass("org.alloytools.alloy.core.infra.AlloyDispatcher");
-        Method main = dispatcher.getMethod("main", String[].class);
-        main.invoke(null, (Object) args);
+        try (AlloyClassLoader l1 = new AlloyClassLoader()) {
+            Class< ? > dispatcher = l1.loadClass("org.alloytools.alloy.core.infra.AlloyDispatcher");
+            Method main = dispatcher.getMethod("main", String[].class);
+            main.invoke(null, (Object) args);
+        }
     }
 }

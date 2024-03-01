@@ -1147,7 +1147,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
                 WorkerEngine.runLocally(task, cb);
             else
-                WorkerEngine.run(task, newmem, newstack, alloyHome(frame) + fs + "binary", "", cb);
+                WorkerEngine.run(task, newmem, newstack, "", cb);
             subMemoryNow = newmem;
             subStackNow = newstack;
         } catch (Throwable ex) {
@@ -1744,7 +1744,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 if (AlloyCore.isDebug())
                     WorkerEngine.runLocally(task, cb);
                 else
-                    WorkerEngine.run(task, SubMemory.get(), SubStack.get(), alloyHome(frame) + fs + "binary", "", cb);
+                    WorkerEngine.run(task, SubMemory.get(), SubStack.get(), "", cb);
                 // task.run(cb);
             } catch (Throwable ex) {
                 WorkerEngine.stop();
@@ -2104,7 +2104,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
         // Copy required files from the JAR
         copyFromJAR();
-        final String binary = alloyHome(frame) + fs + "binary";
 
         // Create the menu bar
         JMenuBar bar = new JMenuBar();
@@ -2197,24 +2196,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
             wrap = false;
         }
 
-        // Add the new JNI location to the java.library.path
-        try {
-            System.setProperty("java.library.path", binary);
-            // The above line is actually useless on Sun JDK/JRE (see Sun's bug
-            // ID 4280189)
-            // The following 4 lines should work for Sun's JDK/JRE (though they
-            // probably won't work for others)
-            String[] newarray = new String[] {
-                                              binary
-            };
-            java.lang.reflect.Field old = ClassLoader.class.getDeclaredField("usr_paths");
-            old.setAccessible(true);
-            old.set(null, newarray);
-        } catch (Throwable ex) {
-        }
 
         // Pre-load the preferences dialog
-        prefDialog = new PreferencesDialog(log, binary);
+        prefDialog = new PreferencesDialog(log);
         prefDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         try {
             wrap = true;

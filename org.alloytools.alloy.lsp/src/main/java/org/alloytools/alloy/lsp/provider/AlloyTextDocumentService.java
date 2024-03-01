@@ -815,7 +815,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
             // if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
             //WorkerEngine.runLocally(task, cb);
             // else
-            WorkerEngine.run(task, newmem, newstack, SimpleGUI.alloyHome(null) + fs + "binary", "", cb);
+            WorkerEngine.run(task, newmem, newstack, "", cb);
             subMemoryNow = newmem;
             subStackNow = newstack;
         } catch (Throwable ex) {
@@ -1321,7 +1321,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
                                                    if (AlloyCore.isDebug())
                                                        WorkerEngine.runLocally(task, cb);
                                                    else
-                                                       WorkerEngine.run(task, SubMemory.get(), SubStack.get(), SimpleGUI.alloyHome(null) + fs + "binary", "", cb);
+                                                       WorkerEngine.run(task, SubMemory.get(), SubStack.get(), "", cb);
                                                    // task.run(cb);
                                                } catch (Throwable ex) {
                                                    WorkerEngine.stop();

@@ -3,16 +3,21 @@ package kodkod.solvers.api;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,12 +52,13 @@ import org.slf4j.LoggerFactory;
  * </ul>
  */
 public class NativeCode {
-	final static Logger		logger		= LoggerFactory.getLogger("alloy");
-	final static Set<File>	PATH		= new LinkedHashSet<>();
-	final static Set<File>	LIBRARYPATH	= new LinkedHashSet<>();
-	final static File		cache;
+	final static Logger logger = LoggerFactory.getLogger("alloy");
+	final static Set<File> PATH = new LinkedHashSet<>();
+	final static Set<File> LIBRARYPATH = new LinkedHashSet<>();
+	final static File cache;
 
 	static {
+		Runtime.getRuntime().addShutdownHook(new Thread(NativeCode::close, "native-code-cleanup") {} );
 		String libraryPath = System.getProperty("java.library.path");
 		if (libraryPath != null) {
 			for (String s : libraryPath.split(File.pathSeparator)) {
@@ -72,6 +78,8 @@ public class NativeCode {
 
 		try {
 			cache = Files.createTempDirectory("alloy-").toFile();
+			LIBRARYPATH.add(cache);
+			PATH.add(cache);
 		} catch (IOException e) {
 			RuntimeException runtimeException = new RuntimeException(
 					"Failed to create temporary directory for binaries");
@@ -82,11 +90,11 @@ public class NativeCode {
 
 	public static class Platform {
 
-		final String					id;
-		final Function<String, String>	mapLibrary;
-		final Function<String, String>	mapExe;
-		final Pattern					osname;
-		final Pattern					osarch;
+		final String id;
+		final Function<String, String> mapLibrary;
+		final Function<String, String> mapExe;
+		final Pattern osname;
+		final Pattern osarch;
 
 		public Platform(String id, String osnames, String osarch, Function<String, String> mapLibrary,
 				Function<String, String> mapExe) {
@@ -168,7 +176,7 @@ public class NativeCode {
 			String lib = mapLibrary.apply(genericName);
 
 			for (File dir : LIBRARYPATH) {
-				File file = new File(dir, genericName);
+				File file = new File(dir, lib);
 				if (file.isFile())
 					return Optional.of(file);
 			}
@@ -193,9 +201,11 @@ public class NativeCode {
 
 				Path to = file.toPath();
 				Files.copy(url.openStream(), to, StandardCopyOption.REPLACE_EXISTING);
+				file.deleteOnExit();
 				return true;
 			} catch (Exception e) {
-				logger.error("Failed to extract native code from the jar. name=%s, file=%s: %s", actualName, file, e,e);
+				logger.error("Failed to extract native code from the jar. name=%s, file=%s: %s", actualName, file, e,
+						e);
 				return false;
 			}
 		}
@@ -209,24 +219,20 @@ public class NativeCode {
 		}
 	}
 
-	static Map<String, File>	cached			= new HashMap<>();
+	static Map<String, File> cached = new HashMap<>();
 
-	public static Platform		LINUX_X86_64	= new Platform("linux/amd64", "linux", "amd64", s -> "lib" + s + ".so",
-			s -> s);
-	public static Platform		DARWIN_ARM64	= new Platform("darwin/arm64", "mac\\s*os.*", "aarch64",
-			s -> "lib" + s + ".dylib",
-			s -> s);
-	public static Platform		DARWIN_AMD64	= new Platform("darwin/amd64", "mac\\s*os.*",
-			"ppc|power|powerpc.*|x86.*", s -> "lib" + s + ".dylib", s -> s);
+	public static Platform LINUX_X86_64 = new Platform("linux/amd64", "linux", "amd64", s -> "lib" + s + ".so", s -> s);
+	public static Platform DARWIN_ARM64 = new Platform("darwin/arm64", "mac\\s*os.*", "aarch64",
+			s -> "lib" + s + ".dylib", s -> s);
+	public static Platform DARWIN_AMD64 = new Platform("darwin/amd64", "mac\\s*os.*", "ppc|power|powerpc.*|x86.*",
+			s -> "lib" + s + ".dylib", s -> s);
 
-	public static Platform		WINDOWS_AMD64	= new Platform("windows/amd64", "win.*", "x86.*|amd64",
-			s -> s + ".dll", s -> s + ".exe");
+	public static Platform WINDOWS_AMD64 = new Platform("windows/amd64", "win.*", "x86.*|amd64", s -> s + ".dll",
+			s -> s + ".exe");
 
-	public static Platform[]	platforms		= {
-			LINUX_X86_64, DARWIN_ARM64, DARWIN_AMD64, WINDOWS_AMD64
-	};
+	public static Platform[] platforms = { LINUX_X86_64, DARWIN_ARM64, DARWIN_AMD64, WINDOWS_AMD64 };
 
-	public static Platform		platform		= findPlatform();
+	public static Platform platform = findPlatform();
 
 	private static Platform findPlatform() {
 		String os = System.getProperty("os.name");
@@ -242,6 +248,32 @@ public class NativeCode {
 	public static void clearCache() {
 		for (File f : cache.listFiles()) {
 			f.delete();
+		}
+	}
+
+	public static String getLibraryPath() {
+		return LIBRARYPATH.stream().map(File::getAbsolutePath).collect(Collectors.joining(File.pathSeparator));
+	}
+
+	final static AtomicBoolean closing = new AtomicBoolean(false); 
+	public static void close() {
+		if ( closing.getAndSet(true))
+			return;
+		try {
+			Files.walkFileTree(cache.toPath(), new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					Files.deleteIfExists(file);
+					return super.visitFile(file, attrs);
+				}
+				@Override
+				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+					Files.delete(dir);
+					return super.postVisitDirectory(dir, exc);
+				}
+			});
+		} catch (IOException e) {
+			// ignore
 		}
 	}
 
