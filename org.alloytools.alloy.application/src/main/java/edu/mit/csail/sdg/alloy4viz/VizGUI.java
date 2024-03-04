@@ -1133,7 +1133,7 @@ public final class VizGUI implements ComponentListener {
      * Helper method returns a JTextArea containing the given text.
      */
     private JComponent getTextComponent(String text) {
-        final JTextArea ta = OurUtil.textarea(text, 10, 10, false, true);
+        final JTextArea ta = OurUtil.textarea(text, 10, 10, false, false);
         final JScrollPane ans = new JScrollPane(ta, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED) {
 
             private static final long serialVersionUID = 0;

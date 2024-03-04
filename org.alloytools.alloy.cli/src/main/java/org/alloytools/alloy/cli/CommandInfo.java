@@ -9,8 +9,12 @@ public class CommandInfo implements Comparable<CommandInfo>{
 	public long durationInMs;
 	public File cnf;
 	public File kodkod;
+	public int sequence;
 	@Override
 	public int compareTo(CommandInfo o) {
-		return command.label.compareTo(o.command.label);
+		int n = command.label.compareTo(o.command.label);
+		if ( n != 0)
+			return n;
+		return Integer.compare(sequence, o.sequence);
 	}
 }

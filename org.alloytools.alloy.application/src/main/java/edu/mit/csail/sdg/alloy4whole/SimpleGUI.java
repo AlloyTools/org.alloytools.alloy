@@ -180,6 +180,7 @@ import edu.mit.csail.sdg.translator.A4SolutionReader;
 import edu.mit.csail.sdg.translator.A4Tuple;
 import edu.mit.csail.sdg.translator.A4TupleSet;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
+import kodkod.engine.satlab.SATFactory;
 
 /**
  * Simple graphical interface for accessing various features of the analyzer.
@@ -1427,7 +1428,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     private Runner doOptRefreshLineNumbers() {
-        if ( wrap ) {
+        if (wrap) {
             return wrapMe();
         }
         text.enableLineNumbers(LineNumbers.get());
@@ -1690,7 +1691,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             Pos p = new Pos(Util.canon(f), x1, y1, x2, y2);
             text.shade(p);
         }
-        if (arg.startsWith("CNF: ")) { // CNF: filename
+        if (arg.startsWith("CNF: ") || arg.startsWith("file:")) { // CNF: filename
             String filename = Util.canon(arg.substring(5));
             try {
                 String text = Util.readAll(filename);
@@ -1698,17 +1699,16 @@ public final class SimpleGUI implements ComponentListener, Listener {
             } catch (IOException ex) {
                 log.logRed("Error reading the file \"" + filename + "\"\n");
             }
-        }
-        if (arg.startsWith("XML: ")) { // XML: filename
+        } else if (arg.startsWith("XML: ")) { // XML: filename
             viz.loadXML(Util.canon(arg.substring(5)), false, 0);
-        }
-        try {
-            Desktop desktop = java.awt.Desktop.getDesktop();
-            URI oURL = new URI(arg);
-            desktop.browse(oURL);
-        } catch (Exception e) {
-            // ignore
-        }
+        } else
+            try {
+                Desktop desktop = java.awt.Desktop.getDesktop();
+                URI oURL = new URI(arg);
+                desktop.browse(oURL);
+            } catch (Exception e) {
+                // ignore
+            }
         return null;
     }
 
@@ -2354,7 +2354,12 @@ public final class SimpleGUI implements ComponentListener, Listener {
         Object selected = pref.get();
         for (Object item : pref.validChoices()) {
             Action action = pref.getAction(item);
-            menuItem(parent, pref.renderValueLong(item).toString(), action, item == selected ? iconYes : iconNo);
+            JMenuItem submenu = menuItem(parent, pref.renderValueLong(item).toString(), action, item == selected ? iconYes : iconNo);
+
+            if (item instanceof SATFactory) {
+                SATFactory i = (SATFactory) item;
+                i.getDescription().ifPresent(d -> submenu.setToolTipText(d));
+            }
         }
     }
 

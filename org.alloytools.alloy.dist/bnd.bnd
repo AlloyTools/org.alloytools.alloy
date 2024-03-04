@@ -26,6 +26,7 @@ JPM-Command: alloy
     @${repo;org.alloytools.alloy.cli}, \
 	@${repo;org.alloytools.pardinus.core}, \
 	@${repo;org.alloytools.pardinus.native}, \
+	@${repo;jline}, \
 	@${repo;org.sat4j.core}, \
 	@${repo;org.sat4j.maxsat}, \
 	@${repo;org.sat4j.pb}, \

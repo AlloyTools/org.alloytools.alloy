@@ -94,6 +94,11 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 																	}
 
 																	@Override
+																	public String name() {
+																		return "KodKod output";
+																	}
+
+																	@Override
 																	public Optional<String> getDescription() {
 																		return Optional.of(
 																				"KK is the KodKod debug output format");
@@ -122,13 +127,13 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 																	}
 
 																	@Override
+																	public String name() {
+																		return "CNF output";
+																	}
+																	@Override
 																	public Optional<String> getDescription() {
 																		return Optional.of(
 																				"CNF stands for Conjunctive Normal Form. It is specified by DIMACS. This is a standardized way of representing Boolean algebra expressions for processing by SAT solvers.");
-																	}
-
-																	public String toString() {
-																		return id();
 																	}
 
 																	public String type() {
@@ -373,7 +378,7 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	}
 
 	public String toString() {
-		return id();
+		return name();
 	}
 
 	public abstract String type();
@@ -388,5 +393,9 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 			attrs.add("prover");
 
 		return attrs.stream().collect(Collectors.joining(","));
+	}
+	
+	public String name() {
+		return id();
 	}
 }
