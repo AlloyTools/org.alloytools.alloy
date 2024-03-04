@@ -290,6 +290,8 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 			return true;
 		} catch (java.lang.UnsatisfiedLinkError e) {
 			log.debug("lib {} gave error {}", id(), e.getMessage());
+		} catch (Exception e) {
+			log.debug("not present {}", id());
 		}
 		return false;
 	}
