@@ -217,7 +217,9 @@ public final class SimpleReporter extends A4Reporter {
             if (array[0].equals("resultCNF")) {
                 results.add(null);
                 span.setLength(len3);
-                span.log("   File written to " + array[1] + "\n\n");
+                span.log("   File written to ");
+                span.logLink(array[1].toString(), "file://" + array[1]);
+                span.log("\n\n");
             }
             if (array[0].equals("debug") && verbosity > 2) {
                 span.log("   " + array[1] + "\n");
@@ -759,7 +761,6 @@ public final class SimpleReporter extends A4Reporter {
                 for (int i = 0; i < result.size(); i++) {
                     Command r = world.getAllCommands().get(i);
                     if (result.get(i) == null) {
-                        rep.cb("", "   #" + (i + 1) + ": Unknown.\n");
                         continue;
                     }
                     StringBuilder sb = new StringBuilder();

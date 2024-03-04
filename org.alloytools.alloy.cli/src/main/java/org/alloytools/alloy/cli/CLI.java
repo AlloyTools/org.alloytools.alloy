@@ -53,16 +53,16 @@ public class CLI extends Env {
 		none, plain, json, xml;
 	}
 
-	InputStream	stdin	= new FilterInputStream(System.in) {
-							@Override
-							public void close() throws IOException {
-							}
-						};
-	PrintStream	stdout	= new PrintStream(new FilterOutputStream(System.out)) {
-							public void close() {
-								System.out.flush();
-							};
-						};
+	InputStream stdin = new FilterInputStream(System.in) {
+		@Override
+		public void close() throws IOException {
+		}
+	};
+	PrintStream stdout = new PrintStream(new FilterOutputStream(System.out)) {
+		public void close() {
+			System.out.flush();
+		};
+	};
 
 	/**
 	 * Show the list of solvers
@@ -104,16 +104,20 @@ public class CLI extends Env {
 
 		@Description("After resolving each command, start an evaluator")
 		boolean evaluator();
+
+		@Description("Find multiple solutions, up to this number. Use 0 for as many as can be found.")
+		int repeat(int deflt);
+
 	}
 
 	/**
 	 * Execute a Alloy program
 	 * 
-	 * @param options
-	 *            the options to use
+	 * @param options the options to use
 	 */
 	@Description("Execute an Alloy program")
 	public void _exec(ExecOptions options) throws Exception {
+
 		SimpleReporter rep = new SimpleReporter(this);
 		A4Options opt = this.options.dup();
 		opt.noOverflow = options.nooverflow();
@@ -175,17 +179,27 @@ public class CLI extends Env {
 				stdout.println("solving command " + c);
 
 			long start = System.nanoTime();
-			A4Solution s = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), c,
-					opt);
+			A4Solution s = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), c, opt);
 			long finish = System.nanoTime();
-
-			CommandInfo info = new CommandInfo();
-			info.command = c;
-			info.durationInMs = TimeUnit.NANOSECONDS.toMillis(finish - start);
-			if (opt.solver == SATFactory.CNF || opt.solver == SATFactory.KK)
-				info.cnf = rep.output;
-			answers.put(info, s);
-
+			int repeat = options.repeat(-1);
+			if (repeat == 0) {
+				repeat = Integer.MAX_VALUE;
+			}
+			if (s.satisfiable()) {
+				int sequence = 0;
+				do {
+					repeat--;
+					System.out.println("repeat " + repeat);
+					CommandInfo info = new CommandInfo();
+					info.command = c;
+					info.sequence = sequence++;
+					info.durationInMs = TimeUnit.NANOSECONDS.toMillis(finish - start);
+					if (opt.solver == SATFactory.CNF || opt.solver == SATFactory.KK)
+						info.cnf = rep.output;
+					answers.put(info, s);
+					System.out.println("answers " + answers.size());
+				} while (repeat >= 0 && s.isIncremental() && (s = s.next()).satisfiable());
+			}
 		}
 		if (!options.quiet() && answers.isEmpty()) {
 			stdout.println("no commands found " + cmd);
@@ -229,8 +243,7 @@ public class CLI extends Env {
 	/**
 	 * Execute a Alloy program
 	 * 
-	 * @param options
-	 *            the options to use
+	 * @param options the options to use
 	 */
 	@Description("Show all commands in an Alloy program")
 	public void _commands(CommandsOptions options) throws Exception {

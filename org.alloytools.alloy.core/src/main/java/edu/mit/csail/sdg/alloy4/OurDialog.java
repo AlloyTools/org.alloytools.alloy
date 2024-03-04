@@ -382,7 +382,7 @@ public final class OurDialog {
         JFrame window = new JFrame(title);
         JButton done = new JButton("Close");
         done.addActionListener(Runner.createDispose(window));
-        JScrollPane scrollPane = OurUtil.scrollpane(OurUtil.textarea(text, 20, 60, false, false));
+        JScrollPane scrollPane = OurUtil.scrollpane(OurUtil.textarea(text, 40, 90, false, false));
         window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         window.getContentPane().setLayout(new BorderLayout());
         window.getContentPane().add(scrollPane, BorderLayout.CENTER);
