@@ -20,14 +20,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package kodkod.engine.unbounded;
+package org.alloytools.solvers.natv.electrod;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
@@ -71,14 +71,13 @@ import kodkod.ast.operator.IntOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.VoidVisitor;
-import kodkod.engine.InvalidSolverParamException;
 import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.fol2sat.Translation.Whole;
-import kodkod.engine.ltl2fol.InvalidMutableExpressionException;
 import kodkod.engine.fol2sat.Translator;
+import kodkod.engine.unbounded.InvalidUnboundedProblem;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.Tuple;

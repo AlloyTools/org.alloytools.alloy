@@ -37,7 +37,7 @@ public final class AbortedException extends RuntimeException {
 	/**
 	 * Constructs an aborted exception with the given message.
 	 */
-	AbortedException(String message) {
+	public AbortedException(String message) {
 		super(message);
 	}
 
@@ -51,7 +51,7 @@ public final class AbortedException extends RuntimeException {
 	/**
 	 * Constructs an aborted exception with the given message and cause.
 	 */
-	AbortedException(String message, Throwable cause) {
+	public AbortedException(String message, Throwable cause) {
 		super(message, cause);
 	}
 

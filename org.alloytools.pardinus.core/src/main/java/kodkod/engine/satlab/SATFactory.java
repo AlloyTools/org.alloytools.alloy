@@ -398,4 +398,5 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	public String name() {
 		return id();
 	}
+
 }

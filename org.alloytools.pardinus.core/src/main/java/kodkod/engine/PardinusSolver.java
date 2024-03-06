@@ -33,7 +33,9 @@ import kodkod.engine.config.Options;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.engine.ltl2fol.TemporalTranslator;
+import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.PardinusBounds;
+import kodkod.solvers.api.TemporalSolverFactory;
 
 /**
  * The main Pardinus solver. Depending on the define {@link options
@@ -136,11 +138,7 @@ public class PardinusSolver implements
 		if (options.decomposed()) {
 
 			if (options.temporal()) {
-				TemporalSolver<ExtendedOptions> solver2;
-				if (options.solver().toString().equals("electrod"))
-					solver2 = new ElectrodSolver(options);
-				else 
-					solver2 = new TemporalPardinusSolver(options);
+				TemporalSolver<ExtendedOptions> solver2 = getTemporalSolver(options);
 				DecomposedPardinusSolver<TemporalSolver<ExtendedOptions>> solver = new DecomposedPardinusSolver<TemporalSolver<ExtendedOptions>>(options,solver2);
 				return solver;
 			} else {
@@ -152,12 +150,7 @@ public class PardinusSolver implements
 		} else {
 
 			if (options.temporal()) {
-				TemporalSolver<ExtendedOptions> solver;
-				if (options.solver().toString().equals("electrod"))
-					solver = new ElectrodSolver(options);
-				else 
-					solver = new TemporalPardinusSolver(options);
-				return solver;
+				return getTemporalSolver(options);
 			} else {
 				ExtendedSolver solver = new ExtendedSolver(options);
 				return solver;				
@@ -167,6 +160,14 @@ public class PardinusSolver implements
 		
 	}
 	
+	private TemporalSolver<ExtendedOptions> getTemporalSolver(ExtendedOptions options) {
+		SATFactory s = options.solver();
+		if ( s instanceof TemporalSolverFactory) {
+			return ((TemporalSolverFactory)s).getTemporalSolver(options);
+		} else
+			return new PardinusSolver(options);
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */

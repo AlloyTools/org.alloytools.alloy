@@ -2,12 +2,15 @@ package org.alloytools.solvers.natv.electrod;
 
 import java.util.Optional;
 
+import kodkod.engine.TemporalSolver;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.satlab.ExternalSolver;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.SATSolver;
 import kodkod.solvers.api.NativeCode;
+import kodkod.solvers.api.TemporalSolverFactory;
 
-public class ElectrodXRef extends SATFactory {
+public class ElectrodXRef extends SATFactory implements TemporalSolverFactory {
 
     private static final long serialVersionUID = 1L;
 
@@ -58,6 +61,11 @@ public class ElectrodXRef extends SATFactory {
     @Override
     public String type() {
         return "external";
+    }
+
+    @Override
+    public TemporalSolver<ExtendedOptions> getTemporalSolver(ExtendedOptions options) {
+        return new ElectrodSolver(options);
     }
 
 }

@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package kodkod.engine.unbounded;
+package org.alloytools.solvers.natv.electrod;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +38,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import kodkod.ast.Relation;
+import kodkod.engine.unbounded.InvalidUnboundedSolution;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
