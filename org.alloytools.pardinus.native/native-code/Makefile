@@ -135,3 +135,5 @@ build_windows_inner:
 	cmake -DJNI_INCLUDE=../jni/windows/amd64 -Bbuild glucose
 	make -C build
 	cp build/libglucose.dll native/windows/amd64/glucose.dll
+
+

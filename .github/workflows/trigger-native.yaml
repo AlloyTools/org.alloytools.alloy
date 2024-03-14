@@ -1,11 +1,11 @@
-name: native-code-change
+name: trigger-native
 
 on:
   push:
     branches: master
     paths:
-      - 'org.alloytools.pardinus.native/native-code/'
-      - '.github'
+      - 'org.alloytools.pardinus.native/native-code/**'
+      - '.github/**'
 
 jobs:
   electrod:
