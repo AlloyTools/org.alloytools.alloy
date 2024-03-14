@@ -194,7 +194,7 @@ public class CLI extends Env {
 					info.command = c;
 					info.sequence = sequence++;
 					info.durationInMs = TimeUnit.NANOSECONDS.toMillis(finish - start);
-					if (opt.solver == SATFactory.CNF || opt.solver == SATFactory.KK)
+					if (opt.solver.isTransformer())
 						info.cnf = rep.output;
 					answers.put(info, s);
 					System.out.println("answers " + answers.size());
@@ -205,7 +205,7 @@ public class CLI extends Env {
 			stdout.println("no commands found " + cmd);
 		}
 
-		if (opt.solver == SATFactory.CNF || opt.solver == SATFactory.KK) {
+		if (opt.solver.isTransformer()) {
 			for (CommandInfo c : answers.keySet()) {
 				IO.copy(c.cnf, out);
 			}

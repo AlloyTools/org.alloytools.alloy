@@ -184,7 +184,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 
 				stats.update(translation, transTime, solveTime);
 			}
-			return isSat ? sat(translation, stats, bounds) : unsat(translation, stats);
+			return isSat? sat(translation, stats, bounds) : unsat(translation, stats);
 		} catch (SATAbortedException sae) {
 			throw new AbortedException(sae);
 		}
@@ -209,12 +209,11 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 	private void flushFormula(Formula formula, Bounds bounds) {
 		try {
 			File f = new File(System.getProperty("java.io.tmpdir"), "kk.txt");
-			OutputStream os = new BufferedOutputStream(new FileOutputStream(f));
-			os.write(PrettyPrinter.print(formula, 2).getBytes());
-			os.write("\n================\n".getBytes());
-			os.write(bounds.toString().getBytes());
-			os.flush();
-			os.close();
+			try (OutputStream os = new BufferedOutputStream(new FileOutputStream(f))) {
+				os.write(PrettyPrinter.print(formula, 2).getBytes());
+				os.write("\n================\n".getBytes());
+				os.write(bounds.toString().getBytes());
+			}
 		} catch (Exception e) {
 		}
 	}

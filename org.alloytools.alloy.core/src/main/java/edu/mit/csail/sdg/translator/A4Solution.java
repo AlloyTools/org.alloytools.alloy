@@ -1156,6 +1156,8 @@ public final class A4Solution {
     /** Caches a constant pair of Type.EMPTY and Pos.UNKNOWN */
     private Pair<Type,Pos> cachedPAIR = null;
 
+    private Formula        fgoal;
+
     /**
      * Maps a Kodkod variable to an Alloy Type and Alloy Pos (if no association
      * exists, it will return (Type.EMPTY , Pos.UNKNOWN)
@@ -1553,10 +1555,9 @@ public final class A4Solution {
         if (opt.inferPartialInstance && simp != null && formulas.size() > 0 && !simp.simplify(rep, this, formulas))
             addFormula(Formula.FALSE, Pos.UNKNOWN);
         rep.translate(opt.solver.id(), bitwidth, maxseq, mintrace, maxtrace, solver.options().skolemDepth(), solver.options().symmetryBreaking(), A4Preferences.Decompose.values()[opt.decompose_mode].toString());
-        Formula fgoal = Formula.and(formulas);
+        fgoal = Formula.and(formulas);
         rep.debug("Generating the solution...\n");
         kEnumerator = null;
-        Solution sol = null;
         final Reporter oldReporter = solver.options().reporter();
         final boolean solved[] = new boolean[] {
                                                 true
@@ -1595,56 +1596,34 @@ public final class A4Solution {
             }
 
         });
-        if (!opt.solver.equals(SATFactory.CNF) && !opt.solver.equals(SATFactory.KK) && tryBookExamples) { // try book examples
-            A4Reporter r = "yes".equals(System.getProperty("debug")) ? rep : null;
-            try {
-                sol = BookExamples.trial(r, this, fgoal, (AbstractKodkodSolver) solver.solver, cmd.check);
-            } catch (Throwable ex) {
-                sol = null;
-            }
-        }
 
         solved[0] = false; // this allows the reporter to report the # of
-                          // vars/clauses
+        // vars/clauses
         for (Relation r : bounds.relations()) {
             formulas.add(r.eq(r));
         } // Without this, kodkod refuses to grow unmentioned relations
+
         fgoal = Formula.and(formulas);
-        // Now pick the solver and solve it!
-        if (opt.solver.equals(SATFactory.KK)) {
-            File tmpCNF = File.createTempFile("tmp", ".java", new File(opt.tempDirectory));
-            String out = tmpCNF.getAbsolutePath();
-            Util.writeAll(out, debugExtractKInput());
-            rep.resultCNF(out);
-            return null;
-        }
-        if (opt.solver.equals(SATFactory.CNF)) {
-            File tmpCNF = File.createTempFile("tmp", ".cnf", new File(opt.tempDirectory));
-            String out = tmpCNF.getAbsolutePath();
-            solver.options().setSolver(WriteCNF.factory(out));
-            try {
-                sol = solver.solve(fgoal, bounds);
-            } catch (WriteCNF.WriteCNFCompleted ex) {
-                rep.resultCNF(out);
-                return null;
-            }
-            // The formula is trivial (otherwise, it would have thrown an
-            // exception)
-            // Since the user wants it in CNF format, we manually generate a
-            // trivially satisfiable (or unsatisfiable) CNF file.
-            Util.writeAll(out, sol.instance() != null ? "p cnf 1 1\n1 0\n" : "p cnf 1 2\n1 0\n-1 0\n");
-            rep.resultCNF(out);
-            return null;
-        }
-        if (/* solver.options().solver()==SATFactory.ZChaffMincost || */ !solver.options().solver().incremental()) {
+
+        Solution sol;
+        if (opt.solver instanceof KKTransformer) {
+            sol = doKK(rep, opt);
+        } else if (opt.solver instanceof CNFTransformer) {
+            sol = doCNF(rep, opt);
+        } else if (tryBookExamples && solver.solver instanceof AbstractKodkodSolver) {
+            sol = tryBook(rep, cmd);
+        } else if (!solver.options().solver().incremental()) {
             sol = solver.solve(fgoal, bounds);
-        } else {
+        } else
+            sol = null;
+
+        if (sol == null) {
             PardinusBounds b;
             if (solver.options().decomposed())
-                b = PardinusBounds.splitAtTemporal(bounds); // [electrum] split bounds on temporal
+                b = PardinusBounds.splitAtTemporal(bounds);
             else
                 b = bounds;
-            // [electrum] better handling of solving runtime errors
+
             try {
                 kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, b));
             } catch (InvalidMutableExpressionException e) {
@@ -1656,11 +1635,17 @@ public final class A4Solution {
                 Pos p = ((Expr) k2pos(e.node())).pos;
                 throw new ErrorAPI(p, "Invalid specification for complete backend.\n" + e.getMessage());
             }
-            if (sol == null)
-                sol = kEnumerator.next();
+            sol = kEnumerator.next();
         }
+
+        if (sol.getOutput().isPresent()) {
+            rep.resultCNF(sol.getOutput().get().getAbsolutePath());
+            return null;
+        }
+
         if (!solved[0])
             rep.solve(0, 0, 0, 0);
+
         Instance inst = sol.instance();
         if (inst != null && !(inst instanceof TemporalInstance))
             inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
@@ -1713,6 +1698,39 @@ public final class A4Solution {
         else
             rep.resultUNSAT(cmd, time, this);
         return this;
+    }
+
+    @SuppressWarnings({
+                       "rawtypes", "unchecked"
+    } )
+    private Solution tryBook(final A4Reporter rep, Command cmd) {
+        Solution sol;
+        A4Reporter r = "yes".equals(System.getProperty("debug")) ? rep : null;
+        try {
+            sol = BookExamples.trial(r, this, fgoal, (AbstractKodkodSolver) solver.solver, cmd.check);
+        } catch (Throwable ex) {
+            rep.debug("" + ex);
+            sol = null;
+        }
+        return sol;
+    }
+
+    private Solution doCNF(final A4Reporter rep, final A4Options opt) throws IOException {
+        File tmpCNF = opt.tempFile(".cnf");
+        String out = tmpCNF.getAbsolutePath();
+        solver.options().setSolver(WriteCNF.factory(out));
+        Solution solve = solver.solve(fgoal, bounds);
+        solve.setOutput(tmpCNF);
+        return solve;
+    }
+
+    private Solution doKK(final A4Reporter rep, final A4Options opt) throws IOException {
+        File tmpKK = opt.tempFile(".java");
+        String out = tmpKK.getAbsolutePath();
+        Util.writeAll(out, debugExtractKInput());
+        Solution s = Solution.unsatisfiable(null, null);
+        s.setOutput(tmpKK);
+        return s;
     }
 
     // ===================================================================================================//
@@ -2165,6 +2183,20 @@ public final class A4Solution {
             }
         }
         return dto;
+    }
+
+    public A4Reporter getReporter() {
+        return null;
+    }
+
+    /**
+     * Add default transformers
+     *
+     * @param extensions
+     */
+    public static void addTransformers(List<SATFactory> extensions) {
+        extensions.add(new KKTransformer());
+        extensions.add(new CNFTransformer());
     }
 
 }

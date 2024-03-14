@@ -1,8 +1,10 @@
 package org.alloytools.solvers.natv.yices;
 
+import aQute.bnd.annotation.spi.ServiceProvider;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.WTargetSATSolver;
 
+@ServiceProvider(SATFactory.class )
 public class YicesExternalRef extends SATFactory {
 
     private static final long serialVersionUID = 1L;

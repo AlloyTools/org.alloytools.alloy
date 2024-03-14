@@ -42,6 +42,7 @@ import aQute.libg.parameters.ParameterMap;
 import aQute.service.reporter.Reporter;
 import edu.mit.csail.sdg.alloy4.A4Preferences;
 import edu.mit.csail.sdg.alloy4.A4Preferences.Pref;
+import edu.mit.csail.sdg.translator.A4Solution;
 import kodkod.engine.satlab.ExternalSolver;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.SATSolver;
@@ -533,6 +534,7 @@ public class AlloyDispatcher extends Env {
      */
 
     void loadExtensions(File extensions) {
+        A4Solution.addTransformers(SATFactory.extensions);
         if (!extensions.isDirectory())
             return;
 

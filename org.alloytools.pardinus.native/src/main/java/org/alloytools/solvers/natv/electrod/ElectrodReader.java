@@ -23,8 +23,12 @@
 package org.alloytools.solvers.natv.electrod;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,6 +38,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import kodkod.ast.Relation;
@@ -62,7 +67,7 @@ public class ElectrodReader {
 
     /**
      * Initializes the Electrod solution reader with the original problem bounds.
-     * 
+     *
      * @param bounds the original bounds of the solved problem.
      */
     public ElectrodReader(PardinusBounds bounds) {
@@ -75,22 +80,30 @@ public class ElectrodReader {
      * Reads an Electrod solution from an XML file, creating a temporal instance
      * that can be processed by Kodkod/Pardinus. Returns null if the problem is
      * unsatisfiable.
-     * 
-     * @param file the XML Electrod solution to be parsed.
+     *
+     * @param string the XML Electrod solution to be parsed.
      * @return the parsed temporal instance or null if unsat.
      * @throws InvalidUnboundedSolution if the parsing fails.
      */
-    public TemporalInstance read(String file) throws InvalidUnboundedSolution {
+    public TemporalInstance read(String string) throws InvalidUnboundedSolution {
+        return read(new StringReader(string));
+    }
+
+    public TemporalInstance read(Reader reader) throws InvalidUnboundedSolution {
+        return read(new InputSource(reader));
+    }
+
+    public TemporalInstance read(InputSource source) throws InvalidUnboundedSolution {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setValidating(false);
         factory.setIgnoringElementContentWhitespace(true);
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(file);
+            Document doc = builder.parse(source);
             Element root = doc.getDocumentElement();
             nbvars = Integer.valueOf(root.getAttributes().getNamedItem("nbvars").getNodeValue());
-            ctime = Integer.valueOf(root.getAttributes().getNamedItem("conversion-time").getNodeValue());
-            atime = Integer.valueOf(root.getAttributes().getNamedItem("analysis-time").getNodeValue());
+            ctime = getMillis(root.getAttributes().getNamedItem("conversion-time").getNodeValue());
+            atime = getMillis(root.getAttributes().getNamedItem("analysis-time").getNodeValue());
             NodeList elems = root.getChildNodes();
             int c = 0;
             for (int i = 0; i < elems.getLength(); i++) {
@@ -110,11 +123,38 @@ public class ElectrodReader {
         return new TemporalInstance(insts, loop, 1);
     }
 
+    final static Pattern DURATION_P = Pattern.compile("(?<val>\\d+(\\.\\d+)?)(?<unit>.*)?");
+
+    private int getMillis(String nodeValue) {
+        try {
+            return Integer.valueOf(nodeValue);
+        } catch (NumberFormatException e) {
+            Matcher m = DURATION_P.matcher(nodeValue);
+            if (m.matches()) {
+                double val = Double.valueOf(m.group("val"));
+                String unit = m.group("unit");
+                if (unit == null)
+                    return (int) val;
+                switch (unit) {
+                    default :
+                    case "ms" :
+                        return (int) val;
+                    case "s" :
+                        return (int) (val * 1000);
+                    case "m" :
+                        return (int) (val * 60_000);
+                }
+            } else {
+                return Integer.MAX_VALUE;
+            }
+        }
+    }
+
     /**
      * Parses a single state of the trace as a static regular Kodkod {@link Instance
      * instance}. Atoms and relations may have been renamed by
      * {@link ElectrodPrinter#normRel(String)}, which must be reverted.
-     * 
+     *
      * @param node the XML node containing the state.
      * @return the static instance corresponding to the state.
      */

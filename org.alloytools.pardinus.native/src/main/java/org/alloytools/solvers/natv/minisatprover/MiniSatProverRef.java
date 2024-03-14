@@ -1,9 +1,11 @@
 package org.alloytools.solvers.natv.minisatprover;
 
+import aQute.bnd.annotation.spi.ServiceProvider;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.SATSolver;
 
+@ServiceProvider(SATFactory.class )
 public class MiniSatProverRef extends SATFactory {
 
     private static final long serialVersionUID = 1L;

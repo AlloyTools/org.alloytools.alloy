@@ -15,7 +15,10 @@
 
 package edu.mit.csail.sdg.translator;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
 
 import kodkod.engine.satlab.SATFactory;
 
@@ -161,6 +164,11 @@ public final class A4Options implements Serializable {
         x.decompose_mode = decompose_mode;
         x.decompose_threads = decompose_threads;
         return x;
+    }
+
+    public File tempFile(String extension) throws IOException {
+        File f = new File(tempDirectory);
+        return Files.createTempFile(f.toPath(), "alloy", extension).toFile();
     }
 
 }
