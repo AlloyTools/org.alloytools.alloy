@@ -2,9 +2,9 @@ name: native-code-change
 
 on:
   push:
-    branches: feature/electrod
+    branches: master
     paths:
-      - 'org.alloytools.pardinus.native/'
+      - 'org.alloytools.pardinus.native/native-code/'
       - '.github'
 
 jobs:
