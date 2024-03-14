@@ -1,6 +1,0 @@
-
-https://github.com/dockcross/dockcross
-
-cmake -DJNI_INCLUDE=../jni/macos/x86-64/ -DOSX_ARCH=x86_64  .;make
-
-

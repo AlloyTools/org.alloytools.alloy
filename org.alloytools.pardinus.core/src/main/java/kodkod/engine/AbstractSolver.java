@@ -66,6 +66,6 @@ public interface AbstractSolver<B extends Bounds, O extends PardinusOptions> {
 	/**
 	 * Releases the resources, if any, associated with this solver.
 	 */
-	public void free();
+	default void free() {}
 
 }

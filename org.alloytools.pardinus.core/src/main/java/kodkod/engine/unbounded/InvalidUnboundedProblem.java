@@ -38,7 +38,7 @@ public class InvalidUnboundedProblem extends RuntimeException {
 	/**
 	 * TODO
 	 */
-	InvalidUnboundedProblem(Node node) {
+	public InvalidUnboundedProblem(Node node) {
 		super("Invalid formula: " + node);
 		this.node = node;
 	}

@@ -13,18 +13,15 @@ jobs:
     name: build on OpenJDK Linux (just changing name for testing with new commit)
     runs-on: ubuntu-latest
     steps:
-      - name: Git Checkout
-        uses: actions/checkout@v1
-      - name: Set up Java
-        uses: actions/setup-java@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: 17 
-      - name: Build
-        shell: bash
+          distribution: temurin
+      - shell: bash
         run: ./gradlew --parallel build
-      - name: save-tests
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v2
+      - if: ${{ always() }}
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: '*/target/reports'
