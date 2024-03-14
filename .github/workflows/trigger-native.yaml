@@ -1,11 +1,39 @@
-name: Native code branch changed
+name: native-code-change
 
 on:
   push:
-    branches:
-      - native
+    branches: feature/electrod
+    paths:
+      - 'org.alloytools.pardinus.native/'
+      - '.github'
 
 jobs:
-  call-native:
-     uses: ./.github/workflows/subflow-native.yaml
-     secrets: inherit
+  electrod:
+    uses: ./.github/workflows/subflow-electrod.yaml
+
+  native:
+    uses: ./.github/workflows/subflow-native.yaml
+
+  merge-natives:
+    needs: [electrod,native]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: org.alloytools.pardinus.native/native
+          merge-multiple: true
+
+      - run: |
+          git config user.name github-actions
+          git config user.email github-actions@galloytools.org
+
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Native code update request"
+          title: "Native code update"
+          delete-branch: true
+          branch: native
+          base: master

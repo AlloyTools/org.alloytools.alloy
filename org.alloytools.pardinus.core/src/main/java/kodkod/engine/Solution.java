@@ -55,7 +55,7 @@ public final class Solution {
 	 * Returns a new Solution with a SATISFIABLE outcome, given stats and instance.
 	 * @return {s: Solution | s.outcome() = SATISFIABLE && s.stats() = stats && s.instance() = instance }
 	 */
-	static Solution satisfiable(Statistics stats, Instance instance) {
+	public static Solution satisfiable(Statistics stats, Instance instance) {
 		return new Solution(Outcome.SATISFIABLE, stats, instance, null);
 	}
 	
@@ -71,7 +71,7 @@ public final class Solution {
 	 * Returns a new Solution with a UNSATISFIABLE outcome, given stats and proof.
 	 * @return {s: Solution | s.outcome() = UNSATISFIABLE && s.stats() = stats && s.proof() = proof }
 	 */
-	static Solution unsatisfiable(Statistics stats, Proof proof) {
+	public static Solution unsatisfiable(Statistics stats, Proof proof) {
 		return new Solution(Outcome.UNSATISFIABLE, stats, null, proof);
 	}
 	

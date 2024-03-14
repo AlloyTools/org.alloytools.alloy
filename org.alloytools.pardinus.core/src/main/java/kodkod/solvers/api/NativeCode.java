@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import aQute.lib.io.IO;
 
 /**
  * Alloy Native code
@@ -130,7 +131,7 @@ public class NativeCode {
 					logger.warn("requested to ignore native exe {}", genericName);
 					return Optional.empty();
 				}
-				File f = new File(path);
+				File f = IO.getFile(path);
 				if (f.isFile()) {
 					return Optional.of(f);
 				}

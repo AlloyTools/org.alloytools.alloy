@@ -51,7 +51,7 @@ public class InvalidUnboundedSolution extends RuntimeException {
 	 * Constructs an invalid unbounded solution exception with the given message
 	 * and cause.
 	 */
-	InvalidUnboundedSolution(String message, Throwable cause) {
+	public InvalidUnboundedSolution(String message, Throwable cause) {
 		super(message, cause);
 	}
 }

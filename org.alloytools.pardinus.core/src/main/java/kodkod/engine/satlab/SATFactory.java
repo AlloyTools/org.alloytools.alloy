@@ -25,6 +25,7 @@ package kodkod.engine.satlab;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -69,83 +70,83 @@ import kodkod.solvers.api.NativeCode;
  * </ul>
  */
 public abstract class SATFactory implements Serializable, Comparable<SATFactory> {
-	private final static org.slf4j.Logger	log					= LoggerFactory.getLogger(SATFactory.class);
-	private static final long				serialVersionUID	= 1L;
-	protected static final String[]			EMPTY				= new String[0];
+	private final static org.slf4j.Logger log = LoggerFactory.getLogger(SATFactory.class);
+	private static final long serialVersionUID = 1L;
+	protected static final String[] EMPTY = new String[0];
 
 	/**
 	 * Any SATFactory objects added to this list will be included in the
 	 * {@link #getAllSolvers()} list. Can be used to add experimental or custom
 	 * solvers.
 	 */
-	public static List<SATFactory>			extensions			= new ArrayList<>();
-	public static final SATFactory			DEFAULT				= SAT4JRef.INSTANCE;
+	public static List<SATFactory> extensions = new ArrayList<>();
+	public static final SATFactory DEFAULT = SAT4JRef.INSTANCE;
 
 	/**
-	 * A special SATFactory, will indicate output of the KodKod/Pardinus code to
-	 * a file
+	 * A special SATFactory, will indicate output of the KodKod/Pardinus code to a
+	 * file
 	 */
-	public final static SATFactory			KK					= new SAT4JRef() {
-																	private static final long serialVersionUID = 1L;
+	public final static SATFactory KK = new SAT4JRef() {
+		private static final long serialVersionUID = 1L;
 
-																	@Override
-																	public String id() {
-																		return "KK";
-																	}
+		@Override
+		public String id() {
+			return "KK";
+		}
 
-																	@Override
-																	public String name() {
-																		return "KodKod output";
-																	}
+		@Override
+		public String name() {
+			return "KodKod output";
+		}
 
-																	@Override
-																	public Optional<String> getDescription() {
-																		return Optional.of(
-																				"KK is the KodKod debug output format");
-																	}
+		@Override
+		public Optional<String> getDescription() {
+			return Optional.of("KK is the KodKod debug output format");
+		}
 
-																	public String type() {
-																		return "synthetic";
-																	}
+		public String type() {
+			return "synthetic";
+		}
 
-																	@Override
-																	public boolean incremental() {
-																		return false;
-																	}
+		@Override
+		public boolean incremental() {
+			return false;
+		}
 
-																};
+	};
 
 	/**
 	 * A special SATFactory, will indicate output of the CNF DIMACS file
 	 */
-	public final static SATFactory			CNF					= new SAT4JRef() {
-																	private static final long serialVersionUID = 1L;
+	public final static SATFactory CNF = new SAT4JRef() {
+		private static final long serialVersionUID = 1L;
 
-																	@Override
-																	public String id() {
-																		return "CNF";
-																	}
+		@Override
+		public String id() {
+			return "CNF";
+		}
 
-																	@Override
-																	public String name() {
-																		return "CNF output";
-																	}
-																	@Override
-																	public Optional<String> getDescription() {
-																		return Optional.of(
-																				"CNF stands for Conjunctive Normal Form. It is specified by DIMACS. This is a standardized way of representing Boolean algebra expressions for processing by SAT solvers.");
-																	}
+		@Override
+		public String name() {
+			return "CNF output";
+		}
 
-																	public String type() {
-																		return "synthetic";
-																	}
+		@Override
+		public Optional<String> getDescription() {
+			return Optional.of(
+					"CNF stands for Conjunctive Normal Form. It is specified by DIMACS. This is a standardized way of representing Boolean algebra expressions for processing by SAT solvers.");
+		}
 
-																	@Override
-																	public boolean incremental() {
-																		return false;
-																	}
+		public String type() {
+			return "synthetic";
+		}
 
-																};
+		@Override
+		public boolean incremental() {
+			return false;
+		}
+
+	};
 
 	static {
 		extensions.add(DEFAULT);
@@ -159,14 +160,14 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	}
 
 	/**
-	 * Return the identity of this solver. No two SATFactory objects should have
-	 * the same id.
+	 * Return the identity of this solver. No two SATFactory objects should have the
+	 * same id.
 	 */
 	public abstract String id();
 
 	/**
-	 * Check if the SATSolver is available. Return null if so, otherwise a
-	 * reason why it is not available is returned.
+	 * Check if the SATSolver is available. Return null if so, otherwise a reason
+	 * why it is not available is returned.
 	 */
 
 	public String check() {
@@ -202,20 +203,20 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	public abstract SATSolver instance();
 
 	/**
-	 * Returns true if the solvers returned by this.instance() are
-	 * {@link SATProver SATProvers}. Otherwise returns false.
+	 * Returns true if the solvers returned by this.instance() are {@link SATProver
+	 * SATProvers}. Otherwise returns false.
 	 * 
-	 * @return true if the solvers returned by this.instance() are
-	 *         {@link SATProver SATProvers}. Otherwise returns false.
+	 * @return true if the solvers returned by this.instance() are {@link SATProver
+	 *         SATProvers}. Otherwise returns false.
 	 */
 	public boolean prover() {
 		return false;
 	}
 
 	/**
-	 * Returns true if the solvers returned by this.instance() are incremental;
-	 * i.e. if clauses/variables can be added to the solver between multiple
-	 * calls to solve().
+	 * Returns true if the solvers returned by this.instance() are incremental; i.e.
+	 * if clauses/variables can be added to the solver between multiple calls to
+	 * solve().
 	 * 
 	 * @return true if the solvers returned by this.instance() are incremental
 	 */
@@ -233,8 +234,8 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	}
 
 	/**
-	 * Returns true if the solvers returned by this.instance() are Max-SAT,
-	 * i.e., soft clauses and weights can added to the solver.
+	 * Returns true if the solvers returned by this.instance() are Max-SAT, i.e.,
+	 * soft clauses and weights can added to the solver.
 	 * 
 	 * @return true if the solvers returned by this.instance() are Max-SAT
 	 */
@@ -257,8 +258,8 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	}
 
 	/**
-	 * Return all solvers on this platform in a sorted list by {@link #id()}.
-	 * This contains:
+	 * Return all solvers on this platform in a sorted list by {@link #id()}. This
+	 * contains:
 	 * <ul>
 	 * <li>the SATFactory's in {@link #extensions}
 	 * <li>{@link #DEFAULT}
@@ -268,12 +269,17 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	 * </ul>
 	 */
 	public static List<SATFactory> getAllSolvers() {
-		ServiceLoader<SATFactory> loader = ServiceLoader.load(SATFactory.class,
-				SATFactory.class.getClassLoader());
+		ServiceLoader<SATFactory> loader = ServiceLoader.load(SATFactory.class, SATFactory.class.getClassLoader());
 		List<SATFactory> result = new ArrayList<>(extensions);
-		for (SATFactory r : loader) {
-			result.add(r);
-		}
+		Iterator<SATFactory> iterator = loader.iterator();
+		while (iterator.hasNext())
+			try {
+				SATFactory r = iterator.next();
+				result.add(r);
+			} catch (Throwable e) {
+				log.error("failure in loading solvers {}", e);
+				return Collections.emptyList();
+			}
 		Collections.sort(result);
 		return result;
 	}
@@ -303,8 +309,8 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 
 	/**
 	 * Get a list of executable names. These executable names must be generic,
-	 * without suffix. For Unix/MacOS this is just the name of the executable.
-	 * For windows, it must be without .exe.
+	 * without suffix. For Unix/MacOS this is just the name of the executable. For
+	 * windows, it must be without .exe.
 	 */
 	public String[] getExecutables() {
 		return EMPTY;
@@ -312,8 +318,8 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 
 	/**
 	 * Get a list of library names. These library names must be generic, without
-	 * suffix. For Unix this is libNAME.so, for MacOS this is libNAME.dylib, and
-	 * for windows this is NAME.dll.
+	 * suffix. For Unix this is libNAME.so, for MacOS this is libNAME.dylib, and for
+	 * windows this is NAME.dll.
 	 */
 	public String[] getLibraries() {
 		return EMPTY;
@@ -323,8 +329,7 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	 * This must be called before the solver is used so that the solver can
 	 * influence the options.
 	 * 
-	 * @param options
-	 *            the options
+	 * @param options the options
 	 */
 	public SATFactory doOptions(ExtendedOptions options) {
 		return this;
@@ -333,24 +338,20 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	/**
 	 * Find a SAT Factory by name.
 	 * 
-	 * @param solver
-	 *            the solver name
+	 * @param solver the solver name
 	 */
 	public static Optional<SATFactory> find(String solver) {
 		return getSolvers().stream().filter(s -> s.id().equalsIgnoreCase(solver)).findFirst();
 	}
 
 	/**
-	 * Get a SAT Factory by name. If not found, throw an
-	 * IllegalArgumentException.
+	 * Get a SAT Factory by name. If not found, throw an IllegalArgumentException.
 	 * 
-	 * @param solver
-	 *            the solver name
+	 * @param solver the solver name
 	 */
 	public static SATFactory get(String solver) {
-		return find(solver)
-				.orElseThrow(
-						() -> new IllegalArgumentException("no solver " + solver + ", available are " + getSolvers()));
+		return find(solver).orElseThrow(
+				() -> new IllegalArgumentException("no solver " + solver + ", available are " + getSolvers()));
 	}
 
 	@Override
@@ -394,8 +395,9 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 
 		return attrs.stream().collect(Collectors.joining(","));
 	}
-	
+
 	public String name() {
 		return id();
 	}
+
 }

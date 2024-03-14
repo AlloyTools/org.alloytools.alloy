@@ -1,5 +1,5 @@
 -includeresource \
-    native=satsolvers/native, \
+    native=native, \
     LICENSES=LICENSES, \
     META-INF/services=services
 -buildpath: org.alloytools.pardinus.core

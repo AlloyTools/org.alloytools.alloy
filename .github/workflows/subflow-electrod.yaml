@@ -1,0 +1,53 @@
+name: subflow-electrod
+
+on:
+  workflow_call:
+
+jobs:
+  binaries:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            ocaml-compiler: 4.14.1
+            dir: darwin/amd64
+            file: electrod
+            id: darwin-amd64
+          - os: macos-14
+            ocaml-compiler: 4.14.1
+            dir: darwin/arm64
+            file: electrod
+            id: darwin-arm64
+          - os: ubuntu-latest
+            ocaml-compiler: 4.14.1
+            dir: linux/amd64
+            file: electrod
+            id: linux-amd64
+          - os: windows-latest
+            ocaml-compiler: 4.14.1
+            dir: windows/amd64
+            file: electrod.exe
+            id: windows-amd64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: alloytools/electrod
+          ref: alloy
+
+      - uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          opam-local-packages: |
+            !electrod.opam.lock
+            electrod.opam
+      - run: |
+          opam install . --deps-only --with-test
+          opam exec -- dune build 
+          mkdir -p native/${{ matrix.dir }}
+          cp electrod.exe native/${{ matrix.dir }}/${{ matrix.file }}
+ 
+      - uses: actions/upload-artifact@v4
+        with:
+          path: native/
+          name: electrod-${{ matrix.id }}

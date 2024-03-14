@@ -32,7 +32,7 @@ public final class InvalidSolverParamException extends RuntimeException {
 	/**
 	 * TODO
 	 */
-	InvalidSolverParamException(String msg) {
+	public InvalidSolverParamException(String msg) {
 		super(msg);
 	}
 

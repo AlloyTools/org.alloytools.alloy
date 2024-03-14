@@ -41,6 +41,7 @@ import kodkod.engine.satlab.SATFactory;
 } )
 public class A4Preferences {
 
+
     /** Base class for holding a single preference */
     public abstract static class Pref<T> extends DefaultSingleSelectionModel {
 

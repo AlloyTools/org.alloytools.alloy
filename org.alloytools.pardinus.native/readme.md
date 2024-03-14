@@ -17,7 +17,7 @@ requires an amd64 or arm64 mac. We therefore require that the code is build on a
 
 The JAR that we build with bnd has the following layout:
 
-* `satsolvers/native/...` – Contains the native directories in `os/arch/lib|exe` format.
+* `native/...` – Contains the native directories in `os/arch/lib|exe` format.
 * `services/kodkod.engine.satlab.SATFactory` – Contains a list of all the SATFactory classes in this bundle
 * `org/alloytools/solvers/natv/...` – The class files for the included SATFactory's
 * `LICENSE` – The licenses for the included files
@@ -27,7 +27,7 @@ The `natives` directory is stored in GIT. It is build by a Makefile in satsolver
 ## Native Solver
 
 To simplify the build, it helps when the names are consistently used. For each native solver, you need to pick a 
-unique id like minisat, minisatprover, lingeling, etc.
+unique id like minisat, minisatprover, plingeling, etc.
 
 To include a native solver first make sure there is a repository of the solver code in the Alloytools organization
 with the name of the chosen id.  This repository can be cloned or contain a copy of the code. 
@@ -43,7 +43,6 @@ MiniSatProver will look for `libminisatprover.so` on linux, `libminisatprover.dy
 In satsolvers, make a directory for the native solver with the given id. This directory will contain a copy of the
 repository for the native code in the `repo` directory. It will contain the JNI c or C++ file and a CMakeLists.txt
 file.
-
 
 ## Building the natives
 
@@ -64,22 +63,4 @@ because of performance. The darwin/arm64 environment needs to emulate the dockro
 the windows version need to build the zlib package. The overhead made it unbearably slow so we build
 all the supported natives in one invocation.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 [1]: https://github.com/dockcross/dockcross
-
-
-
-
