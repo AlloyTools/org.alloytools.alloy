@@ -9,7 +9,8 @@
 	aQute.libg,\
 	org.alloytools.api,\
 	slf4j.api,\
-	org.alloytools.pardinus.core
+	org.alloytools.pardinus.core,\
+	biz.aQute.bnd.annotation
 
 -testpath: \
 	biz.aQute.wrapper.junit,\

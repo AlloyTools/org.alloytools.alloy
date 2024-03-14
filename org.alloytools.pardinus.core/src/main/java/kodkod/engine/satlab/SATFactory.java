@@ -82,76 +82,8 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	public static List<SATFactory> extensions = new ArrayList<>();
 	public static final SATFactory DEFAULT = SAT4JRef.INSTANCE;
 
-	/**
-	 * A special SATFactory, will indicate output of the KodKod/Pardinus code to a
-	 * file
-	 */
-	public final static SATFactory KK = new SAT4JRef() {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public String id() {
-			return "KK";
-		}
-
-		@Override
-		public String name() {
-			return "KodKod output";
-		}
-
-		@Override
-		public Optional<String> getDescription() {
-			return Optional.of("KK is the KodKod debug output format");
-		}
-
-		public String type() {
-			return "synthetic";
-		}
-
-		@Override
-		public boolean incremental() {
-			return false;
-		}
-
-	};
-
-	/**
-	 * A special SATFactory, will indicate output of the CNF DIMACS file
-	 */
-	public final static SATFactory CNF = new SAT4JRef() {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public String id() {
-			return "CNF";
-		}
-
-		@Override
-		public String name() {
-			return "CNF output";
-		}
-
-		@Override
-		public Optional<String> getDescription() {
-			return Optional.of(
-					"CNF stands for Conjunctive Normal Form. It is specified by DIMACS. This is a standardized way of representing Boolean algebra expressions for processing by SAT solvers.");
-		}
-
-		public String type() {
-			return "synthetic";
-		}
-
-		@Override
-		public boolean incremental() {
-			return false;
-		}
-
-	};
-
 	static {
 		extensions.add(DEFAULT);
-		extensions.add(KK);
-		extensions.add(CNF);
 		extensions.add(LightSat4JRef.INSTANCE);
 		extensions.add(PMaxSAT4JRef.INSTANCE);
 	}
@@ -174,6 +106,9 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 		if (!isPresent())
 			return "cannot be found";
 
+		if ( isTransformer())
+		    return "";
+		
 		SATSolver solver = null;
 		try {
 			solver = instance();
@@ -200,7 +135,9 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	 * 
 	 * @return a SATSolver instance
 	 */
-	public abstract SATSolver instance();
+	public SATSolver instance() {
+		throw new UnsupportedOperationException(this + " is not a SATFactory that can create instances");
+	}
 
 	/**
 	 * Returns true if the solvers returned by this.instance() are {@link SATProver
@@ -288,6 +225,9 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	 * Check if the SATFactory is present
 	 */
 	public boolean isPresent() {
+	    if ( isTransformer())
+	        return true;
+	    
 		try {
 			instance();
 			for (String library : getLibraries()) {
@@ -400,4 +340,9 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 		return id();
 	}
 
+	public boolean isTransformer() {
+		return false;
+	}
+
+	
 }

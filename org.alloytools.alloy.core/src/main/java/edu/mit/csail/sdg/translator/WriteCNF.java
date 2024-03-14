@@ -27,7 +27,7 @@ import kodkod.engine.satlab.SATSolver;
  * an exception (this code is adapted from ExternalSolver from Kodkod).
  */
 
-final class WriteCNF implements SATSolver {
+final public class WriteCNF implements SATSolver {
 
     /**
      * This runtime exception is thrown when the CNF file has been written
@@ -131,6 +131,7 @@ final class WriteCNF implements SATSolver {
         Util.close(cnf);
     }
 
+
     /** {@inheritDoc} */
     @Override
     public void addVariables(int numVars) {
@@ -173,10 +174,10 @@ final class WriteCNF implements SATSolver {
             cnf.seek(0);
             cnf.writeBytes("p cnf " + vars + " " + clauses);
             cnf.close();
+            return false;
         } catch (Exception ex) {
             throw new RuntimeException("WriteCNF failed.", ex);
         }
-        throw new WriteCNFCompleted();
     }
 
     /** {@inheritDoc} */

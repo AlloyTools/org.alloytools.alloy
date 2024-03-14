@@ -2,10 +2,12 @@ package org.alloytools.solvers.natv.lingeling;
 
 import java.util.Optional;
 
+import aQute.bnd.annotation.spi.ServiceProvider;
 import kodkod.engine.satlab.ExternalSolver;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.SATSolver;
 
+@ServiceProvider(SATFactory.class )
 public class PlingelingRef extends SATFactory {
 
     private static final long serialVersionUID = 1L;

@@ -1,5 +1,6 @@
 -includeresource \
     native=native, \
-    LICENSES=LICENSES, \
-    META-INF/services=services
--buildpath: org.alloytools.pardinus.core
+    LICENSES=LICENSES
+-buildpath: \
+	org.alloytools.pardinus.core,\
+	biz.aQute.bnd.annotation

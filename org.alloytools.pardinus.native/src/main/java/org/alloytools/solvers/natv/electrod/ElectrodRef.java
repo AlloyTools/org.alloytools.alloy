@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import kodkod.ast.Formula;
@@ -28,8 +29,8 @@ import kodkod.solvers.api.TemporalSolverFactory;
 abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
 
     private static final long serialVersionUID = 1L;
-    final String              electrod;
-    final String              solver;
+    final File                electrod;
+    final File                solver;
     final String              solverId;
 
     class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, TemporalSolver<ExtendedOptions> {
@@ -65,19 +66,33 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
             options.reporter().solvingCNF(-1, -1, -1, -1);
 
             String electrod = ElectrodPrinter.print(formula, bounds, rep);
-            String xml = execute(this, electrod, bounds);
-            ElectrodReader rd = new ElectrodReader(bounds);
-            TemporalInstance temporalInstance = rd.read(xml);
-            Statistics stats = new Statistics(rd.nbvars, 0, 0, rd.ctime, rd.atime);
-            return temporalInstance == null ? Solution.unsatisfiable(stats, null) : Solution.satisfiable(stats, temporalInstance);
+            Solution solution;
+            if (solverId == null) {
+                try {
+                    solution = Solution.unsatisfiable(null, null);
+                    File f = Files.createTempFile(options.uniqueName(), ".elo").toFile();
+                    write(f, electrod);
+                    solution.setOutput(f);
+                    return solution;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                String xml = execute(this, electrod, bounds);
+                ElectrodReader rd = new ElectrodReader(bounds);
+                TemporalInstance temporalInstance = rd.read(xml);
+                Statistics stats = new Statistics(rd.nbvars, 0, 0, rd.ctime, rd.atime);
+                solution = temporalInstance == null ? Solution.unsatisfiable(stats, null) : Solution.satisfiable(stats, temporalInstance);
+            }
+            return solution;
         }
 
     }
 
     ElectrodRef(String solver) {
         solverId = solver;
-        this.electrod = NativeCode.platform.getExecutable("electrod").map(File::getAbsolutePath).orElse(null);
-        this.solver = NativeCode.platform.getExecutable(solver).map(File::getAbsolutePath).orElse(null);
+        this.electrod = NativeCode.platform.getExecutable("electrod").orElse(null);
+        this.solver = solverId == null ? null : NativeCode.platform.getExecutable(solver).orElse(null);
     }
 
     @Override
@@ -130,10 +145,12 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
         Exception exception = null;
         int exitCode = Integer.MAX_VALUE;
         ProcessBuilder processBuilder = new ProcessBuilder();
+        Map<String,String> environment = processBuilder.environment();
+        environment.put("PATH", addSolverToPath(environment.get("PATH"), solver));
         List<String> args = processBuilder.command();
-        args.add(electrod);
+        args.add(electrod.getAbsolutePath());
         args.add("-t");
-        args.add(solver);
+        args.add(solverId);
 
         ExtendedOptions options = electrodSolver.options();
         if (!options.unbounded()) {
@@ -144,8 +161,9 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
         try {
             File tempDir = Files.createTempDirectory(options.uniqueName()).toFile();
             File eloFile = new File(tempDir, "output.elo");
+            write(eloFile, elo);
             File out = new File(tempDir, ".out");
-            args.add(elo);
+            args.add(eloFile.getAbsolutePath());
             processBuilder.redirectError(out);
             processBuilder.redirectOutput(out);
             reporter.debug("starting electrod process with : " + args);
@@ -175,7 +193,15 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
         throw new AbortedException(report);
     }
 
-    private String read(File file) {
+    private String addSolverToPath(String PATH, File solverPath) {
+        String dir = solverPath.getParent();
+        if (PATH == null) {
+            return dir;
+        } else
+            return dir + File.pathSeparator + PATH;
+    }
+
+    private String read(File file) throws Exception {
         try {
             if (file != null && file.isFile()) {
                 byte[] allBytes = Files.readAllBytes(file.toPath());
@@ -187,5 +213,8 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
         return "no file " + file;
     }
 
+    private void write(File file, String contents) throws Exception {
+        Files.write(file.toPath(), contents.getBytes(StandardCharsets.UTF_8));
+    }
 
 }
