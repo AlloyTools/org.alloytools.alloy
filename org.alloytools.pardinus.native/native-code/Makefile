@@ -1,5 +1,5 @@
 #
-# On a mac (x86/arm) just type make in this directory
+# On a mac (amd64/arm64) just type make in this directory
 # All native code will end up in ../native/OS/ARCH. OS=[darwin,linux,windows], ARCH=[amd64,arm64]
 #
 
