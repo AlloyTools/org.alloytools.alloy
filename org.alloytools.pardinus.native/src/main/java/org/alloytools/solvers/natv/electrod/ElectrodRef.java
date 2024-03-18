@@ -151,6 +151,7 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
         args.add(electrod.getAbsolutePath());
         args.add("-t");
         args.add(solverId);
+        args.add("-v");
 
         ExtendedOptions options = electrodSolver.options();
         if (!options.unbounded()) {

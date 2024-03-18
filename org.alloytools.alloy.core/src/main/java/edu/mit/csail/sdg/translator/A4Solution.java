@@ -344,7 +344,7 @@ public final class A4Solution {
         this.maxtrace = maxtrace;
         this.mintrace = mintrace;
         // [electrum] test whether unbounded solver
-        if (maxtrace == Integer.MAX_VALUE && !(!opt.solver.unbounded()))
+        if (maxtrace == Integer.MAX_VALUE && !opt.solver.unbounded())
             throw new ErrorAPI("Bounded engines do not support open bounds on steps.");
         if (bitwidth < 0)
             throw new ErrorSyntax("Cannot specify a bitwidth less than 0.");
