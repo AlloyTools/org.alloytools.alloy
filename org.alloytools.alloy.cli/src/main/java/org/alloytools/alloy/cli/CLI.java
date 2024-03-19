@@ -268,11 +268,6 @@ public class CLI extends Env {
 			error("Cannot create parent directory for %s", file);
 			return null;
 		}
-		if (!file.canWrite()) {
-			error("Cannot write %s", file);
-			return null;
-		}
-
 		return new FileOutputStream(file);
 	}
 
