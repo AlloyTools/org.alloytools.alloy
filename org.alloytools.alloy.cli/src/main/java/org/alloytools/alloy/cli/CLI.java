@@ -251,8 +251,9 @@ public class CLI extends Env {
 		String filename = options._arguments().remove(0);
 		Map<String, String> cache = new HashMap<>();
 		CompModule world = CompUtil.parseEverything_fromFile(rep, cache, filename);
+		int n = 0;
 		for (Command c : world.getAllCommands()) {
-			stdout.println(c);
+			stdout.printf("%-2d. %s%n",n++,c);
 		}
 	}
 

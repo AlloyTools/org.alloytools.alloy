@@ -73,6 +73,7 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	private final static org.slf4j.Logger log = LoggerFactory.getLogger(SATFactory.class);
 	private static final long serialVersionUID = 1L;
 	protected static final String[] EMPTY = new String[0];
+	static List<SATFactory> solvers;
 
 	/**
 	 * Any SATFactory objects added to this list will be included in the
@@ -106,9 +107,9 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 		if (!isPresent())
 			return "cannot be found";
 
-		if ( isTransformer())
-		    return "";
-		
+		if (isTransformer())
+			return "";
+
 		SATSolver solver = null;
 		try {
 			solver = instance();
@@ -191,7 +192,11 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	 * Return a list of all SATFactory that are found on this platform.
 	 */
 	public static List<SATFactory> getSolvers() {
-		return getAllSolvers().stream().filter(SATFactory::isPresent).collect(Collectors.toList());
+		if (solvers == null) {
+			solvers = Collections.unmodifiableList(
+					getAllSolvers().stream().filter(SATFactory::isPresent).collect(Collectors.toList()));
+		}
+		return solvers;
 	}
 
 	/**
@@ -225,9 +230,9 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	 * Check if the SATFactory is present
 	 */
 	public boolean isPresent() {
-	    if ( isTransformer())
-	        return true;
-	    
+		if (isTransformer())
+			return true;
+
 		try {
 			instance();
 			for (String library : getLibraries()) {
@@ -344,5 +349,4 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 		return false;
 	}
 
-	
 }

@@ -31,6 +31,7 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import org.alloytools.alloy.core.AlloyCore;
 import org.alloytools.alloy.core.infra.Alloy;
 
+import kodkod.engine.satlab.SATFactory;
 import kodkod.solvers.api.NativeCode;
 
 /**
@@ -262,6 +263,7 @@ public final class WorkerEngine {
      *             to it
      */
     public static void run(final WorkerTask task, int newmem, int newstack, String classPath, final WorkerCallback callback) throws IOException {
+        SATFactory.getSolvers(); // init native code
         String java = "java";
         String javahome = System.getProperty("java.home");
         if (javahome == null)
@@ -304,9 +306,12 @@ public final class WorkerEngine {
                 String debug = AlloyCore.isDebug() ? "yes" : "no";
                 String main = Alloy.class.getName();
 
-                sub = Runtime.getRuntime().exec(new String[] {
-                                                              java, "-Xmx" + newmem + "m", "-Xss" + newstack + "k", "-Djava.library.path=" + NativeCode.getLibraryPath(), "-Ddebug=" + debug, "-cp", classPath, WorkerEngine.class.getName(), Version.buildDate(), "" + Version.buildNumber()
-                });
+                String[] cmdline = new String[] {
+                                                 java,
+                                                 // "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5006",
+                                                 "-Xmx" + newmem + "m", "-Xss" + newstack + "k", "-Djava.library.path=" + NativeCode.getLibraryPath(), "-Ddebug=" + debug, "-cp", classPath, WorkerEngine.class.getName(), Version.buildDate(), "" + Version.buildNumber()
+                };
+                sub = Runtime.getRuntime().exec(cmdline);
                 latest_sub = sub;
             } else {
                 sub = latest_sub;
@@ -403,20 +408,7 @@ public final class WorkerEngine {
         System.setErr(new PrintStream(wrap((OutputStream) null)));
         final FileInputStream in = new FileInputStream(FileDescriptor.in);
         final FileOutputStream out = new FileOutputStream(FileDescriptor.out);
-        // Preload these 3 libraries; on MS Windows with JDK 1.6 this seems to
-        // prevent freezes
-        try {
-            System.loadLibrary("minisat");
-        } catch (Throwable ex) {
-        }
-        try {
-            System.loadLibrary("minisatprover");
-        } catch (Throwable ex) {
-        }
-        try {
-            System.loadLibrary("zchaff");
-        } catch (Throwable ex) {
-        }
+
         // Now we repeat the following read-then-execute loop
         Thread t = null;
         while (true) {
