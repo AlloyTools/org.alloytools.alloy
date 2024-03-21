@@ -22,7 +22,6 @@ import java.util.function.Predicate;
 
 import org.alloytools.alloy.dto.SolutionDTO;
 import org.alloytools.alloy.infrastructure.api.AlloyMain;
-import org.alloytools.util.table.Table;
 
 import aQute.lib.env.Env;
 import aQute.lib.getopt.Arguments;
@@ -32,6 +31,7 @@ import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.glob.Glob;
 import edu.mit.csail.sdg.ast.Command;
+import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.translator.A4Options;
@@ -50,7 +50,7 @@ public class CLI extends Env {
 	final A4Options options = new A4Options();
 
 	public enum OutputType {
-		none, plain, json, xml;
+		none, text, table, json, xml;
 	}
 
 	InputStream stdin = new FilterInputStream(System.in) {
@@ -211,7 +211,7 @@ public class CLI extends Env {
 			}
 
 		} else {
-			generate(world, answers, options.type(OutputType.plain), out);
+			generate(world, answers, options.type(OutputType.table), out);
 
 			if (options.evaluator() && !answers.isEmpty()) {
 				evaluator(world, answers);
@@ -253,7 +253,7 @@ public class CLI extends Env {
 		CompModule world = CompUtil.parseEverything_fromFile(rep, cache, filename);
 		int n = 0;
 		for (Command c : world.getAllCommands()) {
-			stdout.printf("%-2d. %s%n",n++,c);
+			stdout.printf("%-2d. %s%n", n++, c);
 		}
 	}
 
@@ -280,21 +280,35 @@ public class CLI extends Env {
 			case none:
 				return;
 
-			case plain:
-
-				Table overall = new Table(s.size() * 2, 1, 0);
-				int n = 0;
-				for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
-					Table info = new Table(2, 2, 0);
-					info.set(0, 0, "Command");
-					info.set(0, 1, e.getKey().command);
-					info.set(1, 0, "Duration in ms");
-					info.set(1, 1, e.getKey().durationInMs);
-					overall.set(n, 0, info);
-					overall.set(n + 1, 0, e.getValue().toTable());
-					n += 2;
+			case text:
+				try (PrintWriter pw = new PrintWriter(out)) {
+					for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
+						A4Solution solution = e.getValue();
+						CommandInfo cmdinfo = e.getKey();
+						pw.println(cmdinfo);
+						pw.println(solution.toString());
+					}
 				}
-				IO.store(overall, out);
+				return;
+
+			case table:
+				try (PrintWriter pw = new PrintWriter(out)) {
+					for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
+						A4Solution solution = e.getValue();
+						CommandInfo cmdinfo = e.getKey();
+						
+						pw.println("---");
+						pw.printf("%-40s%s%n", "Command", cmdinfo.command);
+						pw.printf("%-40s%s%n", "Duration (ms)", cmdinfo.durationInMs);
+						pw.printf("%-40s%s%n", "Sequence", cmdinfo.sequence);
+						for ( ExprVar expr : solution.getAllSkolems()) {
+							Object eval = solution.eval(expr);
+							pw.printf("%-40s%s%n", expr.label, eval);
+							
+						}
+						pw.println(e.getValue().toTable());
+					}
+				}
 				break;
 
 			case json:

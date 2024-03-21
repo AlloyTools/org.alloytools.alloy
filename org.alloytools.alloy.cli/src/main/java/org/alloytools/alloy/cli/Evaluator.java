@@ -266,6 +266,7 @@ public class Evaluator extends Env {
 
 	private void println(Expr e) {
 		pw.println(toString(e));
+		pw.flush();
 	}
 
 }
