@@ -78,7 +78,7 @@ public class CLI extends Env {
 		@Description("The command to run. If no command is specified, the default command will run. The command may specify wildcards to run multiple commands. If the command is an integer, it will run the command with that index.")
 		String command();
 
-		@Description("Specify the output type: plain, json, xml, or none")
+		@Description("Specify the output type: none, text, table, json, xml")
 		OutputType type(OutputType deflt);
 
 		@Description("Specify where the output should go. Default is the console")
@@ -306,7 +306,7 @@ public class CLI extends Env {
 							pw.printf("%-40s%s%n", expr.label, eval);
 							
 						}
-						pw.println(e.getValue().toTable());
+						pw.println(solution.toTable());
 					}
 				}
 				break;
