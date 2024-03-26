@@ -400,7 +400,7 @@ public final class SimpleReporter extends A4Reporter {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (Sig s : sigs)
-            if (!s.builtin) {
+            if (!s.builtin && s.isSubset == null) {
                 if (!first)
                     sb.append(", ");
                 else
@@ -409,6 +409,8 @@ public final class SimpleReporter extends A4Reporter {
                     sb.append("exactly " + scopes.get(s) + " " + s.label.replace("this/", ""));
                 else if (scopes.keySet().contains(s))
                     sb.append(scopes.get(s) + " " + s.label.replace("this/", ""));
+                else
+                    sb.append(s.label.replace("this/", "") + "????");
             }
         cb("scopes", "Actual scopes: " + sb.toString() + "\n");
     }
