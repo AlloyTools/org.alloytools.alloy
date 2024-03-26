@@ -124,7 +124,7 @@ public final class StaticGraphMaker {
     private StaticGraphMaker(Graph graph, AlloyInstance originalInstance, VizState view, AlloyProjection proj) throws ErrorFatal {
         final boolean hidePrivate = view.hidePrivate();
         final boolean hideMeta = view.hideMeta();
-        final Map<AlloyRelation,Color> magicColor = new TreeMap<AlloyRelation,Color>();
+        final Map<AlloyElement,Color> magicColor = new TreeMap<AlloyElement,Color>();
         final Map<AlloyRelation,Integer> rels = new TreeMap<AlloyRelation,Integer>();
         this.graph = graph;
         this.view = view;
@@ -154,16 +154,25 @@ public final class StaticGraphMaker {
             if (count > 0)
                 ci = (ci + 1) % (colors.size());
         }
+        ci = 0;
+        for (AlloyType rel : model.getTypes()) {
+            DotColor c = view.nodeColor.resolve(rel);
+            Color cc = (c == DotColor.MAGIC) ? colors.get(ci) : c.getColor(view.getEdgePalette());
+            magicColor.put(rel, cc);
+            if (!(hidePrivate && rel.isPrivate) && view.nodeVisible.resolve(rel) && instance.type2atoms(rel).size() > 0)
+                ci = (ci + 1) % (colors.size());
+        }
+
         for (AlloyAtom atom : instance.getAllAtoms()) {
             List<AlloySet> sets = instance.atom2sets(atom);
             if (sets.size() > 0) {
                 for (AlloySet s : sets)
                     if (view.nodeVisible.resolve(s) && !view.hideUnconnected.resolve(s)) {
-                        createNode(hidePrivate, hideMeta, atom);
+                        createNode(hidePrivate, hideMeta, atom, magicColor.get(atom.getType()));
                         break;
                     }
             } else if (view.nodeVisible.resolve(atom.getType()) && !view.hideUnconnected.resolve(atom.getType())) {
-                createNode(hidePrivate, hideMeta, atom);
+                createNode(hidePrivate, hideMeta, atom, magicColor.get(atom.getType()));
             }
         }
         for (AlloyRelation rel : model.getRelations())
@@ -194,7 +203,7 @@ public final class StaticGraphMaker {
      *
      * @return null if the atom is explicitly marked as "Don't Show".
      */
-    private GraphNode createNode(final boolean hidePrivate, final boolean hideMeta, final AlloyAtom atom) {
+    private GraphNode createNode(final boolean hidePrivate, final boolean hideMeta, final AlloyAtom atom, Color magicColor) {
         GraphNode node = atom2node.get(atom);
         if (node != null)
             return node;
@@ -249,8 +258,8 @@ public final class StaticGraphMaker {
             return false;
         if ((hidePrivate && tuple.getEnd().getType().isPrivate) || (hideMeta && tuple.getEnd().getType().isMeta) || !view.nodeVisible(tuple.getEnd(), instance))
             return false;
-        GraphNode start = createNode(hidePrivate, hideMeta, tuple.getStart());
-        GraphNode end = createNode(hidePrivate, hideMeta, tuple.getEnd());
+        GraphNode start = createNode(hidePrivate, hideMeta, tuple.getStart(), null);
+        GraphNode end = createNode(hidePrivate, hideMeta, tuple.getEnd(), null);
         if (start == null || end == null)
             return false;
         boolean layoutBack = view.layoutBack.resolve(rel);
