@@ -54,6 +54,8 @@ public final class AlloyModel {
      */
     private final Set<AlloyRelation>       relations;
 
+    private final Set<AlloyElement>       nonempty;
+
     /**
      * If A extends B, then "(A,B)" will be in this map.
      * <p>
@@ -102,7 +104,7 @@ public final class AlloyModel {
      *            relevant to this model. (If we detect a cycle, we will arbitrarily
      *            break the cycle)
      */
-    public AlloyModel(Collection<AlloyType> types, Collection<AlloySet> sets, Collection<AlloyRelation> rels, Map<AlloyType,AlloyType> map) {
+    public AlloyModel(Collection<AlloyType> types, Collection<AlloySet> sets, Collection<AlloyRelation> rels, Set<AlloyElement> nonempty, Map<AlloyType,AlloyType> map) {
         // The following 3 have to be tree sets, since we want to keep them
         // sorted
         Set<AlloyType> allTypes = new TreeSet<AlloyType>();
@@ -119,6 +121,7 @@ public final class AlloyModel {
         this.types = Collections.unmodifiableSet(allTypes);
         this.sets = Collections.unmodifiableSet(allSets);
         this.relations = Collections.unmodifiableSet(allRelations);
+        this.nonempty = Collections.unmodifiableSet(nonempty);
         Map<AlloyType,AlloyType> newmap = new LinkedHashMap<AlloyType,AlloyType>();
         for (AlloyType type : allTypes) {
             AlloyType sup = isCycle(map, type) ? null : map.get(type);
@@ -144,7 +147,7 @@ public final class AlloyModel {
      *            mappings relevant to this model.
      */
     public AlloyModel(Collection<AlloyType> types, Collection<AlloySet> sets, Collection<AlloyRelation> rels, AlloyModel old) {
-        this(types, sets, rels, old.hierarchy);
+        this(types, sets, rels, old.nonempty, old.hierarchy);
     }
 
     /**
@@ -338,5 +341,9 @@ public final class AlloyModel {
      */
     public Set<AlloyRelation> getRelations() {
         return relations;
+    }
+
+    public Set<AlloyElement> getNonEmpty() {
+        return nonempty;
     }
 }

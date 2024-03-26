@@ -151,10 +151,20 @@ public final class StaticGraphMaker {
             int count = ((hidePrivate && rel.isPrivate) || !view.edgeVisible.resolve(rel)) ? 0 : edgesAsArcs(hidePrivate, hideMeta, rel, colors.get(ci));
             rels.put(rel, count);
             magicColor.put(rel, cc);
-            if (count > 0)
+            if (model.getNonEmpty().contains(rel))
                 ci = (ci + 1) % (colors.size());
         }
         ci = 0;
+        if (view.getNodePalette() == DotPalette.CLASSIC)
+            colors = colorsClassic;
+        else if (view.getNodePalette() == DotPalette.STANDARD)
+            colors = colorsStandard;
+        else if (view.getNodePalette() == DotPalette.MARTHA)
+            colors = colorsMartha;
+        else if (view.getNodePalette() == DotPalette.BRIGHT)
+            colors = colorsColorBlind;
+        else
+            colors = colorsNeon;
         for (AlloyType rel : model.getTypes()) {
             DotColor c = view.nodeColor.resolve(rel);
             Color cc = (c == DotColor.MAGIC) ? colors.get(ci) : c.getColor(view.getEdgePalette());
@@ -205,8 +215,12 @@ public final class StaticGraphMaker {
      */
     private GraphNode createNode(final boolean hidePrivate, final boolean hideMeta, final AlloyAtom atom, Color magicColor) {
         GraphNode node = atom2node.get(atom);
-        if (node != null)
+        if (node != null) {
+            DotColor color = view.nodeColor(atom, instance);
+            if (color == DotColor.MAGIC && magicColor != null)
+                node.set(magicColor);
             return node;
+        }
         if ((hidePrivate && atom.getType().isPrivate) || (hideMeta && atom.getType().isMeta) || !view.nodeVisible(atom, instance))
             return null;
         for (AlloySet set : instance.atom2sets(atom))
@@ -217,7 +231,13 @@ public final class StaticGraphMaker {
         DotStyle style = view.nodeStyle(atom, instance);
         DotShape shape = view.shape(atom, instance);
         String label = atomname(atom, false);
-        node = new GraphNode(graph, atom, label).set(shape).set(color.getColor(view.getNodePalette())).set(style);
+
+        node = new GraphNode(graph, atom, label).set(shape).set(style);
+        if (color == DotColor.MAGIC && magicColor != null)
+            node.set(magicColor);
+        else
+            node.set(color.getColor(view.getNodePalette()));
+
         // Get the label based on the sets and relations
         String setsLabel = "";
         boolean showLabelByDefault = view.showAsLabel.get(null);
