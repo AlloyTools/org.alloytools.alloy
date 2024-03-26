@@ -1930,9 +1930,9 @@ public final class VizGUI implements ComponentListener {
         if (!myStates.isEmpty()) {
             // [electrum] apply theme to all states
             for (int i = 1; i < myStates.size(); i++) {
-                VizState ss = myStates.get(0);
-                myStates.set(i, new VizState(ss));
-                myStates.get(i).loadInstance(ss.getOriginalInstance());
+                VizState old = myStates.get(1);
+                myStates.set(i, new VizState(myStates.get(0)));
+                myStates.get(i).loadInstance(old.getOriginalInstance());
             }
         }
         if (!wrap)
