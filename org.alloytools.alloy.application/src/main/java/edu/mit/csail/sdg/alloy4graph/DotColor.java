@@ -34,26 +34,29 @@ import edu.mit.csail.sdg.alloy4.OurUtil;
 public enum DotColor {
 
                       MAGIC("Magic", "magic"),
-                      YELLOW("Yellow", "gold", "yellow", "lightgoldenrod", "yellow"),
+                      YELLOW("Yellow", "gold", "yellow", "lightgoldenrod", "yellow", "bright_yellow"),
                       GREEN(
                             "Green",
                             "limegreen",
                             "green2",
                             "darkolivegreen2",
-                            "chartreuse2"),
+                            "chartreuse2",
+                            "bright_green"),
                       BLUE(
                            "Blue",
                            "cornflowerblue",
                            "blue",
                            "cadetblue",
-                           "cyan"),
+                           "cyan",
+                           "bright_blue"),
                       RED(
                           "Red",
                           "palevioletred",
                           "red",
                           "salmon",
-                          "magenta"),
-                      GRAY("Gray", "lightgray"),
+                          "magenta",
+                          "bright_red"),
+                      GRAY("Gray", "lightgray", "lightgray", "lightgray", "lightgray", "bright_gray"),
                       WHITE("White", "white"),
                       BLACK("Black", "black");
 
@@ -128,6 +131,8 @@ public enum DotColor {
             ans = new Color(222, 113, 148);
         else if (name.equals("red"))
             ans = new Color(255, 0, 0);
+        else if (name.equals("bright_red"))
+            ans = new Color(238, 102, 119);
         else if (name.equals("salmon"))
             ans = new Color(255, 130, 115);
         else if (name.equals("magenta"))
@@ -136,6 +141,8 @@ public enum DotColor {
             ans = new Color(49, 207, 49);
         else if (name.equals("green2"))
             ans = new Color(0, 239, 0);
+        else if (name.equals("bright_green"))
+            ans = new Color(34, 136, 51);
         else if (name.equals("darkolivegreen2"))
             ans = new Color(189, 239, 107);
         else if (name.equals("chartreuse2"))
@@ -144,18 +151,24 @@ public enum DotColor {
             ans = new Color(255, 215, 0);
         else if (name.equals("yellow"))
             ans = new Color(255, 255, 0);
+        else if (name.equals("bright_yellow"))
+            ans = new Color(204, 187, 68);
         else if (name.equals("lightgoldenrod"))
             ans = new Color(239, 223, 132);
         else if (name.equals("cornflowerblue"))
             ans = new Color(99, 150, 239);
         else if (name.equals("blue"))
             ans = new Color(0, 0, 255);
+        else if (name.equals("bright_blue"))
+            ans = new Color(68, 119, 170);
         else if (name.equals("cadetblue"))
             ans = new Color(90, 158, 165);
         else if (name.equals("cyan"))
             ans = new Color(0, 255, 255);
         else if (name.equals("lightgray"))
             ans = new Color(214, 214, 214);
+        else if (name.equals("bright_gray"))
+            ans = new Color(187, 187, 187);
         else if (name.equals("white"))
             ans = Color.WHITE;
         else
