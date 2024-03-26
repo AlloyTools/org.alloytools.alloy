@@ -406,11 +406,11 @@ public final class SimpleReporter extends A4Reporter {
                 else
                     first = false;
                 if (exacts.contains(s))
-                    sb.append(s.label.replace("this/", "") + "==" + scopes.get(s));
+                    sb.append("exactly " + scopes.get(s) + " " + s.label.replace("this/", ""));
                 else if (scopes.keySet().contains(s))
-                    sb.append(s.label.replace("this/", "") + "<=" + scopes.get(s));
+                    sb.append(scopes.get(s) + " " + s.label.replace("this/", ""));
             }
-        cb("scopes", "Scopes: " + sb.toString() + "\n");
+        cb("scopes", "Actual scopes: " + sb.toString() + "\n");
     }
 
 

@@ -1993,7 +1993,7 @@ public final class A4Solution {
         if (!satisfiable())
             return new Table(0, 0, 0);
 
-        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, state);
+        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, skolems, state);
 
         Table result = new Table(table.size() + 1, 2, 1);
         result.set(0, 0, "sig");
