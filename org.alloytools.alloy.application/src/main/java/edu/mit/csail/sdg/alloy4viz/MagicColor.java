@@ -91,8 +91,8 @@ final class MagicColor {
         }
         int index = 0;
         for (final AlloyType t : uniqueColourTypes) {
-            vizState.nodeColor.put(t, (DotColor) DotColor.valuesWithout(DotColor.MAGIC)[index]);
-            index = (index + 1) % DotColor.valuesWithout(DotColor.MAGIC).length;
+            vizState.nodeColor.put(t, DotColor.values()[index]);
+            index = (index + 1) % DotColor.values().length;
         }
     }
 
