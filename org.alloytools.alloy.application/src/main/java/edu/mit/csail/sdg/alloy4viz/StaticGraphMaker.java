@@ -114,6 +114,9 @@ public final class StaticGraphMaker {
     /** The list of colors, in order, to assign each legend. */
     private static final List<Color> colorsNeon     = Util.asList(new Color(231, 41, 138), new Color(217, 95, 2), new Color(166, 118, 29), new Color(102, 166, 30), new Color(27, 158, 119), new Color(117, 112, 179));
 
+    /** The list of colors, in order, to assign each legend. */
+    private static final List<Color> colorsColorBlind = Util.asList(new Color(68, 119, 170), new Color(102, 204, 238), new Color(34, 136, 51), new Color(204, 187, 68), new Color(238, 102, 119), new Color(170, 51, 119), new Color(187, 187, 187));
+
     /**
      * The constructor takes an Instance and a View, then insert the generate
      * graph(s) into a blank cartoon.
@@ -137,6 +140,8 @@ public final class StaticGraphMaker {
             colors = colorsStandard;
         else if (view.getEdgePalette() == DotPalette.MARTHA)
             colors = colorsMartha;
+        else if (view.getEdgePalette() == DotPalette.BRIGHT)
+            colors = colorsColorBlind;
         else
             colors = colorsNeon;
         int ci = 0;
