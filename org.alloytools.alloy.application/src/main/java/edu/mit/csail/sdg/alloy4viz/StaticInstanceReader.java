@@ -91,6 +91,8 @@ public final class StaticInstanceReader {
      */
     private final Map<AlloyRelation,Set<AlloyTuple>> rels        = new LinkedHashMap<AlloyRelation,Set<AlloyTuple>>();
 
+    private final Set<AlloyElement> nonempty_rels        = new LinkedHashSet<AlloyElement>();
+
     /**
      * For each sig A and B, if A extends B, and B is not univ, then (A,B) will be
      * in this map.
@@ -266,6 +268,11 @@ public final class StaticInstanceReader {
                 for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(t), state))) {
                     atom2sets.get(string2atom.get(tp.atom(0))).add(set);
                 }
+                for (int i = 0; i < sol.getTraceLength(); i++)
+                    if (((A4TupleSet) (sol.eval(expr.intersect(t), i))).size() > 0) {
+                        nonempty_rels.add(set);
+                        break;
+                    }
             } else {
                 Expr mask = null;
                 List<AlloyType> types = new ArrayList<AlloyType>(ps.size());
@@ -288,6 +295,12 @@ public final class StaticInstanceReader {
                     ts.add(new AlloyTuple(atoms));
                 }
                 rels.put(rel, ts);
+                for (int i = 0; i < sol.getTraceLength(); i++)
+                    if (((A4TupleSet) (sol.eval(expr.intersect(mask), i))).size() > 0) {
+                        nonempty_rels.add(rel);
+                        break;
+                    }
+
             }
         }
     }
@@ -412,7 +425,7 @@ public final class StaticInstanceReader {
                 rels.put(AlloyRelation.EXTENDS, exts);
             }
         }
-        AlloyModel am = new AlloyModel(sig2type.values(), sets, rels.keySet(), ts);
+        AlloyModel am = new AlloyModel(sig2type.values(), sets, rels.keySet(), nonempty_rels, ts);
         ans = new AlloyInstance(sol, sol.getOriginalFilename(), sol.getOriginalCommand(), am, atom2sets, rels, isMeta);
     }
 
