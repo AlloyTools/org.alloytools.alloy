@@ -1551,6 +1551,29 @@ public final class VizGUI implements ComponentListener {
         return null;
     }
 
+    private Expr tupleToExpr(A4TupleSet ts, Map<String, ExprVar> reifs) {
+        Expr tupleset = null;
+        for (A4Tuple t : ts) {
+            Expr tuple = null;
+            for (int ai = 0; ai < t.arity(); ai++) {
+                Expr atom;
+                if (t.atom(ai).matches("-?\\d+")) {
+                    atom = ExprConstant.makeNUMBER(Integer.valueOf(t.atom(ai)));
+                } else {
+                    atom = reifs.computeIfAbsent("_" + t.atom(ai).replace("$", "").replace("/", "_"), k -> ExprVar.make(null, k));
+                }
+                tuple = tuple == null ? atom : tuple.product(atom);
+            }
+            tupleset = tupleset == null ? tuple : tupleset.plus(tuple);
+        }
+        if (tupleset == null) {
+            tupleset = ExprConstant.EMPTYNESS;
+            for (int ai = 0; ai < ts.arity() - 1; ai++)
+                tupleset = tupleset.product(ExprConstant.EMPTYNESS);
+        }
+        return tupleset;
+    }
+
     /**
      * Export the current instance as an Alloy formula that exactly represents it.
      */
@@ -1566,63 +1589,43 @@ public final class VizGUI implements ComponentListener {
         A4Solution inst = myStates.get(myStates.size() - 1).getOriginalInstance().originalA4;
 
         // calculate the values of the static relations
-        StringJoiner config = new StringJoiner(" and ");
+        StringJoiner config = new StringJoiner("\n  ");
+        config.add("// configuration");
         for (Sig s : inst.getAllReachableSigs()) {
-            if (s.isPrivate != null || s.isVariable != null || s.equals(Sig.UNIV) || s.equals(Sig.NONE))
-                continue;
-            A4TupleSet ts = inst.eval(s);
-            Expr tupleset = null;
-            for (A4Tuple t : ts) {
-                Expr tuple = null;
-                for (int ai = 0; ai < t.arity(); ai++) {
-                    Expr atom;
-                    if (t.atom(ai).matches("-?\\d+")) {
-                        atom = ExprConstant.makeNUMBER(Integer.valueOf(t.atom(ai)));
-                    } else {
-                        atom = reifs.computeIfAbsent("_" + t.atom(ai).replace("$", "").replace("/", "_"), k -> ExprVar.make(null, k));
-                    }
-                    tuple = tuple == null ? atom : tuple.product(tuple);
-                }
-                tupleset = tupleset == null ? tuple : tupleset.plus(tuple);
+            if (!(s.isPrivate != null || s.isVariable != null || s.equals(Sig.UNIV) || s.equals(Sig.NONE))) {
+                A4TupleSet ts = inst.eval(s);
+                config.add(s.equal(tupleToExpr(ts, reifs)).toString());
             }
-            if (tupleset == null) {
-                tupleset = ExprConstant.EMPTYNESS;
-                for (int ai = 0; ai < ts.arity() - 1; ai++)
-                    tupleset = tupleset.product(ExprConstant.EMPTYNESS);
+            for (Sig.Field f : s.getFields()) {
+                if (f.isPrivate != null || f.isVariable != null)
+                    continue;
+                A4TupleSet ts = inst.eval(f);
+                config.add(f.equal(tupleToExpr(ts,reifs)).toString());
             }
-            config.add(s.equal(tupleset).toString());
         }
 
         // calculate the values of the variable relations
         List<String> states = new ArrayList<String>();
-        for (int i = 0; i < inst.getTraceLength(); i++) {
-            StringJoiner state = new StringJoiner(" and ");
-            for (Sig s : inst.getAllReachableSigs()) {
-                if (s.isPrivate != null || (s.isVariable == null && !s.equals(Sig.UNIV)))
-                    continue;
-                A4TupleSet ts = inst.eval(s, i);
-                Expr tupleset = null;
-                for (A4Tuple t : ts) {
-                    Expr tuple = null;
-                    for (int ai = 0; ai < t.arity(); ai++) {
-                        Expr atom;
-                        if (t.atom(ai).matches("-?\\d+")) {
-                            atom = ExprConstant.makeNUMBER(Integer.valueOf(t.atom(ai)));
-                        } else {
-                            atom = reifs.computeIfAbsent("_" + t.atom(ai).replace("$", "").replace("/", "_"), k -> ExprVar.make(null, k));
-                        }
-                        tuple = tuple == null ? atom : tuple.product(tuple);
+        if (inst.getMaxTrace() > 0) {
+            for (int i = 0; i < inst.getTraceLength(); i++) {
+                StringJoiner state = new StringJoiner("\n  ");
+                for (Sig s : inst.getAllReachableSigs()) {
+                    if (!(s.isPrivate != null || (s.isVariable == null && !s.equals(Sig.UNIV)))) {
+                        A4TupleSet ts = inst.eval(s, i);
+                        state.add(s.equal(tupleToExpr(ts, reifs)).toString());
                     }
-                    tupleset = tupleset == null ? tuple : tupleset.plus(tuple);
+                    for (Sig.Field f : s.getFields()) {
+                        if (f.isPrivate != null || f.isVariable == null)
+                            continue;
+                        A4TupleSet ts = inst.eval(f, i);
+                        state.add(f.equal(tupleToExpr(ts, reifs)).toString());
+                    }
                 }
-                if (tupleset == null) {
-                    tupleset = ExprConstant.EMPTYNESS;
-                    for (int ai = 0; ai < ts.arity() - 1; ai++)
-                        tupleset = tupleset.product(ExprConstant.EMPTYNESS);
-                }
-                state.add(s.equal(tupleset).toString());
+                states.add("{\n  // state " + i + "\n  " + state.toString() + "\n  }");
             }
-            states.add(state.toString());
+        } else {
+            A4TupleSet ts = inst.eval(Sig.UNIV);
+            config.add(Sig.UNIV.equal(tupleToExpr(ts, reifs)).toString());
         }
         StringBuilder sb = new StringBuilder();
         if (!reifs.isEmpty()) {
@@ -1647,12 +1650,13 @@ public final class VizGUI implements ComponentListener {
         for (String s : states)
             statesj.add(s);
         sb.append(statesj.toString());
-        sb.append("\n\n  ");
+        sb.append("\n\n");
         // print looping suffix
         if (inst.getMaxTrace() >= 0) {
+            sb.append("  // enforce loop\n  ");
             for (int i = 0; i < inst.getLoopState(); i++)
                 sb.append("after ");
-            sb.append(" {\n");
+            sb.append("always {\n");
             for (int i = inst.getLoopState(); i < inst.getTraceLength(); i++) {
                 StringBuilder sa = new StringBuilder("");
                 for (int j = inst.getLoopState(); j < inst.getTraceLength(); j++)
@@ -1660,13 +1664,12 @@ public final class VizGUI implements ComponentListener {
                 sa.append("(");
                 sa.append(states.get(i));
                 sa.append(")");
-                sb.append("    (" + states.get(i) + ") implies " + sa.toString() + "\n");
+                sb.append("  (" + states.get(i) + ") implies " + sa.toString() + "\n");
             }
             sb.append("  }\n");
         }
         sb.append("}\n");
-
-        OurDialog.showtext("Text Viewer", sb.toString());
+        OurDialog.showtext("Instance as predicate", sb.toString());
         return null;
     }
 
