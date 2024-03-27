@@ -66,7 +66,7 @@ public final class StaticInstanceReader {
     private final LinkedHashMap<Sig,AlloyType>       sig2type    = new LinkedHashMap<Sig,AlloyType>();
 
     /**
-     * This maps each Sig to its corresponding unique VIsualizer AlloyAtom (if
+     * This maps each Sig to its corresponding unique Visualizer AlloyAtom (if
      * isMeta is true).
      */
     private final LinkedHashMap<Sig,AlloyAtom>       sig2atom    = new LinkedHashMap<Sig,AlloyAtom>();
@@ -91,7 +91,7 @@ public final class StaticInstanceReader {
      */
     private final Map<AlloyRelation,Set<AlloyTuple>> rels        = new LinkedHashMap<AlloyRelation,Set<AlloyTuple>>();
 
-    private final Set<AlloyElement> nonempty_rels        = new LinkedHashSet<AlloyElement>();
+    private final Set<AlloyElement> nonempty_elems = new LinkedHashSet<AlloyElement>();
 
     /**
      * For each sig A and B, if A extends B, and B is not univ, then (A,B) will be
@@ -241,6 +241,7 @@ public final class StaticInstanceReader {
                                                               // associated
                                                               // with the most
                                                               // specific sig
+
         for (A4Tuple z : ts) {
             String atom = z.atom(0);
             int i, dollar = atom.lastIndexOf('$');
@@ -254,6 +255,12 @@ public final class StaticInstanceReader {
             atom2sets.put(at, new LinkedHashSet<AlloySet>());
             string2atom.put(atom, at);
         }
+
+        for (int i = 0; i < sol.getTraceLength(); i++)
+            if (((A4TupleSet) (sol.eval(s.minus(sum), i))).size() > 0) {
+                nonempty_elems.add(sig(s));
+                break;
+            }
     }
 
     /**
@@ -270,7 +277,7 @@ public final class StaticInstanceReader {
                 }
                 for (int i = 0; i < sol.getTraceLength(); i++)
                     if (((A4TupleSet) (sol.eval(expr.intersect(t), i))).size() > 0) {
-                        nonempty_rels.add(set);
+                        nonempty_elems.add(set);
                         break;
                     }
             } else {
@@ -297,7 +304,7 @@ public final class StaticInstanceReader {
                 rels.put(rel, ts);
                 for (int i = 0; i < sol.getTraceLength(); i++)
                     if (((A4TupleSet) (sol.eval(expr.intersect(mask), i))).size() > 0) {
-                        nonempty_rels.add(rel);
+                        nonempty_elems.add(rel);
                         break;
                     }
 
@@ -425,7 +432,7 @@ public final class StaticInstanceReader {
                 rels.put(AlloyRelation.EXTENDS, exts);
             }
         }
-        AlloyModel am = new AlloyModel(sig2type.values(), sets, rels.keySet(), nonempty_rels, ts);
+        AlloyModel am = new AlloyModel(sig2type.values(), sets, rels.keySet(), nonempty_elems, ts);
         ans = new AlloyInstance(sol, sol.getOriginalFilename(), sol.getOriginalCommand(), am, atom2sets, rels, isMeta);
     }
 
