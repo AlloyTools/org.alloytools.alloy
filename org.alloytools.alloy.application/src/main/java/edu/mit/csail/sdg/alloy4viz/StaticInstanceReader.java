@@ -91,6 +91,9 @@ public final class StaticInstanceReader {
      */
     private final Map<AlloyRelation,Set<AlloyTuple>> rels        = new LinkedHashMap<AlloyRelation,Set<AlloyTuple>>();
 
+    /**
+     * This registers all elements that are not empty along the complete trace.
+     */
     private final Set<AlloyElement> nonempty_elems = new LinkedHashSet<AlloyElement>();
 
     /**
@@ -433,7 +436,9 @@ public final class StaticInstanceReader {
             }
         }
         AlloyModel am = new AlloyModel(sig2type.values(), sets, rels.keySet(), nonempty_elems, ts);
-        ans = new AlloyInstance(sol, sol.getOriginalFilename(), sol.getOriginalCommand(), am, atom2sets, rels, isMeta);
+        int tracelen = Integer.valueOf(inst.getAttribute("tracelength"));
+        int looplen = Integer.valueOf(inst.getAttribute("looplength"));
+        ans = new AlloyInstance(sol, sol.getOriginalFilename(), sol.getOriginalCommand(), am, atom2sets, rels, isMeta,tracelen,looplen);
     }
 
     /** Parse the file into an AlloyInstance if possible. */

@@ -277,8 +277,8 @@ public final class A4SolutionWriter {
         Util.encodeXML(out, originalFileName);
         out.print("\" tracelength=\"");
         out.print(tracelength);
-        out.print("\" backloop=\"");
-        out.print(backloop);
+        out.print("\" looplength=\"");
+        out.print((tracelength-backloop));
         if (sol == null)
             out.print("\" metamodel=\"yes");
         out.print("\">\n");
@@ -326,8 +326,17 @@ public final class A4SolutionWriter {
         try {
             Util.encodeXMLs(out, "<alloy builddate=\"", Version.buildDate(), "\">\n\n");
 
+            int unrolls = 0;
+            for (Func f : extraSkolems) {
+                if (f.count() == 0 && f.call().type().hasTuple()) {
+                    int dpt = f.getBody().pastDepth();
+                    if (dpt > 0)
+                        unrolls = Math.max(unrolls, dpt);
+                }
+            }
+
             // [electrum] write all instances of the trace
-            for (int i = 0; i < sol.getTraceLength(); i++)
+            for (int i = 0; i < sol.getTraceLength()+unrolls*(sol.getTraceLength()-sol.getLoopState()); i++)
                 new A4SolutionWriter(rep, sol, sol.getAllReachableSigs(), sol.getBitwidth(), sol.getMaxSeq(), sol.getMinTrace(), sol.getMaxTrace(), sol.getTraceLength(), sol.getLoopState(), sol.getOriginalCommand(), sol.getOriginalFilename(), out, extraSkolems, i);
             if (sources != null)
                 for (Map.Entry<String,String> e : sources.entrySet()) {

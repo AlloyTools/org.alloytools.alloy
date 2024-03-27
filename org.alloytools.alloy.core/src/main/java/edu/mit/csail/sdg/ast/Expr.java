@@ -32,6 +32,7 @@ import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.ast.ExprUnary.Op;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
+import edu.mit.csail.sdg.parser.Macro;
 
 /**
  * Immutable; represents a formula or expression.
@@ -403,6 +404,106 @@ public abstract class Expr extends Browsable {
     };
 
     /**
+     * A return visitor that determines whether the node (or a subnode) has any
+     * past temporal operator.
+     */
+    private static final VisitReturn<Integer> pastDepth = new VisitReturn<Integer>() {
+
+        @Override
+        public Integer visit(ExprUnary x) throws Err {
+            int d = x.sub.accept(this);
+            if (x.op == Op.BEFORE || x.op == Op.HISTORICALLY || x.op == Op.ONCE)
+                d++;
+            return d;
+        }
+
+        @Override
+        public Integer visit(ExprVar x) throws Err {
+            return 0;
+        }
+
+        @Override
+        public Integer visit(Sig x) throws Err {
+            return 0;
+        }
+
+        @Override
+        public Integer visit(Sig.Field x) throws Err {
+            return 0;
+        }
+
+        @Override
+        public Integer visit(Func x) throws Err {
+            return 0;
+        }
+
+        @Override
+        public Integer visit(Assert x) throws Err {
+            return 0;
+        }
+
+        @Override
+        public Integer visit(Macro macro) throws Err {
+            return 0;
+        }
+
+        @Override
+        public Integer visit(ExprBinary x) throws Err {
+            int d1 = x.left.accept(this);
+            int d2 = x.right.accept(this);
+            int d = d1 > d2 ? d1 : d2;
+            if (x.op == ExprBinary.Op.SINCE || x.op == ExprBinary.Op.TRIGGERED)
+                d++;
+            return d;
+        }
+
+        @Override
+        public Integer visit(ExprList x) throws Err {
+            int d = 0;
+            for (Expr e : x.args) {
+                int d1 = e.accept(this);
+                d = Math.max(d,d1);
+            }
+            return d;
+        }
+
+        @Override
+        public Integer visit(ExprCall x) throws Err {
+            return x.fun.getBody().accept(this);
+        }
+
+        @Override
+        public Integer visit(ExprConstant x) throws Err {
+            return 0;
+        }
+
+        @Override
+        public Integer visit(ExprITE x) throws Err {
+            int d1 = x.right.accept(this);
+            int d2 = x.right.accept(this);
+            int d3 = x.cond.accept(this);
+            return Math.max(Math.max(d1,d2),d3);
+        }
+
+        @Override
+        public Integer visit(ExprLet x) throws Err {
+            int d1 = x.sub.accept(this);
+            return d1;
+        }
+
+        @Override
+        public Integer visit(ExprQt x) throws Err {
+            int d = 0;
+            for (Decl e : x.decls) {
+                int d1 = e.expr.accept(this);
+                d = Math.max(d,d1);
+            }
+            int d1 = x.sub.accept(this);
+            return Math.max(d,d1);
+        }
+    };
+
+    /**
      * Returns true if the node is well-typed, unambiguous, and contains any
      * temporal operator.
      */
@@ -416,6 +517,23 @@ public abstract class Expr extends Browsable {
             }
         } // This exception should not occur
         return ans;
+    }
+
+    /**
+     * Returns true if the node is well-typed, unambiguous, and contains any
+     * past temporal operator.
+     */
+    public final int pastDepth() {
+        boolean ans = !ambiguous && errors.isEmpty();
+        int d = -1;
+        if (ans) {
+            try {
+                d = accept(pastDepth);
+            } catch (Err ex) {
+
+            }
+        } // This exception should not occur
+        return d;
     }
 
     /**

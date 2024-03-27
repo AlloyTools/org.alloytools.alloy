@@ -1508,7 +1508,7 @@ public final class A4Solution {
      */
     // [electrum] this is the method now called, iteratively, by the static reader;
     // it reads a state at a time, and the solution is built incrementally
-    A4Solution solve(final A4Reporter rep, A4Solution pre_sol, int loop) throws Err, IOException {
+    A4Solution solve(final A4Reporter rep, A4Solution pre_sol, int looplen) throws Err, IOException {
         // construct the instance from the current state
         Universe static_uni;
         if (pre_sol != null)
@@ -1531,8 +1531,10 @@ public final class A4Solution {
         }
         instances.add(inst);
 
-        if (loop >= instances.size())
-            loop = instances.size() - 1;
+        int loop = (instances.size()-looplen);
+        // loop may be invalid until trace is complete
+        if (loop < 0)
+            loop = instances.size()-1;
 
         // create temporal instance
         TemporalInstance prev = new TemporalInstance(instances, loop, 1);
