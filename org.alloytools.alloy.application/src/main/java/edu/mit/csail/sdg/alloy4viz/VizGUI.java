@@ -2079,8 +2079,9 @@ public final class VizGUI implements ComponentListener {
                 int offsety = 2 + heighti / 2;
                 // center and apply offset according to current state
                 int offsetx = this.getWidth() / 2 + ((dist - 2 * radius) / 2) - (dist * (current + 1));
-                int lst = getVizState().get(getVizState().size() - 1).getOriginalInstance().originalA4.getTraceLength();
-                int lop = getVizState().get(getVizState().size() - 1).getOriginalInstance().originalA4.getLoopState();
+                int lst = getVizState().get(getVizState().size() - 1).getOriginalInstance().tracelen;
+                int lol = getVizState().get(getVizState().size() - 1).getOriginalInstance().looplen;
+                int lop = (lst - lol);
                 int lmx = current + getVizState().size() > lst ? current + getVizState().size() : lst;
                 int lox = lmx - (lst - lop);
                 Ellipse2D loop = null, last = null;
