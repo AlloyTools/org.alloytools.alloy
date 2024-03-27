@@ -332,7 +332,7 @@ public final class VizCustomizationPanel extends JPanel {
             elt2 = ((AlloySet) elt).getType();
         else
             elt2 = null;
-        JComboBox color = new OurCombobox(true, DotColor.valuesWithout(DotColor.MAGIC), 100, 35, vizState.nodeColor.get(elt)) {
+        JComboBox color = new OurCombobox(true, DotColor.values(), 100, 35, vizState.nodeColor.get(elt)) {
 
             private static final long serialVersionUID = 0;
 
@@ -673,7 +673,7 @@ public final class VizCustomizationPanel extends JPanel {
      * "parent".
      */
     private void createDefaultNodeWidget(JPanel parent) {
-        JComboBox color = new OurCombobox(false, DotColor.valuesWithout(DotColor.MAGIC), 110, 35, vizState.nodeColor.get(null)) {
+        JComboBox color = new OurCombobox(false, DotColor.values(), 110, 35, vizState.nodeColor.get(null)) {
 
             private static final long serialVersionUID = 0;
 

@@ -118,7 +118,6 @@ import kodkod.instance.Tuple;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
-import kodkod.util.ints.IndexedEntry;
 
 /**
  * This class stores a SATISFIABLE or UNSATISFIABLE solution. It is also used as
@@ -1498,7 +1497,7 @@ public final class A4Solution {
      */
     // [electrum] this is the method now called, iteratively, by the static reader;
     // it reads a state at a time, and the solution is built incrementally
-    A4Solution solve(final A4Reporter rep, A4Solution pre_sol, int loop) throws Err, IOException {
+    A4Solution solve(final A4Reporter rep, A4Solution pre_sol, int looplen) throws Err, IOException {
         // construct the instance from the current state
         Universe static_uni;
         if (pre_sol != null)
@@ -1521,8 +1520,10 @@ public final class A4Solution {
         }
         instances.add(inst);
 
-        if (loop >= instances.size())
-            loop = instances.size() - 1;
+        int loop = (instances.size()-looplen);
+        // loop may be invalid until trace is complete
+        if (loop < 0)
+            loop = instances.size()-1;
 
         // create temporal instance
         TemporalInstance prev = new TemporalInstance(instances, loop, 1);
@@ -1605,6 +1606,12 @@ public final class A4Solution {
 
         fgoal = Formula.and(formulas);
 
+        PardinusBounds b;
+        if (solver.options().decomposed())
+            b = PardinusBounds.splitAtTemporal(bounds);
+        else
+            b = bounds;
+
         Solution sol;
         if (opt.solver instanceof KKTransformer) {
             sol = doKK(rep, opt);
@@ -1613,16 +1620,12 @@ public final class A4Solution {
         } else if (tryBookExamples && solver.solver instanceof AbstractKodkodSolver) {
             sol = tryBook(rep, cmd);
         } else if (!solver.options().solver().incremental()) {
-            sol = solver.solve(fgoal, bounds);
+            sol = solver.solve(fgoal, b);
         } else
             sol = null;
 
         if (sol == null) {
-            PardinusBounds b;
-            if (solver.options().decomposed())
-                b = PardinusBounds.splitAtTemporal(bounds);
-            else
-                b = bounds;
+
 
             try {
                 kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, b));
@@ -1634,6 +1637,8 @@ public final class A4Solution {
             } catch (InvalidUnboundedProblem e) {
                 Pos p = ((Expr) k2pos(e.node())).pos;
                 throw new ErrorAPI(p, "Invalid specification for complete backend.\n" + e.getMessage());
+            } catch (CapacityExceededException ex) {
+                throw TranslateAlloyToKodkod.rethrow(ex);
             }
             sol = kEnumerator.next();
         }
@@ -1756,30 +1761,11 @@ public final class A4Solution {
             return answer;
         Instance sol = eval.instance();
         StringBuilder sb = new StringBuilder();
-        sb.append("---INSTANCE---");
-        if (sol instanceof TemporalInstance) {
-            sb.append("\nloop=");
-            sb.append(getLoopState());
-            sb.append("\nend=");
-            sb.append(getTraceLength() - 1);
-        }
-        sb.append("\nintegers={");
-        boolean firstTuple = true;
-        for (IndexedEntry<TupleSet> e : sol.intTuples()) {
-            if (firstTuple)
-                firstTuple = false;
-            else
-                sb.append(", ");
-            // No need to print e.index() since we've ensured the Int atom's
-            // String representation is always equal to ""+e.index()
-            Object atom = e.value().iterator().next().atom(0);
-            sb.append(atom2name(atom));
-        }
-        sb.append("}\n");
         try {
             if (sol instanceof TemporalInstance && state < 0) {
+                sb.append("---Trace---\n");
                 for (int i = 0; i < getTraceLength(); i++) {
-                    sb.append("------State " + i + "-------\n");
+                    sb.append("------State " + i + (i == getLoopState() ? " (loop)" : "") + "-------\n");
                     for (Sig s : sigs) {
                         sb.append(s.label).append("=").append(eval(s, i)).append("\n");
                         for (Field f : s.getFields())
@@ -1791,6 +1777,13 @@ public final class A4Solution {
                 }
             } else {
                 state = Math.max(0, state);
+
+                int lln = getTraceLength() - getLoopState();
+                state = state > getLoopState() ? (((state - getLoopState()) % lln) + getLoopState()) : state;
+
+                if (!eval.options().temporal())
+                    sb.append("---Instance---\n");
+
                 for (Sig s : sigs) {
                     sb.append(s.label).append("=").append(eval(s, state)).append("\n");
                     for (Field f : s.getFields())
@@ -1980,15 +1973,15 @@ public final class A4Solution {
         if (eval == null)
             return "---OUTCOME---\nUnsatisfiable.\n";
 
-        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, state);
-        return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
+        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, skolems, state);
+        return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toList()));
     }
 
     public Table toTable(int state) {
         if (!satisfiable())
             return new Table(0, 0, 0);
 
-        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, state);
+        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, skolems, state);
 
         Table result = new Table(table.size() + 1, 2, 1);
         result.set(0, 0, "sig");

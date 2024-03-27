@@ -994,7 +994,6 @@ CompareExprA ::= CompareExprB:a NOTLT:o     ShiftExprA:b    {: RESULT=ExprBinary
 CompareExprA ::= CompareExprB:a NOTGT:o     ShiftExprA:b    {: RESULT=ExprBinary.Op.NOT_GT    .make(o, null, a, b);       :};
 CompareExprA ::= CompareExprB:a NOTLTE:o    ShiftExprA:b    {: RESULT=ExprBinary.Op.NOT_LTE   .make(o, null, a, b);       :};
 CompareExprA ::= CompareExprB:a NOTGTE:o    ShiftExprA:b    {: RESULT=ExprBinary.Op.NOT_GTE   .make(o, null, a, b);       :};
-CompareExprA ::= ALL:o  ShiftExprA                          {: if (1==1) throw new ErrorSyntax(o,"The \"all x\" construct is no longer supported. If you know the range of possible values of x, consider rewriting it as \"x == set_of_all_possible_values\"."); :};
 CompareExprA ::= NO:o   ShiftExprA:b                        {: RESULT=ExprUnary.Op.NO   .make(o, b);   :};
 CompareExprA ::= SOME:o ShiftExprA:b                        {: RESULT=ExprUnary.Op.SOME .make(o, b);   :};
 CompareExprA ::= LONE:o ShiftExprA:b                        {: RESULT=ExprUnary.Op.LONE .make(o, b);   :};
@@ -1015,7 +1014,6 @@ CompareExprB ::= CompareExprB:a NOTLT:o     ShiftExprB:b    {: RESULT=ExprBinary
 CompareExprB ::= CompareExprB:a NOTGT:o     ShiftExprB:b    {: RESULT=ExprBinary.Op.NOT_GT    .make(o, null, a, b);       :};
 CompareExprB ::= CompareExprB:a NOTLTE:o    ShiftExprB:b    {: RESULT=ExprBinary.Op.NOT_LTE   .make(o, null, a, b);       :};
 CompareExprB ::= CompareExprB:a NOTGTE:o    ShiftExprB:b    {: RESULT=ExprBinary.Op.NOT_GTE   .make(o, null, a, b);       :};
-CompareExprB ::= ALL:o  ShiftExprB                          {: if (1==1) throw new ErrorSyntax(o,"The \"all x\" construct is no longer supported. If you know the range of possible values of x, consider rewriting it as \"x == set_of_all_possible_values\"."); :};
 CompareExprB ::= NO:o   ShiftExprB:b                        {: RESULT=ExprUnary.Op.NO   .make(o, b);   :};
 CompareExprB ::= SOME:o ShiftExprB:b                        {: RESULT=ExprUnary.Op.SOME .make(o, b);   :};
 CompareExprB ::= LONE:o ShiftExprB:b                        {: RESULT=ExprUnary.Op.LONE .make(o, b);   :};

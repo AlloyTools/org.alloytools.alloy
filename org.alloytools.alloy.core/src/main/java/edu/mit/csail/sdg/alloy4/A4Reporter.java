@@ -15,6 +15,12 @@
 
 package edu.mit.csail.sdg.alloy4;
 
+import java.util.Map;
+import java.util.Set;
+
+import edu.mit.csail.sdg.ast.Sig;
+import edu.mit.csail.sdg.ast.Sig.PrimSig;
+
 /**
  * This class receives diagnostic, progress, and warning messages from Alloy4.
  * (This default implementation ignores all calls; you should subclass it to do
@@ -208,5 +214,10 @@ public class A4Reporter {
     public void write(Object expr) {
         if (parent != null)
             parent.write(expr);
+    }
+
+    public void actualScopes(Iterable<Sig> sigs, Map<PrimSig,Integer> sig2scope, Set<Sig> set) {
+        if (parent != null)
+            parent.write(sig2scope);
     }
 }
