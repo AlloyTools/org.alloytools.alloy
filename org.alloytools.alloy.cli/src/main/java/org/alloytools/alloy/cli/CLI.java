@@ -197,12 +197,12 @@ public class CLI extends Env {
 					if (opt.solver.isTransformer())
 						info.cnf = rep.output;
 					answers.put(info, s);
-					System.out.println("answers " + answers.size());
+					stdout.println("answers " + answers.size());
 				} while (repeat >= 0 && s.isIncremental() && (s = s.next()).satisfiable());
 			}
 		}
 		if (!options.quiet() && answers.isEmpty()) {
-			stdout.println("no commands found " + cmd);
+			stdout.println("no commands solved " + cmd);
 		}
 
 		if (opt.solver.isTransformer()) {
@@ -296,17 +296,27 @@ public class CLI extends Env {
 					for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
 						A4Solution solution = e.getValue();
 						CommandInfo cmdinfo = e.getKey();
-						
+
 						pw.println("---");
 						pw.printf("%-40s%s%n", "Command", cmdinfo.command);
 						pw.printf("%-40s%s%n", "Duration (ms)", cmdinfo.durationInMs);
 						pw.printf("%-40s%s%n", "Sequence", cmdinfo.sequence);
-						for ( ExprVar expr : solution.getAllSkolems()) {
-							Object eval = solution.eval(expr);
-							pw.printf("%-40s%s%n", expr.label, eval);
-							
+
+						int n = 0;
+						if (solution.satisfiable()) {
+							pw.printf("%-40s%d/%d%n", "Trace", solution.getTraceLength(), solution.getLoopState());
+							int max = solution.getTraceLength();
+							while (solution.satisfiable() && n < max) {
+								for (ExprVar expr : solution.getAllSkolems()) {
+									Object eval = solution.eval(expr);
+									pw.printf("%-40s%s%n", expr.label, eval);
+
+								}
+								pw.println(solution.toTable(n));
+								solution = solution.next();
+								n++;
+							}
 						}
-						pw.println(solution.toTable());
 					}
 				}
 				break;

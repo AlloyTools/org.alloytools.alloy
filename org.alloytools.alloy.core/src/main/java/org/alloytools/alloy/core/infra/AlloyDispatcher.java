@@ -54,12 +54,13 @@ import kodkod.solvers.api.NativeCode.Platform;
  * we know how the world looks like. This class uses the AlloyMain annotation to
  * find any class that can be called from the command line that was added to the
  * distribution jar.
+ * <p>
+ * DO NOT CREATE A LOGGER
  *
  */
 @Description("The Alloy dispatcher" )
 public class AlloyDispatcher extends Env {
 
-    final static Logger  logger = LoggerFactory.getLogger("alloy");
     static final Justif  justif = new Justif(60, 0, 10, 20, 30);
 
     PrintStream          out    = System.out;
@@ -554,7 +555,7 @@ public class AlloyDispatcher extends Env {
                 // can't happen
                 e.printStackTrace();
             } catch (Exception e) {
-                logger.error("failed to load extension {}, {}", f.getAbsolutePath(), e, e);
+                log.error("failed to load extension {}, {}", f.getAbsolutePath(), e, e);
             }
         }
     }

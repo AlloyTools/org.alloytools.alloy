@@ -1,6 +1,7 @@
 
 
 -buildpath: \
+    slf4j.api,\
 	aQute.libg,\
 	org.alloytools.alloy.core,\
 	org.alloytools.alloy.application,\

@@ -3,17 +3,20 @@ package org.alloytools.alloy.cli;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.lib.env.Env;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.ast.Command;
 
 class SimpleReporter extends A4Reporter {
+    static Logger logger = LoggerFactory.getLogger("alloy");
 	boolean db = true;
 
 	static void db(String msg) {
-		System.out.print(msg);
-		System.out.flush();
+		logger.info(msg);
 	}
 
 	Env cli;

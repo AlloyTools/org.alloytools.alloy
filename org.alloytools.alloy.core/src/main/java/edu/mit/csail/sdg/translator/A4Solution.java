@@ -1640,7 +1640,7 @@ public final class A4Solution {
 
         if (sol.getOutput().isPresent()) {
             rep.resultCNF(sol.getOutput().get().getAbsolutePath());
-            return null;
+            return this;
         }
 
         if (!solved[0])
@@ -2002,33 +2002,21 @@ public final class A4Solution {
         return result;
     }
 
-    public Table toTable() {
+    public List<Table> toTable() {
         if (!satisfiable())
-            return new Table(0, 0, 0);
+            return Collections.emptyList();
 
         if (!isIncremental()) {
-            return toTable(0);
+            return Collections.singletonList(toTable(0));
         }
 
-
-        Table result = new Table(getTraceLength() + 1, 3, 1);
-        result.set(0, 0, "loop");
-        result.set(0, 1, "state");
-        result.set(0, 2, "instance");
-
+        List<Table> result = new ArrayList<>();
         A4Solution s = this;
-        int r = 1;
 
         for (int i = 0; i < getTraceLength(); i++) {
             Table table = toTable(i);
-
-            if (getLoopState() == i) {
-                result.set(r, 0, true);
-            }
-            result.set(r, 1, i);
-            result.set(r, 2, table);
+            result.add(table);
             s = s.next();
-            r++;
         }
 
         return result;
