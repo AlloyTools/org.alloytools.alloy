@@ -371,7 +371,7 @@ public abstract class Sig extends Expr implements Clause {
     public abstract boolean isSameOrDescendentOf(Sig that);
 
     public boolean isEnumMember() {
-        if (this instanceof PrimSig) {
+        if (this instanceof PrimSig && ((PrimSig) this).parent != null) {
             PrimSig _this = (PrimSig) this;
             return _this.parent.isEnum != null;
         } else
