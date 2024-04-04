@@ -924,8 +924,8 @@ public final class A4Solution {
      * Returns an unmodifiable copy of the list of all skolems if the problem is
      * solved and is satisfiable; else returns an empty list.
      */
-    public Iterable<ExprVar> getAllSkolems() {
-        return skolems.dup();
+    public List<ExprVar> getAllSkolems() {
+        return skolems.toList();
     }
 
     /**

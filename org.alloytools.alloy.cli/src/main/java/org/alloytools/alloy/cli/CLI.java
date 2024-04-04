@@ -1,16 +1,14 @@
 package org.alloytools.alloy.cli;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,21 +17,26 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import org.alloytools.alloy.dto.SolutionDTO;
 import org.alloytools.alloy.infrastructure.api.AlloyMain;
+import org.alloytools.util.table.Table;
 
+import aQute.bnd.exceptions.Exceptions;
 import aQute.lib.env.Env;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
+import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
+import edu.mit.csail.sdg.alloy4.TableView;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
+import edu.mit.csail.sdg.sim.SimTupleset;
 import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.A4SolutionWriter;
@@ -81,7 +84,7 @@ public class CLI extends Env {
 		@Description("Specify the output type: none, text, table, json, xml")
 		OutputType type(OutputType deflt);
 
-		@Description("Specify where the output should go. Default is the console")
+		@Description("Specify where the output should go. Default is the console. If a name specified, this will become a directory with the different outputs ordered as separate file with meaningful command names.")
 		String output();
 
 		@Description("If set, the solution will include only those models in which no arithmetic overflows occur")
@@ -127,7 +130,8 @@ public class CLI extends Env {
 
 		Optional<SATFactory> solver = SATFactory.find(options.solver("sat4j"));
 		if (!solver.isPresent()) {
-			error("No such solver %s. Use the `solvers` command to see the available solvers", options.solver(null));
+			error("No such solver %s: %s", options.solver(null),
+					SATFactory.getSolvers().stream().map(sf -> sf.id()).collect(Collectors.joining(", ")));
 			return;
 		}
 		opt.solver = solver.get();
@@ -163,60 +167,86 @@ public class CLI extends Env {
 			run = c -> g.matches(c.label);
 		}
 
-		OutputStream out = output(options.output());
-		if (out == null) {
-			return;
-		}
-
+		File outdir = output(options.output(), getStem(file));
+		OutputTrace trace = new OutputTrace(options.quiet() ? null : stdout);
 		Map<CommandInfo, A4Solution> answers = new TreeMap<>();
+		int n = 0;
 		for (Command c : commands) {
 			if (!run.test(c)) {
 				trace("ignore command %s", c);
 				continue;
 			}
-
-			if (!options.quiet())
-				stdout.println("solving command " + c);
-
-			long start = System.nanoTime();
-			A4Solution s = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), c, opt);
-			long finish = System.nanoTime();
-			int repeat = options.repeat(-1);
+			int repeat = options.repeat(1);
 			if (repeat == 0) {
 				repeat = Integer.MAX_VALUE;
 			}
-			if (s.satisfiable()) {
-				int sequence = 0;
-				do {
-					repeat--;
-					System.out.println("repeat " + repeat);
-					CommandInfo info = new CommandInfo();
-					info.command = c;
-					info.sequence = sequence++;
-					info.durationInMs = TimeUnit.NANOSECONDS.toMillis(finish - start);
-					if (opt.solver.isTransformer())
-						info.cnf = rep.output;
-					answers.put(info, s);
-					stdout.println("answers " + answers.size());
-				} while (repeat >= 0 && s.isIncremental() && (s = s.next()).satisfiable());
-			}
-		}
-		if (!options.quiet() && answers.isEmpty()) {
-			stdout.println("no commands solved " + cmd);
-		}
+			int index = 0;
+			trace.format("%02d. %-5s %-20s %-60s ", n, c.check ? "check" : "run", c.label, c.scope);
+			String cname = toCName(c) + "-" + n;
 
-		if (opt.solver.isTransformer()) {
-			for (CommandInfo c : answers.keySet()) {
-				IO.copy(c.cnf, out);
-			}
+			try {
+				A4Solution solution = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(),
+						c, opt);
 
-		} else {
-			generate(world, answers, options.type(OutputType.table), out);
+				if (!solution.satisfiable()) {
+					if (rep.output != null) {
+						trace.format("  %s", cname + "." + ext(rep.output));
+						showTransformerFile(rep.output, outdir, cname);
+					} else {
+						trace.format("UNSAT");
+					}
+				} else {
+					int back = 0;
+					do {
+						trace.back(back).format("%-5d", index);
+						generate(world, solution, options.type(OutputType.table), outdir, cname);
+						index++;
+						back = 5;
+					} while (index < repeat && solution.isIncremental() && (solution = solution.next()).satisfiable());
 
-			if (options.evaluator() && !answers.isEmpty()) {
-				evaluator(world, answers);
+					if (options.evaluator() && !answers.isEmpty()) {
+						evaluator(world, answers);
+					}
+				}
+				n++;
+			} catch (Exception e) {
+				error("command %s could not be solved: %s", cname, Exceptions.unrollCause(e));
+				trace.format("!%s", Exceptions.unrollCause(e));
 			}
+			trace.format("%n");
 		}
+	}
+
+	private void showTransformerFile(File source, File outdir, String cname) throws IOException {
+		if (outdir == null)
+			IO.copy(source, stdout);
+		else {
+			File out = new File(outdir, cname + "." + ext(source));
+			IO.rename(source, out);
+		}
+		IO.delete(source);
+	}
+
+	private String ext(File file) {
+		String parts[] = Strings.extension(file.getName());
+		if (parts == null)
+			return ".unknown";
+		else
+			return parts[1];
+	}
+
+	private String toCName(Command c) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(c.label);
+		return sb.toString();
+	}
+
+	private String getStem(File file) {
+		String parts[] = Strings.extension(file.getName());
+		if (parts == null) {
+			return file.getName() + "-output";
+		} else
+			return parts[0];
 	}
 
 	private void evaluator(CompModule world, Map<CommandInfo, A4Solution> answers) throws Exception {
@@ -257,101 +287,90 @@ public class CLI extends Env {
 		}
 	}
 
-	private OutputStream output(String output) throws IOException {
+	private File output(String output, String stem) throws IOException {
 
-		if (output == null) {
-			return stdout;
-		}
-
-		File file = IO.getFile(output);
-		file.getParentFile().mkdirs();
-		if (!file.getParentFile().isDirectory()) {
-			error("Cannot create parent directory for %s", file);
+		if (output == null)
+			output = stem;
+		else if (output.equals("--")) {
 			return null;
 		}
-		return new FileOutputStream(file);
+
+		File dir = IO.getFile(output);
+		IO.delete(dir);
+		IO.mkdirs(dir);
+		if (!dir.isDirectory()) {
+			error("Cannot create parent directory for %s", dir);
+			return null;
+		}
+		return dir;
+
 	}
 
-	private void generate(CompModule world, Map<CommandInfo, A4Solution> s, OutputType type, OutputStream out)
+	private void generate(CompModule world, A4Solution solution, OutputType type, File outdir, String cname)
 			throws Exception {
-		try {
-			switch (type) {
-			default:
-			case none:
-				return;
+		switch (type) {
+		default:
+		case none:
+			return;
 
-			case text:
-				try (PrintWriter pw = new PrintWriter(out)) {
-					for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
-						A4Solution solution = e.getValue();
-						CommandInfo cmdinfo = e.getKey();
-						pw.println(cmdinfo);
-						pw.println(solution.toString());
-					}
-				}
-				return;
-
-			case table:
-				try (PrintWriter pw = new PrintWriter(out)) {
-					for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
-						A4Solution solution = e.getValue();
-						CommandInfo cmdinfo = e.getKey();
-
-						pw.println("---");
-						pw.printf("%-40s%s%n", "Command", cmdinfo.command);
-						pw.printf("%-40s%s%n", "Duration (ms)", cmdinfo.durationInMs);
-						pw.printf("%-40s%s%n", "Sequence", cmdinfo.sequence);
-
-						int n = 0;
-						if (solution.satisfiable()) {
-							pw.printf("%-40s%d/%d%n", "Trace", solution.getTraceLength(), solution.getLoopState());
-							int max = solution.getTraceLength();
-							while (solution.satisfiable() && n < max) {
-								for (ExprVar expr : solution.getAllSkolems()) {
-									Object eval = solution.eval(expr);
-									pw.printf("%-40s%s%n", expr.label, eval);
-
-								}
-								pw.println(solution.toTable(n));
-								solution = solution.next();
-								n++;
-							}
-						}
-					}
-				}
-				break;
-
-			case json:
-				List<SolutionDTO> trace = new ArrayList<>();
-
-				for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
-					A4Solution a4s = e.getValue();
-					a4s.setModule(world);
-					trace.add(a4s.toDTO());
-				}
-				JSONCodec codec = new JSONCodec();
-				codec.enc().writeDefaults().indent("  ").to(out).put(trace);
-				break;
-
-			case xml:
-				try (PrintWriter pw = new PrintWriter(out)) {
-					if (s.size() > 1) {
-						pw.println("<top>");
-					}
-					for (Map.Entry<CommandInfo, A4Solution> e : s.entrySet()) {
-						A4SolutionWriter.writeInstance(null, e.getValue(), pw, Collections.emptyList(),
-								Collections.emptyMap());
-					}
-					if (s.size() > 1) {
-						pw.println("</top>");
-					}
-				}
-				break;
-
+		case text:
+			try (PrintWriter pw = getPrintWriter(outdir, cname, ".txt")) {
+				pw.println(solution.toString());
 			}
-		} finally {
-			IO.close(out);
+			return;
+
+		case table:
+			try (PrintWriter pw = getPrintWriter(outdir, cname, ".md")) {
+				int n = solution.getLoopState();
+				if (solution.getTraceLength() < 2)
+					n = -1;
+
+				for (int i = 0; i < solution.getTraceLength(); i++) {
+					Table t = solution.toTable(i);
+					if (n == i) {
+						pw.println("--loopstate->");
+					}
+					pw.println(t);
+					List<ExprVar> skolems = solution.getAllSkolems();
+					if (!skolems.isEmpty()) {
+						Table skolemsTable = new Table(skolems.size() + 1, 2, 1);
+						skolemsTable.set(0, 0, "skolem");
+						skolemsTable.set(0, 1, "value");
+						for (int j = 0; i < skolems.size(); j++) {
+							ExprVar var = skolems.get(j);
+							Object eval = solution.eval(var, i);
+							if (eval instanceof SimTupleset) {
+								Table tt = TableView.toTable((SimTupleset) eval);
+								skolemsTable.set(j + 1, 1, tt);
+							} else
+								skolemsTable.set(j + 1, 1, eval);
+							skolemsTable.set(j + 1, 0, var.label);
+						}
+						pw.println(skolemsTable);
+					}
+				}
+			}
+			break;
+
+		case json:
+			JSONCodec codec = new JSONCodec();
+			codec.enc().writeDefaults().indent("  ").to(getPrintWriter(outdir, cname, ".json")).put(solution.toDTO());
+			break;
+
+		case xml:
+			try (PrintWriter pw = getPrintWriter(outdir, cname, ".xml")) {
+				A4SolutionWriter.writeInstance(null, solution, pw, Collections.emptyList(), Collections.emptyMap());
+			}
+			break;
 		}
+	}
+
+	private PrintWriter getPrintWriter(File outdir, String cname, String extension) throws IOException {
+		if (outdir == null)
+			return new PrintWriter(stdout);
+
+		File file = new File(outdir, cname + extension);
+		return new PrintWriter(IO.writer(file));
 	}
 
 	@Override

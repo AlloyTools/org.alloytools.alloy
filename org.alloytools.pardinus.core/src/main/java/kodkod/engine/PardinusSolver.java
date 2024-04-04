@@ -24,6 +24,7 @@ package kodkod.engine;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 
 import kodkod.ast.Formula;
@@ -114,6 +115,7 @@ public class PardinusSolver implements
 		
 	}
 
+	
 	/**
 	 * Calculates the solver that will be used, given the specified options.
 	 * This may be a regular {@link Solver regular Kodkod solver}, a

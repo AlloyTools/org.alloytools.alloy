@@ -302,4 +302,12 @@ public final class SafeList<T> implements Serializable, Iterable<T> {
         }
         return sb.append(']').toString();
     }
+
+    public List<T> toList() {
+        List<T> result = new ArrayList<>();
+        for (T t : this) {
+            result.add(t);
+        }
+        return result;
+    }
 }
