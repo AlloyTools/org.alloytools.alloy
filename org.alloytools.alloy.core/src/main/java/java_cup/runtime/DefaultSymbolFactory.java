@@ -21,10 +21,7 @@ public class DefaultSymbolFactory implements SymbolFactory {
      * ComplexSymbolFactory instead, since it offers more detailed information about
      * Symbols in source code. Yet since migrating has always been a critical
      * process, You have the chance of still using the oldstyle Symbols.
-     *
-     * @deprecated as of CUP v11a replaced by the new runtime.ComplexSymbolFactory
      */
-    // @deprecated
     @Deprecated
     public DefaultSymbolFactory() {}
 
