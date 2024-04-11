@@ -48,6 +48,14 @@ public final class AlloySet extends AlloyNodeElement {
      */
     public final boolean    isVar;
 
+    public static final AlloySet  ABSTRACT     = new AlloySet("abstract", false, false, false, AlloyType.UNIV);
+    public static final AlloySet  ONE     = new AlloySet("one", false, false, false, AlloyType.UNIV);
+    public static final AlloySet  LONE     = new AlloySet("lone", false, false, false, AlloyType.UNIV);
+    public static final AlloySet  SOME     = new AlloySet("some", false, false, false, AlloyType.UNIV);
+    public static final AlloySet  VAR     = new AlloySet("var", false, false, false, AlloyType.UNIV);
+    public static final AlloySet  ENUM     = new AlloySet("enum", false, false, false, AlloyType.UNIV);
+    public static final AlloySet  ENUMMEM     = new AlloySet("enum-member", false, false, false, AlloyType.UNIV);
+
     /** Constructs a new AlloySet object. */
     public AlloySet(String name, boolean isPrivate, boolean isMeta, boolean isVar, AlloyType type) {
         super(name);

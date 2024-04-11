@@ -37,12 +37,14 @@ public final class AlloyRelation extends AlloyElement {
      * keep re-constructing it.
      */
     public static final AlloyRelation  EXTENDS = new AlloyRelation("extends", false, false, false, Util.asList(AlloyType.UNIV, AlloyType.UNIV));
+    public static final AlloyRelation MEMBER = new AlloyRelation("member", false, false, false, Util.asList(AlloyType.UNIV, AlloyType.UNIV));
 
     /**
      * This caches an instance of the "in" AlloyRelation, so we don't have to keep
      * re-constructing it.
      */
     public static final AlloyRelation  IN      = new AlloyRelation("in", false, false, false, Util.asList(AlloyType.SET, AlloyType.UNIV));
+    public static final AlloyRelation  EQ      = new AlloyRelation("=", false, false, false, Util.asList(AlloyType.SET, AlloyType.UNIV));
 
     /** The unmodifiable list of types. */
     private final ConstList<AlloyType> types;
