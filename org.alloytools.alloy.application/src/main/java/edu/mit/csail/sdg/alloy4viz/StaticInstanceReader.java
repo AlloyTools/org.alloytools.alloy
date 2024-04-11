@@ -75,11 +75,22 @@ public final class StaticInstanceReader {
      * This stores the "extends" relationship among sigs (if isMeta is true).
      */
     private final LinkedHashSet<AlloyTuple>          exts        = new LinkedHashSet<AlloyTuple>();
+    private final LinkedHashSet<AlloyTuple>          mems        = new LinkedHashSet<AlloyTuple>();
+
+    private final LinkedHashSet<AlloyAtom>          absts        = new LinkedHashSet<AlloyAtom>();
+    private final LinkedHashSet<AlloyAtom>          ones        = new LinkedHashSet<AlloyAtom>();
+    private final LinkedHashSet<AlloyAtom>          lones        = new LinkedHashSet<AlloyAtom>();
+    private final LinkedHashSet<AlloyAtom>          somes        = new LinkedHashSet<AlloyAtom>();
+    private final LinkedHashSet<AlloyAtom>          vars        = new LinkedHashSet<AlloyAtom>();
+    private final LinkedHashSet<AlloyAtom>          enums        = new LinkedHashSet<AlloyAtom>();
+    private final LinkedHashSet<AlloyAtom>          enummems        = new LinkedHashSet<AlloyAtom>();
 
     /**
      * This stores the "in" relationship among sigs (if isMeta is true).
      */
     private final LinkedHashSet<AlloyTuple>          ins         = new LinkedHashSet<AlloyTuple>();
+
+    private final LinkedHashSet<AlloyTuple>          eqs         = new LinkedHashSet<AlloyTuple>();
 
     /**
      * This stores the set of Visualizer AlloySet objects we created.
@@ -198,8 +209,39 @@ public final class StaticInstanceReader {
         sig2atom.put(s, atom);
         if (s.parent != Sig.UNIV && s.parent != null)
             ts.put(type, sigMETA(s.parent));
-        if (s.parent != null)
-            exts.add(new AlloyTuple(atom, sig2atom.get(s.parent)));
+        if (s.parent != null) {
+            if (!s.isEnumMember())
+                exts.add(new AlloyTuple(atom, sig2atom.get(s.parent)));
+            else
+                mems.add(new AlloyTuple(atom, sig2atom.get(s.parent)));
+        }
+        if (s.isEnum != null) {
+            enums.add(atom);
+            atom2sets.get(atom).add(AlloySet.ENUM);
+        }else if (s.isAbstract != null) {
+            absts.add(atom);
+            atom2sets.get(atom).add(AlloySet.ABSTRACT);
+        }
+        if (s.isEnumMember()) {
+            enummems.add(atom);
+            atom2sets.get(atom).add(AlloySet.ENUMMEM);
+        } else if (s.isOne != null) {
+            ones.add(atom);
+            atom2sets.get(atom).add(AlloySet.ONE);
+        }
+        if (s.isLone != null) {
+            lones.add(atom);
+            atom2sets.get(atom).add(AlloySet.LONE);
+        }
+        if (s.isSome != null) {
+            somes.add(atom);
+            atom2sets.get(atom).add(AlloySet.SOME);
+        }
+        if (s.isVariable != null) {
+            vars.add(atom);
+            atom2sets.get(atom).add(AlloySet.VAR);
+        }
+
         Iterable<PrimSig> children = (s == Sig.UNIV ? toplevels : s.children());
         for (PrimSig sub : children)
             sigMETA(sub);
@@ -226,7 +268,26 @@ public final class StaticInstanceReader {
                 sigMETA((SubsetSig) p);
             else
                 sigMETA((PrimSig) p);
-            ins.add(new AlloyTuple(atom, sig2atom.get(p)));
+            if (!s.exact)
+                ins.add(new AlloyTuple(atom, sig2atom.get(p)));
+            else
+                eqs.add(new AlloyTuple(atom, sig2atom.get(p)));
+        }
+        if (s.isOne != null) {
+            ones.add(atom);
+            atom2sets.get(atom).add(AlloySet.ONE);
+        }
+        if (s.isLone != null) {
+            lones.add(atom);
+            atom2sets.get(atom).add(AlloySet.LONE);
+        }
+        if (s.isSome != null) {
+            somes.add(atom);
+            atom2sets.get(atom).add(AlloySet.SOME);
+        }
+        if (s.isVariable != null) {
+            vars.add(atom);
+            atom2sets.get(atom).add(AlloySet.VAR);
         }
     }
 
@@ -378,6 +439,26 @@ public final class StaticInstanceReader {
                 sig2type.put(null, AlloyType.SET);
                 rels.put(AlloyRelation.IN, ins);
             }
+            if (eqs.size() > 0) {
+                sig2type.put(null, AlloyType.SET);
+                rels.put(AlloyRelation.EQ, eqs);
+            }
+
+            if (absts.size() > 0)
+                sets.add(AlloySet.ABSTRACT);
+            if (ones.size() > 0)
+                sets.add(AlloySet.ONE);
+            if (lones.size() > 0)
+                sets.add(AlloySet.LONE);
+            if (somes.size() > 0)
+                sets.add(AlloySet.SOME);
+            if (vars.size() > 0)
+                sets.add(AlloySet.VAR);
+            if (enums.size() > 0)
+                sets.add(AlloySet.ENUM);
+            if (enummems.size() > 0)
+                sets.add(AlloySet.ENUMMEM);
+
             AlloyAtom univAtom = sig2atom.get(Sig.UNIV);
             AlloyAtom intAtom = sig2atom.get(Sig.SIGINT);
             AlloyAtom seqAtom = sig2atom.get(Sig.SEQIDX);
@@ -433,6 +514,9 @@ public final class StaticInstanceReader {
             }
             if (exts.size() > 0) {
                 rels.put(AlloyRelation.EXTENDS, exts);
+            }
+            if (mems.size() > 0) {
+                rels.put(AlloyRelation.MEMBER, mems);
             }
         }
         AlloyModel am = new AlloyModel(sig2type.values(), sets, rels.keySet(), nonempty_elems, ts);

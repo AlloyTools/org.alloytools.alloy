@@ -145,20 +145,31 @@ public final class VizState {
         hideUnconnected.put(seqidx, true);
         // Provide some nice defaults for meta model stuff
         AlloyType set = AlloyType.SET;
-        AlloyRelation ext = AlloyRelation.EXTENDS, in = AlloyRelation.IN;
+        AlloySet some = AlloySet.SOME, one = AlloySet.ONE, lone = AlloySet.LONE, var = AlloySet.VAR;
+        AlloyRelation ext = AlloyRelation.EXTENDS, in = AlloyRelation.IN, eq = AlloyRelation.EQ, mem = AlloyRelation.MEMBER;
         shape.put(null, DotShape.BOX);
         nodeColor.put(null, DotColor.YELLOW);
         nodeStyle.put(null, DotStyle.SOLID);
+        nodeStyle.put(var, DotStyle.DASHED);
         shape.put(set, DotShape.ELLIPSE);
         nodeColor.put(set, DotColor.BLUE);
         label.put(set, "");
         edgeColor.put(ext, DotColor.BLACK);
         weight.put(ext, 100);
         layoutBack.put(ext, true);
+        edgeColor.put(mem, DotColor.BLACK);
+        weight.put(mem, 100);
+        layoutBack.put(mem, true);
         edgeColor.put(in, DotColor.BLACK);
         weight.put(in, 100);
         layoutBack.put(in, true);
-        applyDefaultVar(); // [electrum] dashed style for variable elements
+        edgeColor.put(eq, DotColor.BLACK);
+        weight.put(eq, 100);
+        layoutBack.put(eq, true);
+        // there are no sub-relations, must be done manually
+        for (AlloyRelation r : currentModel.getRelations())
+            if (edgeStyle.get(r) == null && r.isVar)
+                edgeStyle.put(r, DotStyle.DASHED);
         // Done
         cache.clear();
         changedSinceLastSave = false;
