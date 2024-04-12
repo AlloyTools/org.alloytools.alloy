@@ -181,7 +181,7 @@ public class CLI extends Env {
 				repeat = Integer.MAX_VALUE;
 			}
 			int index = 0;
-			trace.format("%02d. %-5s %-20s %-60s ", n, c.check ? "check" : "run", c.label, c.scope);
+			trace.format("%02d. %-5s %-20s %-60s\n", n, c.check ? "check" : "run", c.label, c.scope);
 			String cname = toCName(c) + "-" + n;
 
 			try {
@@ -198,7 +198,8 @@ public class CLI extends Env {
 				} else {
 					int back = 0;
 					do {
-						trace.back(back).format("%-5d", index);
+						if (repeat > 1)
+							trace.back(back).format("repeat %-5d\n", index);
 						generate(world, solution, options.type(OutputType.table), outdir, cname);
 						index++;
 						back = 5;

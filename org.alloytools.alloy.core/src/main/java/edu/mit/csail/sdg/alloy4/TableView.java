@@ -178,7 +178,7 @@ public class TableView {
                 Table table = new Table(sigInstances.size() + 1, s.getFields().size() + 1, 1);
                 table.set(0, 0, s.label);
 
-                if (s.getFields().size() == 0 && sigInstances.size() <= 1)
+                if (s.getFields().size() == 0 && sigInstances.size() < 1)
                     continue;
 
                 int c = 1;
