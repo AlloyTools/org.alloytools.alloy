@@ -160,12 +160,8 @@ public final class OurSyntaxWidget {
         int modifier = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
         this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, modifier), "line.begin");
         this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, modifier + InputEvent.SHIFT_DOWN_MASK), "line.begin");
-        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK), "line.begin");
-        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK), "line.begin");
         this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, modifier), "line.end");
         this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, modifier + InputEvent.SHIFT_DOWN_MASK), "line.end");
-        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK), "line.end");
-        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK), "line.end");
 
         this.pane.getActionMap().put("line.begin", new AbstractAction() {
 
