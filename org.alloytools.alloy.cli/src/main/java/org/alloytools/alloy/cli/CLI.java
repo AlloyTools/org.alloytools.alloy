@@ -353,6 +353,7 @@ public class CLI extends Env {
 			break;
 
 		case json:
+			solution.setModule(world);
 			JSONCodec codec = new JSONCodec();
 			codec.enc().writeDefaults().indent("  ").to(getPrintWriter(outdir, cname, ".json")).put(solution.toDTO());
 			break;
