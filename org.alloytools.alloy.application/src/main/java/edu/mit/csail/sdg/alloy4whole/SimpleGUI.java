@@ -1014,7 +1014,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
             menuItem(runmenu, "Show Metamodel", 'M', 'M', doShowMetaModel());
             if (Version.experimental)
                 menuItem(runmenu, "Show Parse Tree", 'P', doShowParseTree());
-            menuItem(runmenu, "Open Evaluator", 'V', doLoadEvaluator());
         } finally {
             wrap = false;
         }
@@ -1259,18 +1258,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
             log.logRed("No previous instances are available for viewing.\n\n");
         else
             doVisualize("XML: " + latestInstance);
-        return null;
-    }
-
-    /**
-     * This method happens when the user tries to load the evaluator from the main
-     * GUI.
-     */
-    private Runner doLoadEvaluator() {
-        if (wrap)
-            return wrapMe();
-        log.logRed("Note: the evaluator is now in the visualizer.\n" + "Just click the \"Evaluator\" toolbar button\n" + "when an instance is shown in the visualizer.\n");
-        log.flush();
         return null;
     }
 
