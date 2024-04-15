@@ -818,11 +818,10 @@ public class ElectrodPrinter {
 			 *   tokenize[node.intExpr], "]" ] **/
 			// [HASLab] integer relations
 			public void visit(IntToExprCast node) {
-				throw new InvalidUnboundedProblem(lastFormula);
-//				append("Int");
-//				append("[");
-//				node.intExpr().accept(this);
-//				append("]");
+				append("Int");
+				append("[");
+				node.intExpr().accept(this);
+				append("]");
 			}
 			
 			/** @throws InvalidUnboundedProblem 
@@ -832,12 +831,11 @@ public class ElectrodPrinter {
 			public void visit(ExprToIntCast node) {
 				switch(node.op()) { 
 				case SUM:
-					throw new InvalidUnboundedProblem(lastFormula);
-//					append("int");
-//					append("[");
-//					node.expression().accept(this);
-//					append("]");
-//					break;
+					append("int");
+					append("[");
+					node.expression().accept(this);
+					append("]");
+					break;
 				case CARDINALITY : 
 					append("#");
 					append("(");
@@ -883,9 +881,7 @@ public class ElectrodPrinter {
 	/**
 	 * Converts identifiers into a version that is compatible with Electrod by
 	 * removing '/', '.' and '$' symbols.
-	 * 
-	 * TODO: what if id already has # symbols?
-	 * 
+	 *
 	 * @param id the identifier.
 	 * @return the normalized identifier.
 	 */
@@ -900,9 +896,7 @@ public class ElectrodPrinter {
 	/**
 	 * Converts identifiers that are compatible with Electrod back to their Kodkod
 	 * internal representation.
-	 * 
-	 * * TODO: what if id already has # symbols?
-	 * 
+	 *
 	 * @param id the identifier.
 	 * @return the denormalized identifier.
 	 */
