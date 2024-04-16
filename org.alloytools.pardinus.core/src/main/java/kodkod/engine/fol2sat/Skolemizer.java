@@ -77,7 +77,7 @@ import kodkod.util.nodes.AnnotatedNode;
  * @author Emina Torlak
  * @modified Nuno Macedo // [HASLab] temporal model finding
  */
-abstract class Skolemizer extends AbstractReplacer {
+public abstract class Skolemizer extends AbstractReplacer {
 
 	/**
 	 * Skolemizes the given annotated formula using the given bounds and options.  If
@@ -93,7 +93,7 @@ abstract class Skolemizer extends AbstractReplacer {
 	 * @throws IllegalArgumentException  some Relation & annotated.node.^children - bounds.relations
 	 * @throws UnsupportedOperationException  bounds is unmodifiable
 	 */
-	static AnnotatedNode<Formula> skolemize(final AnnotatedNode<Formula> annotated, Bounds bounds, Options options) {
+	public static AnnotatedNode<Formula> skolemize(final AnnotatedNode<Formula> annotated, Bounds bounds, Options options) {
 		if (options.logTranslation()>0) {
 			final Map<Node,Node> source = new IdentityHashMap<Node,Node>();
 			final Skolemizer r = new Skolemizer(annotated, bounds, options) {
