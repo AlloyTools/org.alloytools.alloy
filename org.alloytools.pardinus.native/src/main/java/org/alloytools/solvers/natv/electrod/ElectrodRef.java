@@ -16,6 +16,7 @@ import kodkod.engine.TemporalSolver;
 import kodkod.engine.UnboundedSolver;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Reporter;
+import kodkod.engine.fol2sat.Skolemizer;
 import kodkod.engine.satlab.ExternalSolver;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.SATSolver;
@@ -25,6 +26,8 @@ import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 import kodkod.solvers.api.NativeCode;
 import kodkod.solvers.api.TemporalSolverFactory;
+
+import static kodkod.util.nodes.AnnotatedNode.annotateRoots;
 
 abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
 
@@ -65,6 +68,7 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
 
             options.reporter().solvingCNF(-1, -1, -1, -1);
 
+            formula = Skolemizer.skolemize(annotateRoots(formula), bounds, options).node();
             String electrod = ElectrodPrinter.print(formula, bounds, rep);
             Solution solution;
             if (solverId == null) {
