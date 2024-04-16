@@ -18,14 +18,12 @@ package edu.mit.csail.sdg.alloy4;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.WeakHashMap;
 import java.util.function.Function;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JTextPane;
-import javax.swing.ToolTipManager;
+import javax.swing.*;
 import javax.swing.text.DefaultHighlighter;
 
 /**
@@ -124,6 +122,8 @@ public final class OurAntiAlias {
         };
         if (tooltip != null)
             ToolTipManager.sharedInstance().registerComponent(ans);
+
+        ans.getInputMap().put(KeyStroke.getKeyStroke("control shift O"),"none");
 
         OurUtil.make(ans, attributes);
         ans.setHighlighter(new DefaultHighlighter());
