@@ -61,10 +61,12 @@ import kodkod.solvers.api.NativeCode.Platform;
 @Description("The Alloy dispatcher" )
 public class AlloyDispatcher extends Env {
 
-    static final Justif  justif = new Justif(60, 0, 10, 20, 30);
+    public static int    exitCode = 0;
 
-    PrintStream          out    = System.out;
-    PrintStream          err    = System.err;
+    static final Justif  justif   = new Justif(60, 0, 10, 20, 30);
+
+    PrintStream          out      = System.out;
+    PrintStream          err      = System.err;
     AlloyContext         context;
     Optional<Manifest>   manifest;
     Logger               log;
@@ -110,6 +112,7 @@ public class AlloyDispatcher extends Env {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.exit(exitCode);
     }
 
     public void __alloy(BaseOptions options) throws Exception {
@@ -155,6 +158,8 @@ public class AlloyDispatcher extends Env {
                     if (target instanceof Reporter && target != this) {
                         getInfo((Reporter) target);
                     }
+                    if (!getErrors().isEmpty())
+                        exitCode = 1;
                     report(System.err);
                     return;
                 }
@@ -162,7 +167,7 @@ public class AlloyDispatcher extends Env {
             error("no such command %s, use help to get a full list", subcommand);
             __help(null);
             report(System.err);
-
+            exitCode = 2;
         } finally {
             mains.forEach(o -> {
                 if (o instanceof AutoCloseable)

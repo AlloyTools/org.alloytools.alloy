@@ -38,17 +38,22 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
 
 import org.alloytools.alloy.dto.Cardinality;
+import org.alloytools.alloy.dto.CommandDTO;
+import org.alloytools.alloy.dto.CommandDTO.CommandType;
 import org.alloytools.alloy.dto.FieldDTO;
 import org.alloytools.alloy.dto.ModuleDTO;
 import org.alloytools.alloy.dto.OpenDTO;
 import org.alloytools.alloy.dto.SigDefDTO;
-import org.alloytools.alloy.dto.TupleSetDTO;
+import org.alloytools.alloy.dto.TuplesDTO;
 
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
+import edu.mit.csail.sdg.ast.Command;
+import edu.mit.csail.sdg.ast.CommandScope;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Type;
@@ -911,8 +916,8 @@ public final class Util {
         });
     }
 
-    public static TupleSetDTO toDTO(SimTupleset relation, Type typeOrNull) {
-        TupleSetDTO dto = new TupleSetDTO();
+    public static TuplesDTO toDTO(SimTupleset relation, Type typeOrNull) {
+        TuplesDTO dto = new TuplesDTO();
         if (relation.empty() && typeOrNull != null) {
             dto.arity = typeOrNull.arity();
             dto.data = new String[0][0];
@@ -921,26 +926,46 @@ public final class Util {
 
         dto.arity = relation.arity();
         dto.data = new String[relation.size()][];
-        for (int i = 0; i < relation.size(); i++) {
-            SimTuple tuple = relation.getTuple();
+        int i = 0;
+        for (SimTuple tuple : relation) {
             dto.data[i] = new String[dto.arity];
             for (int j = 0; j < dto.arity; j++) {
                 dto.data[i][j] = tuple.get(j).toString();
             }
+            i++;
         }
         return dto;
     }
 
+    public static String[][] toArraySet(SimTupleset relation) {
+        if (relation.empty()) {
+            return new String[0][0];
+        }
+
+        String[][] list = new String[relation.size()][];
+        int i = 0;
+        for (SimTuple tuple : relation) {
+            String[] array = new String[relation.arity()];
+            for (int j = 0; j < relation.arity(); j++) {
+                array[j] = tuple.get(j).toString();
+            }
+            list[i++] = array;
+        }
+
+        return list;
+    }
 
     public static ModuleDTO toDTO(CompModule module) {
         ModuleDTO dto = new ModuleDTO();
-        dto.name = module.getModelName();
-        dto.path = module.path;
-        for (Open open : module.getOpens()) {
-            OpenDTO o = new OpenDTO();
-            o.module = toDTO(open.getRealModule());
-            o.parameters.addAll(open.args);
-            dto.opens.add(o);
+        if (module != null) {
+            dto.name = module.getModuleName();
+            dto.path = module.path;
+            for (Open open : module.getOpens()) {
+                OpenDTO o = new OpenDTO();
+                o.module = toDTO(open.getRealModule());
+                o.parameters.addAll(open.args);
+                dto.opens.add(o);
+            }
         }
         return dto;
     }
@@ -948,7 +973,7 @@ public final class Util {
 
     public static SigDefDTO toDTO(Sig sig) {
         SigDefDTO sigdto = new SigDefDTO();
-        sigdto.name = sig.label;
+        sigdto.name = scope(sig.label);
         sigdto.builtin = sig.builtin;
         if (sig.isAbstract != null)
             sigdto.cardinality = Cardinality.none;
@@ -964,7 +989,7 @@ public final class Util {
             sigdto.cardinality = Cardinality.set;
         sigdto.isEnum = sig.isEnum != null;
         sigdto.meta = sig.isMeta != null;
-        sigdto.type = sig.type().toString();
+        sigdto.type = scope(sig.type().toString());
 
         for (Field field : sig.getFields()) {
             if (field.isPrivate != null)
@@ -975,14 +1000,42 @@ public final class Util {
         return sigdto;
     }
 
+    public static String scope(String label) {
+        return label.replaceAll("this/", "");
+    }
+
     public static FieldDTO toDTO(Field field) {
         FieldDTO flddto = new FieldDTO();
         flddto.name = field.label;
         flddto.meta = field.isMeta != null;
         flddto.var = field.isVariable != null;
-        flddto.type = field.type().toString();
+        flddto.type = scope(field.type().toString());
+        flddto.arity = field.type().arity();
         return flddto;
     }
+
+    /**
+     * Convenience method to turn a command into a DTO
+     *
+     * @param command the command
+     * @param source the source or null
+     * @return a CommandDTO
+     */
+    public static CommandDTO toDTO(Command command, String source) {
+        CommandDTO commandDTO = new CommandDTO();
+        commandDTO.type = command.check ? CommandType.check : CommandType.run;
+        commandDTO.name = command.label;
+        commandDTO.source = command.pos() != null ? command.pos().substring(source) : command.toString();
+        commandDTO.scopes = command.scope.stream().map(CommandScope::toString).collect(Collectors.toList());
+        commandDTO.expects = command.expects;
+        commandDTO.maxseq = command.maxseq;
+        commandDTO.bitwidth = command.bitwidth != -1 ? command.bitwidth : 4;
+        commandDTO.maxprefix = command.maxprefix;
+        commandDTO.minprefix = command.minprefix;
+        commandDTO.overall = command.overall;
+        return commandDTO;
+    }
+
 
 
 }

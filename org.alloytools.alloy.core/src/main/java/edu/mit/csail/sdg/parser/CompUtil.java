@@ -262,7 +262,7 @@ public final class CompUtil {
 
         // Here, we recursively open the included files
         for (Open x : u.getOpens()) {
-            String cp = Util.canon(computeModulePath(u.getModelName(), filename, x.filename)), content = fc.get(cp);
+            String cp = Util.canon(computeModulePath(u.getModuleName(), filename, x.filename)), content = fc.get(cp);
             try {
                 if (content == null) {
                     content = loaded.get(cp);

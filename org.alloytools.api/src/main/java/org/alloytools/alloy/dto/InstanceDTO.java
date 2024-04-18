@@ -1,5 +1,7 @@
 package org.alloytools.alloy.dto;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -16,17 +18,19 @@ public class InstanceDTO {
      * An instance contains relations. Each field has a relation and there are a
      * number of skolem variables that have a relation. sig -> field -> tuples...
      */
-    public Map<String,Map<String,TupleSetDTO>> values  = new TreeMap<>();
+    public Map<String,Map<String,String[][]>> values   = new TreeMap<>();
 
     /**
      * A mapping of Skolem functions within this instance. Each key is a Skolem
      * function name, and its associated value is an object representing the value
      * or values produced by that function.
      */
-    public Map<String,TupleSetDTO>             skolems = new TreeMap<>();
+    public Map<String,TuplesDTO>              skolems  = new TreeMap<>();
 
     /**
      * If part of a temporal solution, the index in the trace. Otherwise -1
      */
-    public int                                 state;
+    public int                                state;
+
+    public List<String>                       messages = new ArrayList<>();
 }
