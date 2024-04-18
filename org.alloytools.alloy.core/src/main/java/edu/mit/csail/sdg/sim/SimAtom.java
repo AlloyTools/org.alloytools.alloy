@@ -32,7 +32,7 @@ import java.util.WeakHashMap;
  * <b>Thread Safety:</b> Safe.
  */
 
-public final class SimAtom {
+public final class SimAtom implements Comparable<SimAtom> {
 
     /** This map is used to canonicalize the atoms. */
     private static final WeakHashMap<SimAtom,SimAtom> map = new WeakHashMap<SimAtom,SimAtom>();
@@ -40,7 +40,7 @@ public final class SimAtom {
     /**
      * The String label for the atom; all distinct atoms have distinct labels.
      */
-    private String                                    string;
+    private final String                              string;
 
     /**
      * Construct a SimAtom; this constructor must only be called by make() since we
@@ -172,23 +172,12 @@ public final class SimAtom {
     public boolean equals(Object that) {
         if (this == that)
             return true;
-        if (!(that instanceof SimAtom))
-            return false;
-        SimAtom x = (SimAtom) that;
-        if (string == x.string)
-            return true;
-        else if (string.equals(x.string)) {
-            string = x.string;
-            return true;
+
+        if (that instanceof SimAtom) {
+            SimAtom other = (SimAtom) that;
+            return string.equals(other.string);
         } else
             return false;
-        // Change it so we share the same String; this is thread safe since
-        // String objects are immutable
-        // so it doesn't matter if some thread sees the old String and some sees
-        // the new String.
-        // JLS 3rd Edition 17.7 guarantees that writes and reads of references
-        // are atomic though not necessarily visible,
-        // so another thread will either see the old String or the new String.
     }
 
     /** {@inheritDoc} */
@@ -201,5 +190,31 @@ public final class SimAtom {
     @Override
     public String toString() {
         return string;
+    }
+
+    @Override
+    public int compareTo(SimAtom o) {
+        if (this.equals(o))
+            return 0;
+
+        int a = string.indexOf('$');
+        int b = o.string.indexOf('$');
+        if (a == b && a != -1) {
+            String asig = string.substring(0, a);
+            String bsig = o.string.substring(0, b);
+            int n = asig.compareTo(bsig);
+            if (n != 0)
+                return n;
+            String aindex = string.substring(n + 1);
+            String bindex = o.string.substring(n + 1);
+            try {
+                int aa = Integer.parseInt(aindex);
+                int bb = Integer.parseInt(bindex);
+                return Integer.compare(aa, bb);
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+        }
+        return string.compareTo(o.string);
     }
 }

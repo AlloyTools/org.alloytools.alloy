@@ -42,11 +42,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.alloytools.alloy.dto.InstanceDTO;
 import org.alloytools.alloy.dto.SolutionDTO;
-import org.alloytools.alloy.dto.TupleSetDTO;
 import org.alloytools.util.table.Table;
 
 import edu.mit.csail.sdg.alloy4.A4Preferences;
@@ -76,6 +76,8 @@ import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.parser.CompModule;
+import edu.mit.csail.sdg.sim.SimAtom;
+import edu.mit.csail.sdg.sim.SimTuple;
 import edu.mit.csail.sdg.sim.SimTupleset;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
@@ -946,6 +948,10 @@ public final class A4Solution {
         return ((TemporalInstance) eval.instance()).prefixLength();
     }
 
+    public boolean isTemporal() {
+        return eval.instance() instanceof TemporalInstance;
+    }
+
     /**
      * Returns the short unique name corresponding to the given atom if the problem
      * is solved and is satisfiable; else returns atom.toString().
@@ -1157,6 +1163,11 @@ public final class A4Solution {
     private Pair<Type,Pos> cachedPAIR = null;
 
     private Formula        fgoal;
+
+    /**
+     * The duration in nanoseconds of the resolving
+     */
+    private long           duration;
 
     /**
      * Maps a Kodkod variable to an Alloy Type and Alloy Pos (if no association
@@ -1618,6 +1629,7 @@ public final class A4Solution {
             sol = null;
 
         if (sol == null) {
+            final long start = System.nanoTime();
             PardinusBounds b;
             if (solver.options().decomposed())
                 b = PardinusBounds.splitAtTemporal(bounds);
@@ -1636,6 +1648,7 @@ public final class A4Solution {
                 throw new ErrorAPI(p, "Invalid specification for complete backend.\n" + e.getMessage());
             }
             sol = kEnumerator.next();
+            this.duration = System.nanoTime() - start;
         }
 
         if (sol.getOutput().isPresent()) {
@@ -1821,7 +1834,10 @@ public final class A4Solution {
      * @throws ErrorAPI if the solver was not an incremental solver
      */
     public A4Solution next() throws Err {
-        return fork(-3);
+        long start = System.nanoTime();
+        A4Solution sol = fork(-3);
+        sol.duration = System.nanoTime() - start;
+        return sol;
     }
 
     /**
@@ -2098,32 +2114,14 @@ public final class A4Solution {
 
     public SolutionDTO toDTO() {
         assert module != null : "the module must be set for the dto to be calculated";
+        String cmd = getOriginalCommand();
+
         SolutionDTO sol = new SolutionDTO();
         sol.utctime = System.currentTimeMillis();
         sol.localtime = LocalDateTime.now(ZoneId.systemDefault()).toString();
-        sol.command = getOriginalCommand();
+        sol.timezone = ZoneId.systemDefault().getId();
         sol.incremental = isIncremental();
-        sol.satisfiable = satisfiable();
-        sol.unrolls = unrolls;
-        sol.skolemDepth = opt.skolemDepth;
-        sol.bitwidth = bitwidth;
-        sol.command = originalCommand;
-        sol.solver = opt.solver.id();
-        sol.module = Util.toDTO(module);
-
-
-
-        for (Sig sig : module.getAllReachableSigs()) {
-            if (sig.isPrivate != null)
-                continue;
-
-            sol.sigs.put(sig.label, Util.toDTO(sig));
-
-            for (Field field : sig.getFields()) {
-                if (field.isPrivate != null)
-                    continue;
-            }
-        }
+        sol.duration = TimeUnit.NANOSECONDS.toMillis(duration);
 
         if (satisfiable()) {
 
@@ -2141,36 +2139,62 @@ public final class A4Solution {
         return sol;
     }
 
+    /**
+     * Map a state instance of this solution to an InstanceDTO. Requires that
+     * {@link #satisfiable()} is true.
+     *
+     * @param state the state to get or -1 if static
+     * @return an InstanceDTO
+     */
     public InstanceDTO toDTO(int state) {
-        InstanceDTO dto = new InstanceDTO();
-        dto.state = state;
-        Instance instance = state < 0 ? eval.instance() : ((TemporalInstance) eval.instance()).state(state);
 
+        Instance instance = eval.instance();
+        if (state >= 0) {
+            TemporalInstance temporalInstance = (TemporalInstance) instance;
+            instance = temporalInstance.state(state);
+        } else
+            state = 0;
+
+        InstanceDTO instanceDTO = new InstanceDTO();
+        instanceDTO.state = state;
 
         for (Sig s : sigs) {
-            TupleSet instanceTuples = instance.tuples(s.label);
-            if (instanceTuples == null) {
-                dto.values.put(s.label, Collections.emptyMap());
-                continue;
-            }
+            TupleSet sigAtoms = instance.tuples(s.label);
+            if (sigAtoms != null) {
+                List<SimTuple> sortedSigAtoms = Util.toList(sigAtoms);
+                Collections.sort(sortedSigAtoms);
 
-            Map<String,TupleSetDTO> values = new LinkedHashMap<>();
-            for (Field field : s.getFields()) {
-                SimTupleset relation = Util.toSimTupleset(state > -1 ? eval(field, state) : eval(field));
-                TupleSetDTO ts = Util.toDTO(relation, field.type());
-                values.put(field.label, ts);
-                field.type().arity();
+                for (SimTuple sigAtom : sortedSigAtoms) {
+                    assert sigAtom.arity() == 1;
+
+                    SimAtom atom = sigAtom.get(0);
+                    String name = atom.toString();
+
+                    Map<String,String[][]> fields = new HashMap<>();
+                    instanceDTO.values.put(name, fields);
+                    SimTupleset singeAtomRelation = SimTupleset.make(sigAtom);
+
+                    for (Field field : s.getFields()) {
+                        A4TupleSet eval = eval(field, state);
+                        SimTupleset fieldRelation = Util.toSimTupleset(eval);
+                        SimTupleset fieldValues = singeAtomRelation.join(fieldRelation);
+                        String[][] old = fields.put(field.label, Util.toArraySet(fieldValues));
+                        assert old == null;
+                    }
+                }
             }
-            dto.values.put(s.label, values);
         }
+
         for (ExprVar v : getAllSkolems()) {
-            Object vv = state > -1 ? eval(v, state) : eval(v);
+            Object vv = eval(v, state);
             if (vv instanceof A4TupleSet) {
                 SimTupleset relation = Util.toSimTupleset((A4TupleSet) vv);
-                dto.skolems.put(v.label, Util.toDTO(relation, v.type()));
+                instanceDTO.skolems.put(v.label, Util.toDTO(relation, v.type()));
+            } else {
+                instanceDTO.messages.add("skolem variable " + v.label + " evaluates not to a tuple set but to " + vv);
             }
         }
-        return dto;
+        return instanceDTO;
     }
 
     public A4Reporter getReporter() {

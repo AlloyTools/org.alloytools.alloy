@@ -1241,7 +1241,7 @@ public final class CompModule extends Browsable implements Module {
      * the line has not be parsed from the file yet.
      */
     @Override
-    public String getModelName() {
+    public String getModuleName() {
         return moduleName;
     }
 
