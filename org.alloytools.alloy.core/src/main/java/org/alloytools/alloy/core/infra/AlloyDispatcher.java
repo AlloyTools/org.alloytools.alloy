@@ -112,7 +112,8 @@ public class AlloyDispatcher extends Env {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.exit(exitCode);
+        if (exitCode != 0)
+            System.exit(exitCode);
     }
 
     public void __alloy(BaseOptions options) throws Exception {
