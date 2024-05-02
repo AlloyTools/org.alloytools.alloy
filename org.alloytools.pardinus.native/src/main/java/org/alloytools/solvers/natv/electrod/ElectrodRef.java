@@ -44,10 +44,11 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
             if (options == null)
                 throw new NullPointerException();
             this.options = options;
-            if (!options.unbounded()) {
-                if (options.minTraceLength() != 1)
-                    throw new InvalidSolverParamException("Electrod bounded model checking must start at length 1.");
-            }
+            if (!options.unbounded() && options.minTraceLength() != 1)
+                throw new InvalidSolverParamException("Electrod bounded model checking must start at length 1.");
+            if (options.noOverflow())
+                throw new InvalidSolverParamException("Electrod model checking does not support preventing integer overflows.");
+
         }
 
         /**
