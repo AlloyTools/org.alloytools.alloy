@@ -531,11 +531,10 @@ public class ElectrodPrinter {
 			public void visit(UnaryIntExpression node)  { 
 				final IntExpression child = node.intExpr();
 				final IntOperator op = node.op();
-				final boolean parens = 
-					(op==IntOperator.ABS) || (op==IntOperator.SGN) || 
-					parenthesize(child);
-				append(node.op());
-				visitChild(child, parens);
+				append("fun/"+op.name());
+				append("[");
+				visitChild(child, false);
+				append("]");
 			}
 			
 			/** @ensures appends the given op and child to this.tokens; the child is 
@@ -615,9 +614,12 @@ public class ElectrodPrinter {
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			public void visit(BinaryIntExpression node) {
 				final IntOperator op = node.op();
-				visitChild(node.left(), parenthesize(op, node.left()));
-				infix(op);
-				visitChild(node.right(), parenthesize(op, node.right()));
+				append("fun/"+op.name());
+				append("[");
+				visitChild(node.left(), false);
+				append(",");
+				visitChild(node.right(), false);
+				append("]");
 			}
 			
 			/** @return true if the given formula needs to be parenthesized if a 
@@ -779,11 +781,14 @@ public class ElectrodPrinter {
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			public void visit(NaryIntExpression node) {
 				final IntOperator op = node.op();
-				visitChild(node.child(0), parenthesize(op, node.child(0)));
+				append("fun/"+op.name());
+				append("[");
+				visitChild(node.child(0), false);
 				for(int i = 1, size = node.size(); i < size; i++) {
-					infix(op);
-					visitChild(node.child(i), parenthesize(op, node.child(i)));
+					append(",");
+					visitChild(node.child(i), false);
 				}
+				append("]");
 			}
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			// [HASLab] break conjuncts if top level
