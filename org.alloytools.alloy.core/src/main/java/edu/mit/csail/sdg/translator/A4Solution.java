@@ -421,9 +421,7 @@ public final class A4Solution {
         solver_opts.setCoreGranularity(opt.coreGranularity);
         solver_opts.setSymmetryBreaking(sym);
         solver_opts.setSkolemDepth(opt.skolemDepth);
-        int aux =(int) Math.ceil(Math.log(atoms.size())) + 1;
-
-        solver_opts.setBitwidth(bitwidth > 0 ? bitwidth : aux);
+        solver_opts.setBitwidth(bitwidth > 0 ? bitwidth : (int) Math.ceil(Math.log(atoms.size()+1) / Math.log(2)) + 1);
         solver_opts.setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);
 
         solver_opts.setSolver(opt.solver.doOptions(solver_opts));
