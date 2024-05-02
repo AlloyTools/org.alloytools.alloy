@@ -134,9 +134,6 @@ public class PardinusSolver implements
 		if (options.unbounded() && !options.solver().unbounded())
 			throw new InvalidSolverParamException("Bounded engines do not support complete model checking.");
 
-		if (!options.temporal() && options.solver().unbounded())
-			throw new InvalidSolverParamException("Unbounded engines do not support static models.");
-
 		if (options.decomposed()) {
 
 			if (options.temporal()) {
@@ -154,8 +151,8 @@ public class PardinusSolver implements
 			if (options.temporal()) {
 				return getTemporalSolver(options);
 			} else {
-				ExtendedSolver solver = new ExtendedSolver(options);
-				return solver;				
+				return getStaticSolver(options);
+
 			}
 			
 		}
@@ -164,10 +161,18 @@ public class PardinusSolver implements
 	
 	private TemporalSolver<ExtendedOptions> getTemporalSolver(ExtendedOptions options) {
 		SATFactory s = options.solver();
-		if ( s instanceof TemporalSolverFactory) {
+		if (s instanceof TemporalSolverFactory) {
 			return ((TemporalSolverFactory)s).getTemporalSolver(options);
 		} else
 			return new TemporalPardinusSolver(options);
+	}
+
+	private AbstractSolver<PardinusBounds,ExtendedOptions> getStaticSolver(ExtendedOptions options) {
+		SATFactory s = options.solver();
+		if (s instanceof TemporalSolverFactory) {
+			return StaticWrapper.wrap((TemporalSolverFactory) s, options);
+		} else
+			return new ExtendedSolver(options);
 	}
 
 	/**
