@@ -79,12 +79,12 @@ public class PardinusSolver implements
 	public PardinusSolver(ExtendedOptions options) {
 		if (options == null)
 			throw new NullPointerException();
-		
+
 		if (!options.temporal() && options.unbounded())
-			throw new IllegalArgumentException("Unbounded solver only for temporal problems.");
+			throw new InvalidSolverParamException("Unbounded solver only for temporal problems.");
 		
 		if (options.targetoriented() && !options.solver().maxsat())
-			throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");			
+			throw new InvalidSolverParamException("A max sat solver is required for target-oriented solving.");
 		
 		this.options = options;
 		this.solver = solver();
@@ -132,10 +132,10 @@ public class PardinusSolver implements
 		assert !options.unbounded() || options.solver().unbounded();
 		
 		if (options.unbounded() && !options.solver().unbounded())
-			throw new IllegalArgumentException("Cannot run complete with purely bounded solver.");
+			throw new InvalidSolverParamException("Bounded engines do not support complete model checking.");
 
 		if (!options.temporal() && options.solver().unbounded())
-			throw new IllegalArgumentException("Cannot run static with complete model checkers.");
+			throw new InvalidSolverParamException("Unbounded engines do not support static models.");
 
 		if (options.decomposed()) {
 
