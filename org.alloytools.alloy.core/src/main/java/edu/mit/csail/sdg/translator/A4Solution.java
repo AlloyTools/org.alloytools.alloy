@@ -344,9 +344,6 @@ public final class A4Solution {
         this.maxseq = maxseq;
         this.maxtrace = maxtrace;
         this.mintrace = mintrace;
-        // [electrum] test whether unbounded solver
-        if (maxtrace == Integer.MAX_VALUE && !opt.solver.unbounded())
-            throw new ErrorAPI("Bounded engines do not support open bounds on steps.");
         if (bitwidth < 0)
             throw new ErrorSyntax("Cannot specify a bitwidth less than 0.");
         if (bitwidth > 30)
@@ -438,7 +435,11 @@ public final class A4Solution {
         }
         String check = getOriginalCommand().replace(' ', '_').replace('$', '-');
         solver_opts.setUniqueName(file + "-" + check + "-" + dateFormat.format(new Date()) + "-" + this.hashCode());
-        solver = new PardinusSolver(solver_opts);
+        try {
+            solver = new PardinusSolver(solver_opts);
+        } catch (InvalidSolverParamException e) {
+            throw new ErrorAPI(e.getMessage(),e);
+        }
     }
 
     /**
