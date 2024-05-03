@@ -141,11 +141,11 @@ public final class StaticInstanceReader {
     /**
      * Create a new AlloySet whose label is unambiguous with any existing one.
      */
-    private AlloySet makeSet(String label, boolean isPrivate, boolean isMeta, boolean isVar, AlloyType type) {
+    private AlloySet makeSet(String label, boolean isPrivate, boolean isMeta, boolean isVar, boolean isSkolem, AlloyType type) {
         while (label.equals(Sig.UNIV.label) || label.equals(Sig.SIGINT.label) || label.equals(Sig.SEQIDX.label) || label.equals(Sig.STRING.label))
             label = label + "'";
         while (true) {
-            AlloySet ans = new AlloySet(label, isPrivate, isMeta, isVar, type);
+            AlloySet ans = new AlloySet(label, isPrivate, isMeta, isVar, isSkolem, type);
             if (!sets.contains(ans))
                 return ans;
             label = label + "'";
@@ -155,11 +155,11 @@ public final class StaticInstanceReader {
     /**
      * Create a new AlloyRelation whose label is unambiguous with any existing one.
      */
-    private AlloyRelation makeRel(String label, boolean isPrivate, boolean isMeta, boolean isVar, List<AlloyType> types) {
+    private AlloyRelation makeRel(String label, boolean isPrivate, boolean isMeta, boolean isVar, boolean isSkolem, List<AlloyType> types) {
         while (label.equals(Sig.UNIV.label) || label.equals(Sig.SIGINT.label) || label.equals(Sig.SEQIDX.label) || label.equals(Sig.STRING.label))
             label = label + "'";
         while (true) {
-            AlloyRelation ans = new AlloyRelation(label, isPrivate, isMeta, isVar, types);
+            AlloyRelation ans = new AlloyRelation(label, isPrivate, isMeta, isVar, isSkolem, types);
             if (!rels.containsKey(ans))
                 return ans;
             label = label + "'";
@@ -330,11 +330,11 @@ public final class StaticInstanceReader {
     /**
      * Construct an AlloySet or AlloyRelation corresponding to the given expression.
      */
-    private void setOrRel(A4Solution sol, String label, Expr expr, boolean isPrivate, boolean isMeta, boolean isVar, int state) throws Err {
+    private void setOrRel(A4Solution sol, String label, Expr expr, boolean isPrivate, boolean isMeta, boolean isVar, boolean isSkolem, int state) throws Err {
         for (List<PrimSig> ps : expr.type().fold()) {
             if (ps.size() == 1) {
                 PrimSig t = ps.get(0);
-                AlloySet set = makeSet(label, isPrivate, isMeta, isVar, sig(t));
+                AlloySet set = makeSet(label, isPrivate, isMeta, isVar, isSkolem, sig(t));
                 sets.add(set);
                 for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(t), state))) {
                     atom2sets.get(string2atom.get(tp.atom(0))).add(set);
@@ -354,7 +354,7 @@ public final class StaticInstanceReader {
                     else
                         mask = mask.product(ps.get(i));
                 }
-                AlloyRelation rel = makeRel(label, isPrivate, isMeta, isVar, types);
+                AlloyRelation rel = makeRel(label, isPrivate, isMeta, isVar, isSkolem, types);
                 Set<AlloyTuple> ts = new LinkedHashSet<AlloyTuple>();
                 for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(mask), state))) {
                     AlloyAtom[] atoms = new AlloyAtom[tp.arity()];
@@ -410,12 +410,12 @@ public final class StaticInstanceReader {
                     atoms(sol, (PrimSig) s, state);
             for (Sig s : sol.getAllReachableSigs())
                 if (s instanceof SubsetSig)
-                    setOrRel(sol, s.label, s, s.isPrivate != null, s.isMeta != null, s.isVariable != null, state);
+                    setOrRel(sol, s.label, s, s.isPrivate != null, s.isMeta != null, s.isVariable != null, false, state);
             for (Sig s : sol.getAllReachableSigs())
                 for (Field f : s.getFields())
-                    setOrRel(sol, f.label, f, f.isPrivate != null, f.isMeta != null, f.isVariable != null, state);
+                    setOrRel(sol, f.label, f, f.isPrivate != null, f.isMeta != null, f.isVariable != null, false, state);
             for (ExprVar s : sol.getAllSkolems())
-                setOrRel(sol, s.label, s, false, false, false, state);
+                setOrRel(sol, s.label, s, false, false, false, true, state);
         }
         if (isMeta) {
             sigMETA(Sig.UNIV);
@@ -431,7 +431,7 @@ public final class StaticInstanceReader {
                             types.add(sig(ps.get(i)));
                             tuple[i] = sig2atom.get(ps.get(i));
                         }
-                        AlloyRelation rel = makeRel(f.label, f.isPrivate != null, false, f.isVariable != null, types);
+                        AlloyRelation rel = makeRel(f.label, f.isPrivate != null, false, f.isVariable != null, false, types);
                         rels.put(rel, Util.asSet(new AlloyTuple(tuple)));
                     }
                 }

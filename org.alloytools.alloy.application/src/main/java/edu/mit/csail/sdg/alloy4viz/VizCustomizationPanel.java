@@ -185,7 +185,7 @@ public final class VizCustomizationPanel extends JPanel {
             private static final long serialVersionUID = 0;
             private final AlloyModel  old              = vizState.getOriginalModel(),
                             now = vizState.getCurrentModel();
-            private final boolean     hidePrivate      = vizState.hidePrivate(), hideMeta = vizState.hideMeta();
+            private final boolean     hidePrivate      = vizState.hidePrivate(), hideMeta = vizState.hideMeta(), hideSkolem = vizState.hideSkolem();
             {
                 do_start();
                 setRootVisible(false);
@@ -238,12 +238,12 @@ public final class VizCustomizationPanel extends JPanel {
                     ans.add(AlloyType.UNIV);
                 } else if (parent == EDGES) {
                     for (AlloyRelation rel : vizState.getCurrentModel().getRelations())
-                        if (!(hidePrivate && rel.isPrivate) && !(hideMeta && rel.isMeta))
+                        if (!(hidePrivate && rel.isPrivate) && !(hideMeta && rel.isMeta) && !(hideSkolem && rel.isSkolem))
                             ans.add(rel);
                 } else if (parent instanceof AlloyType) {
                     AlloyType type = (AlloyType) parent;
                     for (AlloySet s : now.getSets())
-                        if (!(hidePrivate && s.isPrivate) && !(hideMeta && s.isMeta) && s.getType().equals(type))
+                        if (!(hidePrivate && s.isPrivate) && !(hideMeta && s.isMeta) && !(hideSkolem && s.isSkolem) && s.getType().equals(type))
                             ans.add(s);
                     if (!type.isEnum)
                         for (AlloyType t : old.getDirectSubTypes(type))
@@ -584,6 +584,7 @@ public final class VizCustomizationPanel extends JPanel {
         JLabel aLabel = OurUtil.label("Use original atom names:");
         JLabel pLabel = OurUtil.label("Hide private sigs/relations:");
         JLabel mLabel = OurUtil.label("Hide meta sigs/relations:");
+        JLabel sLabel = OurUtil.label("Hide skolem sigs/relations:");
         JLabel fLabel = OurUtil.label("Font Size:");
         JComboBox fontSize = new OurCombobox(false, fontSizes.toArray(), 60, 32, vizState.getFontSize()) {
 
@@ -646,6 +647,18 @@ public final class VizCustomizationPanel extends JPanel {
                 return (!x ? ON : OFF);
             }
         };
+        JPanel skol = new OurCheckbox("", "Whether the visualizer should hide skolemized sigs, sets, and relations by default.", vizState.hideSkolem() ? OurCheckbox.ON : OurCheckbox.OFF) {
+
+            private static final long serialVersionUID = 0;
+
+            @Override
+            public Icon do_action() {
+                boolean x = vizState.hideSkolem();
+                vizState.hideSkolem(!x);
+                remakeAll();
+                return (!x ? ON : OFF);
+            }
+        };
         JPanel meta = new OurCheckbox("", "Whether the visualizer should hide meta sigs, sets, and relations by default.", vizState.hideMeta() ? OurCheckbox.ON : OurCheckbox.OFF) {
 
             private static final long serialVersionUID = 0;
@@ -664,6 +677,7 @@ public final class VizCustomizationPanel extends JPanel {
         parent.add(OurUtil.makeH(wcolor, 25, eLabel, 5, edgepal, 8, fLabel, 5, fontSize, 2, null));
         parent.add(OurUtil.makeH(wcolor, 25, pLabel, 5, priv, 2, null));
         parent.add(OurUtil.makeH(wcolor, 25, mLabel, 5, meta, 2, null));
+        parent.add(OurUtil.makeH(wcolor, 25, sLabel, 5, skol, 2, null));
     }
 
     // =============================================================================================================//
