@@ -110,6 +110,8 @@ public final class StaticThemeReaderWriter {
             now.hidePrivate(getbool(x, "hidePrivate"));
         if (has(x, "hideMeta"))
             now.hideMeta(getbool(x, "hideMeta"));
+        if (has(x, "hideSkolem"))
+            now.hideSkolem(getbool(x, "hideSkolem"));
         if (has(x, "fontsize"))
             now.setFontSize(getint(x, "fontsize"));
         if (has(x, "nodetheme"))
@@ -168,6 +170,11 @@ public final class StaticThemeReaderWriter {
         if (view.hideMeta() != defaultView.hideMeta()) {
             out.write(" hideMeta=\"");
             out.write(view.hideMeta() ? "yes" : "no");
+            out.write("\"");
+        }
+        if (view.hideSkolem() != defaultView.hideSkolem()) {
+            out.write(" hideSkolem=\"");
+            out.write(view.hideSkolem() ? "yes" : "no");
             out.write("\"");
         }
         if (view.getFontSize() != defaultView.getFontSize()) {

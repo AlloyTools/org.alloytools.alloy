@@ -36,15 +36,15 @@ public final class AlloyRelation extends AlloyElement {
      * This caches an instance of the "extends" AlloyRelation, so we don't have to
      * keep re-constructing it.
      */
-    public static final AlloyRelation  EXTENDS = new AlloyRelation("extends", false, false, false, Util.asList(AlloyType.UNIV, AlloyType.UNIV));
-    public static final AlloyRelation MEMBER = new AlloyRelation("member", false, false, false, Util.asList(AlloyType.UNIV, AlloyType.UNIV));
+    public static final AlloyRelation  EXTENDS = new AlloyRelation("extends", false, false, false, false, Util.asList(AlloyType.UNIV, AlloyType.UNIV));
+    public static final AlloyRelation MEMBER = new AlloyRelation("member", false, false, false, false, Util.asList(AlloyType.UNIV, AlloyType.UNIV));
 
     /**
      * This caches an instance of the "in" AlloyRelation, so we don't have to keep
      * re-constructing it.
      */
-    public static final AlloyRelation  IN      = new AlloyRelation("in", false, false, false, Util.asList(AlloyType.SET, AlloyType.UNIV));
-    public static final AlloyRelation  EQ      = new AlloyRelation("=", false, false, false, Util.asList(AlloyType.SET, AlloyType.UNIV));
+    public static final AlloyRelation  IN      = new AlloyRelation("in", false, false, false, false, Util.asList(AlloyType.SET, AlloyType.UNIV));
+    public static final AlloyRelation  EQ      = new AlloyRelation("=", false, false, false, false, Util.asList(AlloyType.SET, AlloyType.UNIV));
 
     /** The unmodifiable list of types. */
     private final ConstList<AlloyType> types;
@@ -68,10 +68,16 @@ public final class AlloyRelation extends AlloyElement {
     public final boolean               isVar;
 
     /**
+     * Records whether this relation is known to be "skolem"; NOTE: this value is NOT
+     * USED during equals() comparison.
+     */
+    public final boolean               isSkolem;
+
+    /**
      * Constructs a new AlloyRelation with that name and that list of types;
      * types.size() must be 2 or above.
      */
-    public AlloyRelation(String name, boolean isPrivate, boolean isMeta, boolean isVar, List<AlloyType> types) {
+    public AlloyRelation(String name, boolean isPrivate, boolean isMeta, boolean isVar, boolean isSkolem, List<AlloyType> types) {
         super(name);
         if (types == null || types.size() < 2)
             throw new RuntimeException("An AlloyRelation object must have 2 or more types.");
@@ -79,6 +85,7 @@ public final class AlloyRelation extends AlloyElement {
         this.isPrivate = isPrivate;
         this.isMeta = isMeta;
         this.isVar = isVar;
+        this.isSkolem = isSkolem;
     }
 
     /**
