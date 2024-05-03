@@ -191,19 +191,16 @@ public class ElectrodPrinter {
 	private static String printShifts(Options opt) {
 		BooleanFactory fact = BooleanFactory.constantFactory(opt);
 		StringBuilder shl = new StringBuilder(), shr = new StringBuilder(), sha = new StringBuilder();
-		shl.append("const Int##SHL :3 {");
-		shr.append("const Int##SHR :3 {");
-		sha.append("const Int##SHA :3 {");
+		shl.append("const Int##SHL :3 { ");
+		shr.append("const Int##SHR :3 { ");
+		sha.append("const Int##SHA :3 { ");
 		for (int i = (int) -Math.pow(2,fact.bitwidth()-1); i < (int) Math.pow(2,fact.bitwidth()-1); i++) {
 			for (int j = (int) -Math.pow(2,fact.bitwidth()-1); j < (int) Math.pow(2, fact.bitwidth() - 1); j++) {
-				shl.append(String.format("( %d %d %d ),", i, j, fact.integer(i).shl(fact.integer(j)).value()));
-				shr.append(String.format("( %d %d %d ),", i, j, fact.integer(i).shr(fact.integer(j)).value()));
-				sha.append(String.format("( %d %d %d ),", i, j, fact.integer(i).sha(fact.integer(j)).value()));
+				shl.append(String.format("( %d %d %d ) ", i, j, fact.integer(i).shl(fact.integer(j)).value()));
+				shr.append(String.format("( %d %d %d ) ", i, j, fact.integer(i).shr(fact.integer(j)).value()));
+				sha.append(String.format("( %d %d %d ) ", i, j, fact.integer(i).sha(fact.integer(j)).value()));
 			}
 		}
-		shl.deleteCharAt(shl.length()-1);
-		shr.deleteCharAt(shr.length()-1);
-		sha.deleteCharAt(sha.length()-1);
 		shl.append("}\n");
 		shr.append("}\n");
 		sha.append("}\n\n");
