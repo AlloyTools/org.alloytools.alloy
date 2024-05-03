@@ -71,6 +71,8 @@ import kodkod.ast.operator.IntOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.VoidVisitor;
+import kodkod.engine.bool.BooleanFactory;
+import kodkod.engine.bool.Int;
 import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
@@ -116,16 +118,16 @@ public class ElectrodPrinter {
 	 * @throws InvalidUnboundedProblem
 	 *             if the problem is not supported by Electrod.
 	 */
-	public static String print(Formula formula, PardinusBounds bounds, Reporter rep)
+	public static String print(Formula formula, PardinusBounds bounds, Options old_opt)
 			throws InvalidUnboundedProblem {
 		// use a reporter to intercept the symmetry breaking predicate
-		Options opt = new ExtendedOptions();
 		StringBuilder temp = new StringBuilder();
+		Options opt = new ExtendedOptions();
 		Reporter reporter = new AbstractReporter() {
 			
 			@Override
 			public void warning(String warning) {
-				rep.warning(warning);
+				old_opt.reporter().warning(warning);
 			}
 			
 			@Override
@@ -142,12 +144,12 @@ public class ElectrodPrinter {
 			
 			@Override
 			public void detectedSymmetries(Set<IntSet> parts) {
-				rep.detectedSymmetries(parts);
+				old_opt.reporter().detectedSymmetries(parts);
 			}
 			
 			@Override
 			public void debug(String debug) {
-				rep.debug(debug);
+				old_opt.reporter().debug(debug);
 			}
 
 		};
@@ -180,9 +182,32 @@ public class ElectrodPrinter {
 		StringBuilder sb = new StringBuilder();
 		sb.append(printUniverse(bounds.universe()));
 		sb.append(printBounds(bounds));
+		sb.append(printShifts(old_opt));
 		sb.append(printSymmetries(temp.toString()));
 		sb.append(printConstraint(formula.and(symbForm)));
 		return sb.toString();
+	}
+
+	private static String printShifts(Options opt) {
+		BooleanFactory fact = BooleanFactory.constantFactory(opt);
+		StringBuilder shl = new StringBuilder(), shr = new StringBuilder(), sha = new StringBuilder();
+		shl.append("const Int##SHL :3 {");
+		shr.append("const Int##SHR :3 {");
+		sha.append("const Int##SHA :3 {");
+		for (int i = (int) -Math.pow(2,fact.bitwidth()-1); i < (int) Math.pow(2,fact.bitwidth()-1); i++) {
+			for (int j = (int) -Math.pow(2,fact.bitwidth()-1); j < (int) Math.pow(2, fact.bitwidth() - 1); j++) {
+				shl.append(String.format("( %d %d %d ),", i, j, fact.integer(i).shl(fact.integer(j)).value()));
+				shr.append(String.format("( %d %d %d ),", i, j, fact.integer(i).shr(fact.integer(j)).value()));
+				sha.append(String.format("( %d %d %d ),", i, j, fact.integer(i).sha(fact.integer(j)).value()));
+			}
+		}
+		shl.deleteCharAt(shl.length()-1);
+		shr.deleteCharAt(shr.length()-1);
+		sha.deleteCharAt(sha.length()-1);
+		shl.append("}\n");
+		shr.append("}\n");
+		sha.append("}\n\n");
+		return shl.append(shr).append(sha).toString();
 	}
 
 	/**
