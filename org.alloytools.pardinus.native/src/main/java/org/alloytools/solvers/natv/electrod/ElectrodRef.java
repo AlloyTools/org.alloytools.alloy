@@ -62,15 +62,13 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
          * {@inheritDoc}
          */
         public Solution solve(Formula formula, PardinusBounds bounds) throws InvalidUnboundedProblem, InvalidUnboundedSolution {
-            Reporter rep = options.reporter();
-
             if (!options.decomposed() && bounds.amalgamated != null)
                 bounds = bounds.amalgamated();
 
             options.reporter().solvingCNF(-1, -1, -1, -1);
 
             formula = Skolemizer.skolemize(annotateRoots(formula), bounds, options).node();
-            String electrod = ElectrodPrinter.print(formula, bounds, rep);
+            String electrod = ElectrodPrinter.print(formula, bounds, options);
             Solution solution;
             if (solverId == null) {
                 try {
