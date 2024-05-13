@@ -739,11 +739,11 @@ public class ElectrodPrinter {
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			public void visit(IfIntExpression node) {
 				visitChild(node.condition(), parenthesize(node.condition()));
-				infix("=>");
+				infix("iimplies");
 				indent++;
 				newline();
 				visitChild(node.thenExpr(), parenthesize(node.thenExpr()));
-				infix("else");
+				infix("ielse");
 				newline();
 				visitChild(node.elseExpr(), parenthesize(node.elseExpr()));
 				indent--;
