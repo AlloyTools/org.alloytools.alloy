@@ -163,20 +163,8 @@ public class ElectrodPrinter {
 //					((BinaryExpression) upp).left().equals(func.domain()) && ((BinaryExpression) upp).right().equals(func.range()))
 //				System.out.println(func.relation() + " : " + func.domain() +" -> "+func.targetMult()+" "+func.range());
 //		}
-		
 
-		// retrieve the additional formula imposed by the symbolic
-		// bounds, depending on execution stage
-		Formula symbForm = Formula.TRUE;
-		// if decomposed mode, the amalgamated bounds are always considered
-		if (opt.decomposed() && bounds.amalgamated() != null)
-			symbForm = bounds.amalgamated().resolve(opt.reporter());
-		// otherwise use regular bounds
-		else
-			symbForm = bounds.resolve(opt.reporter());
-		// NOTE: this is already being performed inside the translator, but is not accessible
-
-		Whole t = Translator.translate(formula.and(symbForm), bounds, opt);
+		Whole t = Translator.translate(formula, bounds, opt);
 		bounds = (PardinusBounds) t.bounds();
 
 		StringBuilder sb = new StringBuilder();
@@ -184,7 +172,7 @@ public class ElectrodPrinter {
 		sb.append(printBounds(bounds));
 		sb.append(printShifts(old_opt));
 		sb.append(printSymmetries(temp.toString()));
-		sb.append(printConstraint(formula.and(symbForm)));
+		sb.append(printConstraint(formula));
 		return sb.toString();
 	}
 
@@ -917,7 +905,9 @@ public class ElectrodPrinter {
 			return "unnamed#unnamed";
 		else if (Arrays.asList(protected_keywords).contains(id))
 			id = "p#" + id;
-		return id.replace("/", "##").replace(".", "#").replace("$", "skolem#").replace("<","").replace(">","");
+		return id.replace("/", "##").replace(".", "#")
+				.replace("$", "skolem#").replace("\"","$")
+				.replace("<","").replace(">","");
 	}
 
 	/**

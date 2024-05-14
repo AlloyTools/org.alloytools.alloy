@@ -67,6 +67,18 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
 
             options.reporter().solvingCNF(-1, -1, -1, -1);
 
+            // retrieve the additional formula imposed by the symbolic
+            // bounds, depending on execution stage
+            Formula symbForm = Formula.TRUE;
+            // if decomposed mode, the amalgamated bounds are always considered
+            if (options.decomposed() && bounds.amalgamated() != null)
+                symbForm = bounds.amalgamated().resolve(options.reporter());
+                // otherwise use regular bounds
+            else
+                symbForm = bounds.resolve(options.reporter());
+            // NOTE: this is already being performed inside the translator, but is not accessible
+            formula = formula.and(symbForm);
+
             formula = Skolemizer.skolemize(annotateRoots(formula), bounds, options).node();
             String electrod = ElectrodPrinter.print(formula, bounds, options);
             Solution solution;
