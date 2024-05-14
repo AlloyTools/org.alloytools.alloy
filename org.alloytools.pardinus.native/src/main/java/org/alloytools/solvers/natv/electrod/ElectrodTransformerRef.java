@@ -48,4 +48,9 @@ public class ElectrodTransformerRef extends ElectrodRef {
         return "transformer";
     }
 
+    @Override
+    public String name() {
+        return "Electrod elo output";
+    }
+
 }
