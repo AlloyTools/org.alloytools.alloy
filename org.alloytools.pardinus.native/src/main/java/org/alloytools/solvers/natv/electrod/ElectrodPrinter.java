@@ -917,7 +917,7 @@ public class ElectrodPrinter {
 			return "unnamed#unnamed";
 		else if (Arrays.asList(protected_keywords).contains(id))
 			id = "p#" + id;
-		return id.replace("/", "##").replace(".", "#").replace("$", "skolem#");
+		return id.replace("/", "##").replace(".", "#").replace("$", "skolem#").replace("<","").replace(">","");
 	}
 
 	/**
