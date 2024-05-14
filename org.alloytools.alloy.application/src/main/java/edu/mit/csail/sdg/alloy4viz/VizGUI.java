@@ -942,18 +942,14 @@ public final class VizGUI implements ComponentListener {
             }
             case TEXT : {
                 String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.toString(current);
-                content = getTextComponent(textualOutput);
+                content = getTextComponent(textualOutput, true);
                 break;
             }
             case TABLE : {
                 String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.format(current);
-                content = getTextComponent(textualOutput);
+                content = getTextComponent(textualOutput, false);
                 break;
             }
-            // case XML: {
-            // content=getTextComponent(xmlFileName);
-            // break;
-            // }
             default : {
                 List<VizState> numPanes = isTrace && !isMeta ? myStates : myStates.subList(statepanes - 1, statepanes);
                 if (myGraphPanel == null || numPanes.size() != myGraphPanel.numPanels()) {
@@ -1131,9 +1127,11 @@ public final class VizGUI implements ComponentListener {
 
     /**
      * Helper method returns a JTextArea containing the given text.
+     *
+     * @param b
      */
-    private JComponent getTextComponent(String text) {
-        final JTextArea ta = OurUtil.textarea(text, 10, 10, false, false);
+    private JComponent getTextComponent(String text, boolean wrap) {
+        final JTextArea ta = OurUtil.textarea(text, 10, 10, false, wrap);
         final JScrollPane ans = new JScrollPane(ta, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED) {
 
             private static final long serialVersionUID = 0;
