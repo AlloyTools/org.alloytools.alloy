@@ -218,8 +218,10 @@ public final class SimpleReporter extends A4Reporter {
                 results.add(null);
                 span.setLength(len3);
                 span.log("   File written to ");
-                span.logLink(array[1].toString(), "file://" + array[1]);
+                String linkDestination = "CNF: " + array[1];
+                span.logLink(array[1].toString(), linkDestination);
                 span.log("\n\n");
+                gui.doSetLatest(linkDestination);
             }
             if (array[0].equals("debug") && verbosity > 2) {
                 span.log("   " + array[1] + "\n");
