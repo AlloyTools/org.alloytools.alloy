@@ -907,7 +907,7 @@ public class ElectrodPrinter {
 			id = "p#" + id;
 		return id.replace("/", "##").replace(".", "#")
 				.replace("$", "skolem#").replace("\"","$")
-				.replace("<","").replace(">","");
+				.replace("<empty>","empty");
 	}
 
 	/**
