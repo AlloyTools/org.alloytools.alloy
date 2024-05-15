@@ -1195,6 +1195,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             else if (AutoVisualize.get() || subrunningTask == 1) {
                 doVisualize(f);
             }
+        } else {
+            viz.noNewInstance();
         }
         return null;
     }
