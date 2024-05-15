@@ -341,6 +341,7 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(OurUtil.makeH(5));
     }
 
+
     // ======== The Preferences
     // ======================================================================================//
     // ======== Note: you must make sure each preference has a unique key
@@ -1199,6 +1200,10 @@ public final class VizGUI implements ComponentListener {
         if (null == myGraphPanel)
             return null;
         return myGraphPanel.alloyGetViewer();
+    }
+
+    public void noNewInstance() {
+        updateDisplay();
     }
 
     /** Load the XML instance. */
