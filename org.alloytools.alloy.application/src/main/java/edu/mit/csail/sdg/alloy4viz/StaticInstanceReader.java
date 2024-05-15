@@ -142,6 +142,8 @@ public final class StaticInstanceReader {
      * Create a new AlloySet whose label is unambiguous with any existing one.
      */
     private AlloySet makeSet(String label, boolean isPrivate, boolean isMeta, boolean isVar, boolean isSkolem, AlloyType type) {
+        if (label.startsWith("this/"))
+            label = label.substring(5);
         while (label.equals(Sig.UNIV.label) || label.equals(Sig.SIGINT.label) || label.equals(Sig.SEQIDX.label) || label.equals(Sig.STRING.label))
             label = label + "'";
         while (true) {
