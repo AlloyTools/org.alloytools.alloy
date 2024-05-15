@@ -1833,8 +1833,9 @@ public final class A4Solution {
     }
 
     /**
-     * If this solution is UNSAT, return itself; else return the next solution
-     * according to the selected operation (which could be SAT or UNSAT).
+     * If this solution is UNSAT as a result of a next/next config, return itself;
+     * else return the next solution according to the selected operation (which
+     * could be SAT or UNSAT).
      *
      * @throws ErrorAPI if the solver was not an incremental solver
      */
@@ -1843,11 +1844,11 @@ public final class A4Solution {
             throw new ErrorAPI("This solution is not yet solved, so next() is not allowed.");
         if (eval == null)
             return this;
-        if (p == -3) {
-            if (nextCache == null)
-                nextCache = new A4Solution(this, -3);
+        if (nextCache == null && (p == -3 || p == -1))
+            nextCache = new A4Solution(this, p);
+
+        if (nextCache != null)
             return nextCache;
-        }
 
         return new A4Solution(this, p); // [electrum] do not cache, may have different arguments
     }
