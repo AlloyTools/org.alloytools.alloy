@@ -15,8 +15,6 @@
 
 package edu.mit.csail.sdg.ast;
 
-import static edu.mit.csail.sdg.alloy4.TableView.clean;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -302,7 +300,7 @@ public final class Func extends Expr implements Clause {
     }
 
     public String explainOld() {
-        if (clean(label).contains("run$")) {
+        if (Util.tailThis(label).contains("run$")) {
             return null;
         }
 
@@ -313,7 +311,7 @@ public final class Func extends Expr implements Clause {
         else
             sb.append("fun ");
 
-        sb.append(clean(label)).append("[");
+        sb.append(Util.tailThis(label)).append("[");
 
         if (decls.size() > 0 || !isPred) {
 
@@ -348,7 +346,7 @@ public final class Func extends Expr implements Clause {
         else
             sb.append("fun ");
 
-        sb.append(clean(label));
+        sb.append(Util.tailThis(label));
 
         if (decls.size() > 0) {
             sb.append(" [\n");

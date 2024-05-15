@@ -458,7 +458,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 
         Stream<SymbolInformation> fields = module.getAllSigs().makeConstList().stream().flatMap(sig -> sig.getFields().makeConstList().stream()).map(field -> {
             SymbolInformation symbolInfo = newSymbolInformation(field.label, posToLocation(field.pos), SymbolKind.Field);
-            symbolInfo.setContainerName(removeThisPrefix(field.sig.label));
+            symbolInfo.setContainerName(Util.tailThis(field.sig.label));
             return symbolInfo;
         });
 
@@ -469,7 +469,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
         Stream<SymbolInformation> assertions = module.getAllAssertions().stream().map(assertion -> newSymbolInformation(assertion.label, posToLocation(assertion.pos), SymbolKind.Property));
 
         return Stream.of(commands, sigs, fields, funcs, assertions, macros).flatMap(x -> x).map(x -> {
-            x.setName(removeThisPrefix(x.getName()));
+            x.setName(Util.tailThis(x.getName()));
             return x;
         })
                      //.sorted((sym1,sym2) -> positionCompare(sym1.getLocation().getRange().getStart(), sym2.getLocation().getRange().getStart()))
@@ -722,13 +722,6 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 
     @Override
     public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
-    }
-
-    static String removeThisPrefix(String name) {
-        if (name.startsWith("this/")) {
-            return name.substring("this/".length());
-        }
-        return name;
     }
 
     private PublishDiagnosticsParams toPublishDiagnosticsParams(Err err) {

@@ -352,8 +352,7 @@ final class ScopeComputer {
             n = n - lower;
             // Pick a name for them
             String name = sig.label;
-            if (name.startsWith("this/"))
-                name = name.substring(5);
+            name = Util.tailThis(name);
             name = un.make(name);
             // Now, generate each atom using the format "SIGNAME$INDEX"
             // By prepending the index with 0 so that they're the same width, we

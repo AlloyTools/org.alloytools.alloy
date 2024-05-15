@@ -295,13 +295,8 @@ public class TableView {
         return table;
     }
 
-
     public static Table toTable(Type type) {
-        return toTable(type.toString().replaceAll("this/", ""), false);
-    }
-
-    public static String clean(String label) {
-        return label.replaceAll("this/", "");
+        return toTable(Util.tailThis(type.toString()), false);
     }
 
 }

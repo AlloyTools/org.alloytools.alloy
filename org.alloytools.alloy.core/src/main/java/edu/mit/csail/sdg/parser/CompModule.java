@@ -348,7 +348,7 @@ public final class CompModule extends Browsable implements Module {
          */
         public Expr resolve(final Pos pos, final String name) {
             if (name.indexOf('/') >= 0) {
-                String n = name.startsWith("this/") ? name.substring(5) : name;
+                String n = Util.tailThis(name);
                 CompModule mod = rootmodule;
                 while (true) {
                     int i = n.indexOf('/');
@@ -1161,8 +1161,7 @@ public final class CompModule extends Browsable implements Module {
         // (r&1)!=0 => Sig, (r&2) != 0 => assertion, (r&4)!=0 => Func
         List<Object> ans = new ArrayList<Object>();
         CompModule u = this;
-        if (name.startsWith("this/"))
-            name = name.substring(5);
+        name = Util.tailThis(name);
         for (int level = 0;; level++) {
             int i = name.indexOf('/');
             if (i < 0) {
@@ -1229,7 +1228,7 @@ public final class CompModule extends Browsable implements Module {
             s2 = params.get(name);
         } else {
             if (name.startsWith("this/")) {
-                name = name.substring(5);
+                name = Util.tailThis(name);
                 s2 = params.get(name);
             }
             s = getRawQS(1, name);
@@ -1773,6 +1772,19 @@ public final class CompModule extends Browsable implements Module {
         SafeList<Func> ans = new SafeList<Func>();
         for (ArrayList<Func> e : funcs.values())
             ans.addAll(e);
+        return ans.dup();
+    }
+
+    /**
+     * Return an unmodifiable list containing all functions defined in this module or a reachable submodule.
+     */
+    @Override
+    public SafeList<Func> getAllReachableUserDefinedFunc() {
+        SafeList<Func> ans = new SafeList<Func>();
+        for (CompModule m : world.getAllReachableModules())
+            if (!m.moduleName.equals("util/integer"))
+                for (ArrayList<Func> e : m.funcs.values())
+                    ans.addAll(e);
         return ans.dup();
     }
 

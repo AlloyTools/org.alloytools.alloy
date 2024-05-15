@@ -408,11 +408,11 @@ public final class SimpleReporter extends A4Reporter {
                 else
                     first = false;
                 if (exacts.contains(s))
-                    sb.append("exactly " + scopes.get(s) + " " + s.label.replace("this/", ""));
+                    sb.append("exactly " + scopes.get(s) + " " + Util.tailThis(s.label));
                 else if (scopes.keySet().contains(s))
-                    sb.append(scopes.get(s) + " " + s.label.replace("this/", ""));
+                    sb.append(scopes.get(s) + " " + Util.tailThis(s.label));
                 else
-                    sb.append(s.label.replace("this/", "") + "????");
+                    sb.append(Util.tailThis(s.label) + "????");
             }
         cb("scopes", "Actual scopes: " + sb.toString() + "\n");
     }
@@ -628,7 +628,7 @@ public final class SimpleReporter extends A4Reporter {
 
     /** Helper method to write out a full XML file. */
     private static void writeXML(A4Reporter rep, Module mod, String filename, A4Solution sol, Map<String,String> sources) throws Exception {
-        sol.writeXML(rep, filename, mod.getAllFunc(), sources);
+        sol.writeXML(rep, filename, mod.getAllReachableUserDefinedFunc(), sources);
         if (AlloyCore.isDebug())
             validate(filename);
     }

@@ -15,8 +15,6 @@
 
 package edu.mit.csail.sdg.ast;
 
-import static edu.mit.csail.sdg.alloy4.TableView.clean;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -844,8 +842,8 @@ public abstract class Sig extends Expr implements Clause {
             if (isMeta != null) {
                 sb.append("meta ");
             }
-            sb.append(clean(label));
-            sb.append(" : ").append(clean(type.explain()));
+            sb.append(Util.tailThis(label));
+            sb.append(" : ").append(Util.tailThis(type.explain()));
             return sb.toString();
         }
 
@@ -1012,10 +1010,10 @@ public abstract class Sig extends Expr implements Clause {
         if (isSubset != null)
             sb.append("subset ");
 
-        sb.append(clean(label)).append(" { ");
+        sb.append(Util.tailThis(label)).append(" { ");
         String del = "";
         for (Field f : realFields) {
-            String relation = clean(type.join(f.type).explain());
+            String relation = Util.tailThis(type.join(f.type).explain());
             sb.append(del).append(f.label).append(" : ").append(relation);
             del = ", ";
         }
@@ -1048,11 +1046,11 @@ public abstract class Sig extends Expr implements Clause {
         if (isSubset != null)
             sb.append("subset ");
 
-        sb.append(clean(label));
+        sb.append(Util.tailThis(label));
         if (!realFields.isEmpty()) {
             sb.append(" {\n");
 
-            sb.append(StreamSupport.stream(realFields.spliterator(), false).map(f -> " " + clean(f.label) + " : " + clean(type.join(f.type).toString())).collect(Collectors.joining(",\n")));
+            sb.append(StreamSupport.stream(realFields.spliterator(), false).map(f -> " " + Util.tailThis(f.label) + " : " + Util.tailThis(type.join(f.type).toString())).collect(Collectors.joining(",\n")));
 
             sb.append("\n}");
         }

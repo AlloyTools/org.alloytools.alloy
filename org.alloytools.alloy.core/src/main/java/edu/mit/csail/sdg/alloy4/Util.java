@@ -829,6 +829,11 @@ public final class Util {
         return (i < 0) ? string : string.substring(i + 1);
     }
 
+    /** Returns the substring without "this/". May not start with "this/" in skolems. */
+    public static String tailThis(String string) {
+        return string.replace("this/","");
+    }
+
     /**
      * Returns the largest allowed integer, or -1 if no integers are allowed
      * (bitwidth < 1).
