@@ -128,8 +128,7 @@ public final class StaticInstanceReader {
      * Create a new AlloyType whose label is unambiguous with any existing one.
      */
     private AlloyType makeType(String label, boolean isOne, boolean isAbstract, boolean isBuiltin, boolean isPrivate, boolean isMeta, boolean isEnum, boolean isVar) {
-        if (label.startsWith("this/"))
-            label = label.substring(5);
+        label = Util.tailThis(label);
         while (true) {
             AlloyType ans = new AlloyType(label, isOne, isAbstract, isBuiltin, isPrivate, isMeta, isEnum, isVar);
             if (!sig2type.values().contains(ans))
@@ -142,8 +141,7 @@ public final class StaticInstanceReader {
      * Create a new AlloySet whose label is unambiguous with any existing one.
      */
     private AlloySet makeSet(String label, boolean isPrivate, boolean isMeta, boolean isVar, boolean isSkolem, AlloyType type) {
-        if (label.startsWith("this/"))
-            label = label.substring(5);
+        Util.tail(label);
         while (label.equals(Sig.UNIV.label) || label.equals(Sig.SIGINT.label) || label.equals(Sig.SEQIDX.label) || label.equals(Sig.STRING.label))
             label = label + "'";
         while (true) {

@@ -55,8 +55,7 @@ public final class VizTree extends OurTree {
             return "<html> <b" + c + encode(title == null ? "" : title) + "</b></html>";
         if (val instanceof Sig) {
             String label = ((Sig) val).label;
-            if (label.startsWith("this/"))
-                label = label.substring(5);
+            label = Util.tailThis(label);
             return "<html> <b" + c + "sig " + encode(label) + "</b></html>";
         }
         if (val instanceof ExprVar)

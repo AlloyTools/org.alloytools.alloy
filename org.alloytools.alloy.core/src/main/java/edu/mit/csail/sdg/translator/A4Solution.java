@@ -1377,7 +1377,7 @@ public final class A4Solution {
                     continue; // Something is wrong; let's skip it
                 while (t.arity() < r.arity())
                     t = UNIV.type().product(t);
-                String n = Util.tail(r.name());
+                String n = Util.tailThis(r.name());
                 while (n.length() > 0 && n.charAt(0) == '$')
                     n = n.substring(1);
                 skolems.add(n);
@@ -1472,7 +1472,7 @@ public final class A4Solution {
         }
         for (PrimSig c : s.children())
             rename(frame, c, nexts, un);
-        String signame = un.make(s.label.startsWith("this/") ? s.label.substring(5) : s.label);
+        String signame = un.make(Util.tailThis(s.label));
         // [electrum] collect atoms from every state
         List<Tuple> list = new ArrayList<Tuple>();
         for (int i = 0; i < frame.getTraceLength(); i++)
