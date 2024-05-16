@@ -344,6 +344,7 @@ public final class SimpleReporter extends A4Reporter {
         }
     }
 
+
     private void cb(Serializable... objs) {
         cb.callback(objs);
     }
@@ -705,6 +706,7 @@ public final class SimpleReporter extends A4Reporter {
 
         @Override
         public void run(WorkerCallback out) throws Exception {
+            boolean transformer = false;
             cb(out, "S2", "Starting the solver...\n\n");
             final SimpleReporter rep = new SimpleReporter(out, options.recordKodkod);
             final Module world = CompUtil.parseEverything_fromFile(rep, map, options.originalFilename, resolutionMode);
@@ -753,12 +755,14 @@ public final class SimpleReporter extends A4Reporter {
                             result.add(tempXML);
                         else if (ai.highLevelCore().a.size() > 0)
                             result.add(tempCNF + ".core");
-                        else
+                        else {
+                            transformer |= ai.opt.solver.isTransformer();
                             result.add("");
+                        }
                     }
             (new File(tempdir)).delete(); // In case it was UNSAT, or
                                          // canceled...
-            if (result.size() > 1) {
+            if (!transformer && result.size() > 1) {
                 rep.cb("bold", "" + result.size() + " commands were executed. The results are:\n");
                 for (int i = 0; i < result.size(); i++) {
                     Command r = world.getAllCommands().get(i);
