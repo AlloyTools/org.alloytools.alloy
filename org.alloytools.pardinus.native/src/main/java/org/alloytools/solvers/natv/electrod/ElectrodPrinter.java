@@ -590,9 +590,7 @@ public class ElectrodPrinter {
 			private boolean parenthesize(ExprOperator op, Expression child) { 
 				return child instanceof IfExpression ||
 					   child instanceof NaryExpression ||
-				       (child instanceof BinaryExpression && 
-				        (op==ExprOperator.JOIN || 
-				         ((BinaryExpression)child).op()!=op));
+				       child instanceof BinaryExpression;
 			}
 			
 			/** @ensures appends the tokenization of the given node to this.tokens */
