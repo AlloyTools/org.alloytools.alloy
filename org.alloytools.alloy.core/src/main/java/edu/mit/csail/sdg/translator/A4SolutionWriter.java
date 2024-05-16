@@ -304,7 +304,10 @@ public final class A4SolutionWriter {
                         if (rep != null)
                             rep.write(f.call());
                         StringBuilder sb = new StringBuilder();
-                        Util.encodeXMLs(sb, "\n<skolem label=\"", label, "\" ID=\"m" + m + "\">\n");
+                        Util.encodeXMLs(sb, "\n<skolem label=\"", label, "\" ID=\"m" + m);
+                        if (f.isPrivate != null)
+                            sb.append("\" private=\"yes");
+                        sb.append("\">\n");
                         if (writeExpr(sb.toString(), f.call(), state)) {
                             out.print("</skolem>\n");
                         }
