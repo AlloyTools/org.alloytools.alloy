@@ -322,6 +322,7 @@ public final class A4SolutionReader {
         if (!node.is("skolem"))
             throw new IOException("ID " + id + " is not a skolem.");
         String label = label(node);
+        Attr isPrivate = yes(node, "private") ? Attr.PRIVATE : null;
         Expr type = null;
         for (XMLNode sub : node)
             if (sub.is("types")) {
