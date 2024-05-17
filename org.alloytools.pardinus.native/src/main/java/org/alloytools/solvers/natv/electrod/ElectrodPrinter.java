@@ -22,12 +22,8 @@
  */
 package org.alloytools.solvers.natv.electrod;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
@@ -70,9 +66,9 @@ import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.IntOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.TemporalOperator;
+import kodkod.ast.visitor.AbstractDetector;
 import kodkod.ast.visitor.VoidVisitor;
 import kodkod.engine.bool.BooleanFactory;
-import kodkod.engine.bool.Int;
 import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
@@ -170,10 +166,29 @@ public class ElectrodPrinter {
 		StringBuilder sb = new StringBuilder();
 		sb.append(printUniverse(bounds.universe()));
 		sb.append(printBounds(bounds));
-		sb.append(printShifts(old_opt));
+		if (areShiftsUsed(formula))
+			sb.append(printShifts(old_opt));
 		sb.append(printSymmetries(temp.toString()));
 		sb.append(printConstraint(formula));
 		return sb.toString();
+	}
+
+	/**
+	 * Whether or not shift operators are used.
+	 */
+	private static boolean areShiftsUsed(Formula formula) {
+		boolean intTriggerNode = formula.accept(new AbstractDetector(new HashSet()) {
+			@Override
+			public Boolean visit(BinaryIntExpression binExpr) {
+				if (binExpr.op() == IntOperator.SHA ||
+						binExpr.op() == IntOperator.SHR ||
+						binExpr.op() == IntOperator.SHL)
+					return true;
+				return super.visit(binExpr);
+			}
+		});
+
+		return intTriggerNode;
 	}
 
 	private static String printShifts(Options opt) {
