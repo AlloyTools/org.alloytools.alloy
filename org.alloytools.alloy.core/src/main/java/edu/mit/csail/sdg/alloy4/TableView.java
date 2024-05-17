@@ -35,7 +35,7 @@ public class TableView {
     final static String  SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
     final static String  SUBSCRIPTS   = "₀₁₂₃₄₅₆₇₈₉";
     final static String  BOX_SINGLE   = "│┌─┬┐┘┴└├┼┤";
-    final static Pattern TABLE_P      = Pattern.compile("\\s*\\{(([\\d\\w$\\s,>\"-]+))\\}\\s*");
+    final static Pattern TABLE_P      = Pattern.compile("\\s*\\{(([\\d\\w$\\s,>\"-/]+))\\}\\s*");
 
     public static boolean isTable(String input) {
         return TABLE_P.matcher(input).matches();
