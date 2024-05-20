@@ -30,8 +30,12 @@ jobs:
         with:
           name: test-reports
           path: '*/target/*reports/tests/'
-      - shell: bash
-        run: cd org.alloytools.alloy.dist/conveyor;conveyor make site
+      - uses: hydraulic-software/conveyor/actions/build@v14.2
+        with:
+            signing_key: ${{ secrets.CONVEYOR_ROOT_KEY }}
+            command: make site
+            extra_flags: -f org.alloytools.alloy.dist/conveyor/conveyor.conf
+            agree_to_license: 1
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
