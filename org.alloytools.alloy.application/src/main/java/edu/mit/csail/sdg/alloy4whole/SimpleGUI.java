@@ -2181,7 +2181,11 @@ public final class SimpleGUI implements ComponentListener, Listener {
         log.logLink("[what is new]", "https://alloytools.org/alloy6.html");
         log.log(" ");
         log.logLink("[spec]", "https://alloytools.org/spec.html");
-        log.log(" " + Version.getShortversion() + " built " + Version.buildDate() + "\n\n");
+        log.log(" " + Version.getShortversion() + " built " + Version.buildDate());
+        if (AlloyCore.isDebug()) {
+            log.log(" [in debug mode]");
+        }
+        log.log("\n\n");
 
         // If on Mac, then register an application listener
         try {
