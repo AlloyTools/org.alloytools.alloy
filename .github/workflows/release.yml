@@ -19,10 +19,6 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-      - uses: hydraulic-software/conveyor/actions/build@v14.2
-        with:
-            signing_key: ${{ secrets.CONVEYOR_ROOT_KEY }}
-            agree_to_license: 1
       - shell: bash
         run: ./gradlew --parallel release
       - if: ${{ always() }}
