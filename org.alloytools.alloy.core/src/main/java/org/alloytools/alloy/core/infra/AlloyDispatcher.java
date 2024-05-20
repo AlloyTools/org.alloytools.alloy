@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
@@ -484,8 +485,8 @@ public class AlloyDispatcher extends Env {
             return mainClass.getConstructor(AlloyContext.class).newInstance(context);
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
             try {
-                return mainClass.newInstance();
-            } catch (InstantiationException | IllegalAccessException e2) {
+                return mainClass.getConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e2) {
                 throw new RuntimeException("Capability " + e + " specifies class " + mainClass + " but that class has no default constructor nor one that takes AlloyContext");
             }
         }
@@ -504,12 +505,18 @@ public class AlloyDispatcher extends Env {
             return manifest;
 
         try {
-            URL resource = AlloyDispatcher.class.getResource("/META-INF/MANIFEST.MF");
-            if (resource == null)
-                return Optional.empty();
+            Enumeration<URL> e = AlloyDispatcher.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
 
-            Manifest manifest = new Manifest(resource.openStream());
-            return this.manifest = Optional.of(manifest);
+            while (e.hasMoreElements()) {
+                URL nextElement = e.nextElement();
+                Manifest manifest = new Manifest(nextElement.openStream());
+                java.util.jar.Attributes mainAttributes = manifest.getMainAttributes();
+                String bsn = mainAttributes.getValue("Bundle-SymbolicName");
+                if ("org.alloytools.alloy.dist".equals(bsn)) {
+                    return this.manifest = Optional.of(manifest);
+                }
+            }
+            return Optional.empty();
         } catch (IOException e) {
             log.error("No Manifest found {}", e, e);
             return Optional.empty();

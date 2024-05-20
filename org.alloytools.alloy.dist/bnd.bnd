@@ -1,7 +1,6 @@
 
 Main-Class: org.alloytools.alloy.core.infra.Alloy
 JPM-Command: alloy
-
 -buildpath: \
 	org.alloytools.alloy.application,\
 	org.alloytools.alloy.core,\
