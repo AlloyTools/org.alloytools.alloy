@@ -3,7 +3,6 @@ name: release
 on:
   push:
     branches: ["release"]
-    tags: [ 'v*' ]
 
 env:
   LC_ALL: en_US.UTF-8
