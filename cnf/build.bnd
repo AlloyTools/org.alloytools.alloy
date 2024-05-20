@@ -26,7 +26,7 @@ base.version:           6.2.0
 Bundle-Version:         ${base.version}.${tstamp}
 
 # Remove -SNAPSHOT for release version
--pom:                   version=${base.version}-SNAPSHOT
+-pom:                   version=${base.version}
 -groupid:               org.alloytools
 -includepackage         *;from:=classes
 
