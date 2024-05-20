@@ -6,3 +6,4 @@
 	aQute.libg
 
 Export-Package kodkod.*
+-nojunit true
