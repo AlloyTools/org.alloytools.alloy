@@ -41,5 +41,5 @@ jobs:
           prerelease: false
           draft: true
           files: |
-             output/
+             output/**
              org.alloytools.alloy.dist/target/*.jar
