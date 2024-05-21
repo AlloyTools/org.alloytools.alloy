@@ -35,9 +35,11 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
+          generate_release_notes: true
+          name: Alloy
+          body: Alloy is an open source language and analyzer for software modeling. It has been used in a wide range of applications, from finding holes in security mechanisms to designing telephone switching networks.
           prerelease: false
           draft: true
           files: |
-             org.alloytools.alloy.dist/conveyor/output
+             output/
              org.alloytools.alloy.dist/target/*.jar
-             */target/reports
