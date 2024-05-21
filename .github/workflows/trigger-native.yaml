@@ -5,7 +5,7 @@ on:
     branches: master
     paths:
       - 'org.alloytools.pardinus.native/native-code/**'
-      - '.github/**'
+      - '.github/trigger-native.yaml'
 
 jobs:
   electrod:
