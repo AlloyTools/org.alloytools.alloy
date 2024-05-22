@@ -109,12 +109,12 @@ public class ElectrodPrinter {
 	 *            the problem's formula.
 	 * @param bounds
 	 *            the problem's bounds.
-	 * @param rep 
+	 * @param old_opt
 	 * @return the printed Electrod problem.
 	 * @throws InvalidUnboundedProblem
 	 *             if the problem is not supported by Electrod.
 	 */
-	public static String print(Formula formula, PardinusBounds bounds, Options old_opt)
+	public static String print(Formula formula, PardinusBounds bounds, Map<Relation,String> rel2name, Options old_opt)
 			throws InvalidUnboundedProblem {
 		// use a reporter to intercept the symmetry breaking predicate
 		StringBuilder temp = new StringBuilder();
@@ -165,11 +165,11 @@ public class ElectrodPrinter {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(printUniverse(bounds.universe()));
-		sb.append(printBounds(bounds));
+		sb.append(printBounds(bounds,rel2name));
 		if (areShiftsUsed(formula))
 			sb.append(printShifts(old_opt));
 		sb.append(printSymmetries(temp.toString()));
-		sb.append(printConstraint(formula));
+		sb.append(printConstraint(formula,rel2name));
 		return sb.toString();
 	}
 
@@ -230,20 +230,20 @@ public class ElectrodPrinter {
 	/**
 	 * Prints the goal formula, either a run or check command. At the Kodkod
 	 * level, every thing is a run command (checks are simply negated goals).
-	 * 
-	 * @param formula
-	 *            the goal formula.
+	 *
+	 * @param formula    the goal formula.
+	 * @param rel2name
 	 * @return the goal in Electrod's concrete syntax.
 	 */
-	private static String printConstraint(Formula formula) {
+	private static String printConstraint(Formula formula, Map<Relation,String> rel2name) {
 		StringBuilder sb = new StringBuilder("run\n");
 		if (formula instanceof NaryFormula && ((NaryFormula) formula).op() == FormulaOperator.AND) {
 			for (int i = 0; i < ((NaryFormula) formula).size(); i++) {
-				sb.append(printFormula(((NaryFormula) formula).child(i)));
+				sb.append(printFormula(((NaryFormula) formula).child(i),rel2name));
 				sb.append(";\n");
 			}
 		} else {
-			sb.append(printFormula(formula));
+			sb.append(printFormula(formula,rel2name));
 			sb.append(";\n");
 		}
 		return sb.toString();
@@ -269,12 +269,12 @@ public class ElectrodPrinter {
 	/**
 	 * Prints the bounds of the declared relations, distinguishing between
 	 * static and variable relations.
-	 * 
-	 * @param bounds
-	 *            the bounds.
+	 *
+	 * @param bounds     the bounds.
+	 * @param rel2name
 	 * @return the bounds in Electrod's concrete syntax.
 	 */
-	private static String printBounds(Bounds bounds) {
+	private static String printBounds(Bounds bounds, Map<Relation,String> rel2name) {
 		StringBuilder sb = new StringBuilder();
 		Bounds bnd = bounds;
 		for (Relation r : bnd.relations()) {
@@ -282,7 +282,11 @@ public class ElectrodPrinter {
 				sb.append("var ");
 			else
 				sb.append("const ");
-			sb.append(normRel(r.toString()));
+			String label = normRel(r.toString());
+			while (rel2name.containsValue(label))
+				label = label+"_";
+			rel2name.put(r,label);
+			sb.append(label);
 			sb.append(" :");
 			sb.append(r.arity());
 			sb.append(" ");
@@ -382,8 +386,8 @@ public class ElectrodPrinter {
 	 *            the formula.
 	 * @return the formula in Electrod's concrete syntax.
 	 */
-	private static String printFormula(Formula formula) {
-		final LTL2Electrod formatter = new LTL2Electrod(0,80);
+	private static String printFormula(Formula formula, Map<Relation,String> rel2name) {
+		final LTL2Electrod formatter = new LTL2Electrod(0,80,rel2name);
 		formula.accept(formatter);
 		return formatter.tokens.toString();
 	
@@ -397,6 +401,7 @@ public class ElectrodPrinter {
 	private static class LTL2Electrod implements VoidVisitor {
 			final StringBuilder tokens;
 			private final int lineLength;
+			private final Map<Relation, String> rel2name;
 			private int indent, lineStart;
 			private Formula lastFormula;
 			
@@ -404,12 +409,13 @@ public class ElectrodPrinter {
 			 * Constructs a new tokenizer.
 			 * @ensures no this.tokens
 			 */
-			LTL2Electrod(int offset, int line) {
+			LTL2Electrod(int offset, int line, Map<Relation,String> rel2name) {
 				assert offset >= 0 && offset < line;
 				this.tokens = new StringBuilder();
 				this.lineLength = line;
 				this.lineStart = 0;
 				this.indent = offset;
+				this.rel2name = rel2name;
 				indent();
 			}
 			
@@ -465,8 +471,7 @@ public class ElectrodPrinter {
 			/*--------------LEAVES---------------*/
 			/** @ensures this.tokens' = concat[ this.tokens, node ] */
 			public void visit(Relation node) { 
-				String s = String.valueOf(node);
-				append(normRel(s)); 
+				append(rel2name.get(node));
 			}
 
 			/** @ensures this.tokens' = concat[ this.tokens, node ] */
@@ -906,6 +911,7 @@ public class ElectrodPrinter {
 
 	};
 
+
 	/**
 	 * Converts identifiers into a version that is compatible with Electrod by
 	 * removing '/', '.' and '$' symbols.
@@ -919,8 +925,8 @@ public class ElectrodPrinter {
 		else if (Arrays.asList(protected_keywords).contains(id))
 			id = "p#" + id;
 		return id.replace("/", "##").replace(".", "#")
-				.replace("$", "skolem#").replace("\"","$")
-				.replace("<empty>","empty");
+				.replaceFirst("^\\$", "skolem#").replace("$","skolem#")
+				.replace("\"","$").replace("<empty>","empty");
 	}
 
 	/**
