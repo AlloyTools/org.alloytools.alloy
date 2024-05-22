@@ -117,7 +117,8 @@ public class ElectrodPrinter {
 	public static String print(Formula formula, PardinusBounds bounds, Map<Relation,String> rel2name, Options old_opt)
 			throws InvalidUnboundedProblem {
 		// use a reporter to intercept the symmetry breaking predicate
-		StringBuilder temp = new StringBuilder();
+		List<List<Entry<Relation, Tuple>>> originals = new ArrayList<>();
+		List<List<Entry<Relation, Tuple>>> permuteds = new ArrayList<>();
 		Options opt = new ExtendedOptions();
 		Reporter reporter = new AbstractReporter() {
 			
@@ -131,11 +132,8 @@ public class ElectrodPrinter {
 					List<Entry<Relation, Tuple>> _permuted) {
 				if (_original.size()+_permuted.size()==0)
 					return;
-				String tmp = printLexList(_original);
-				temp.append(tmp.substring(0,tmp.length()-1));
-				temp.append(" <= ");
-				temp.append(printLexList(_permuted).substring(1));
-				temp.append(";\n");
+				originals.add(new ArrayList<>(_original));
+				permuteds.add(new ArrayList<>(_permuted));
 			}
 			
 			@Override
@@ -168,7 +166,7 @@ public class ElectrodPrinter {
 		sb.append(printBounds(bounds,rel2name));
 		if (areShiftsUsed(formula))
 			sb.append(printShifts(old_opt));
-		sb.append(printSymmetries(temp.toString()));
+		sb.append(printSymmetries(originals,permuteds,rel2name));
 		sb.append(printConstraint(formula,rel2name));
 		return sb.toString();
 	}
@@ -257,11 +255,20 @@ public class ElectrodPrinter {
 	 *            the symmetries.
 	 * @return the symmetries in Electrod's concrete syntax or empty.
 	 */
-	private static String printSymmetries(String syms) {
-		if (syms.length() == 0)
-			return syms;
+	private static String printSymmetries(List<List<Entry<Relation, Tuple>>> originals, List<List<Entry<Relation, Tuple>>> permuteds, Map<Relation,String> rel2name) {
+		StringBuilder temp = new StringBuilder();
+		for (int i = 0; i < originals.size(); i++) {
+			String tmp = printLexList(originals.get(i),rel2name);
+			temp.append(tmp.substring(0, tmp.length() - 1));
+			temp.append(" <= ");
+			temp.append(printLexList(permuteds.get(i),rel2name).substring(1));
+			temp.append(";\n");
+		}
+
+		if (temp.length() == 0)
+			return temp.toString();
 		StringBuilder sb = new StringBuilder("sym\n");
-		sb.append(normRel(syms));
+		sb.append(temp);
 		sb.append("\n");
 		return sb.toString();
 	}
@@ -349,12 +356,12 @@ public class ElectrodPrinter {
 	 *            the detected symmetries.
 	 * @return the symmetries in Electrod's concrete syntax.
 	 */
-	private static String printLexList(List<Entry<Relation, Tuple>> syms) {
+	private static String printLexList(List<Entry<Relation, Tuple>> syms, Map<Relation,String> rel2name) {
 		StringBuilder sb = new StringBuilder("");
 		sb.append("[ ");
 		for (Entry<Relation, Tuple> t : syms) {
 			sb.append("( "); 
-			sb.append(t.getKey());
+			sb.append(rel2name.get(t.getKey()));
 			sb.append(printTuple(t.getValue()));
 			sb.append(") ");
 		}
@@ -925,7 +932,7 @@ public class ElectrodPrinter {
 		else if (Arrays.asList(protected_keywords).contains(id))
 			id = "p#" + id;
 		return id.replace("/", "##").replace(".", "#")
-				.replaceFirst("^\\$", "skolem#").replace("$","skolem#")
+				.replaceFirst("^\\$", "skolem#").replace("$","#")
 				.replace("\"","$").replace("<empty>","empty");
 	}
 
