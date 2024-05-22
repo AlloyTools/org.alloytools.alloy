@@ -3,11 +3,13 @@ package org.alloytools.solvers.natv.electrod;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import kodkod.ast.Formula;
+import kodkod.ast.Relation;
 import kodkod.engine.AbortedException;
 import kodkod.engine.InvalidSolverParamException;
 import kodkod.engine.Solution;
@@ -80,7 +82,8 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
             formula = formula.and(symbForm);
 
             formula = Skolemizer.skolemize(annotateRoots(formula), bounds, options).node();
-            String electrod = ElectrodPrinter.print(formula, bounds, options);
+            Map<Relation, String> rel2name = new HashMap<>();
+            String electrod = ElectrodPrinter.print(formula, bounds, rel2name, options);
             Solution solution;
             if (solverId == null) {
                 try {
@@ -94,7 +97,7 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
                 }
             } else {
                 String xml = execute(this, electrod, bounds);
-                ElectrodReader rd = new ElectrodReader(bounds);
+                ElectrodReader rd = new ElectrodReader(bounds,rel2name);
                 TemporalInstance temporalInstance = rd.read(xml);
                 Statistics stats = new Statistics(rd.nbvars, 0, 0, rd.ctime, rd.atime);
                 solution = temporalInstance == null ? Solution.unsatisfiable(stats, null) : Solution.satisfiable(stats, temporalInstance);
