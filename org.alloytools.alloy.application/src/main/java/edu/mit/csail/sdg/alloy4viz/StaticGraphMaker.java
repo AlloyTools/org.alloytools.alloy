@@ -115,7 +115,7 @@ public final class StaticGraphMaker {
     private static final List<Color> colorsNeon     = Util.asList(new Color(231, 41, 138), new Color(217, 95, 2), new Color(166, 118, 29), new Color(102, 166, 30), new Color(27, 158, 119), new Color(117, 112, 179));
 
     /** The list of colors, in order, to assign each legend. */
-    private static final List<Color> colorsColorBlind = Util.asList(new Color(68, 119, 170), new Color(102, 204, 238), new Color(34, 136, 51), new Color(204, 187, 68), new Color(238, 102, 119), new Color(170, 51, 119), new Color(187, 187, 187));
+    private static final List<Color> colorsColorBlind = Util.asList(new Color(119, 170, 221), new Color(153, 221, 255), new Color(187, 204, 51), new Color(170, 170, 0), new Color(238, 136, 102), new Color(255, 170, 187), new Color(221, 221, 221));
 
     private List<Color> getColors(DotPalette palette) {
         List<Color> colors;
@@ -125,7 +125,7 @@ public final class StaticGraphMaker {
             colors = colorsStandard;
         else if (palette == DotPalette.MARTHA)
             colors = colorsMartha;
-        else if (palette == DotPalette.BRIGHT)
+        else if (palette == DotPalette.TOL_LIGHT)
             colors = colorsColorBlind;
         else
             colors = colorsNeon;
