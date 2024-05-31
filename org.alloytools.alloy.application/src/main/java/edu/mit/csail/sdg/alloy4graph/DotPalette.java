@@ -34,7 +34,7 @@ public enum DotPalette {
                         /** Neon palette. */
                         NEON("Neon"),
                         /** Color-blind palette. */
-                        BRIGHT("Bright");
+                        TOL_LIGHT("Tol");
 
     /** The text to display. */
     private final String displayText;
