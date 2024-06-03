@@ -156,6 +156,7 @@ public final class StaticInstanceReader {
      * Create a new AlloyRelation whose label is unambiguous with any existing one.
      */
     private AlloyRelation makeRel(String label, boolean isPrivate, boolean isMeta, boolean isVar, boolean isSkolem, List<AlloyType> types) {
+        label = Util.tail(label);
         while (label.equals(Sig.UNIV.label) || label.equals(Sig.SIGINT.label) || label.equals(Sig.SEQIDX.label) || label.equals(Sig.STRING.label))
             label = label + "'";
         while (true) {
