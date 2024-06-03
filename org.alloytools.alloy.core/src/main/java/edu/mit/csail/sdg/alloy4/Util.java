@@ -826,7 +826,8 @@ public final class Util {
     /** Returns the substring after the last "/" */
     public static String tail(String string) {
         int i = string.lastIndexOf('/');
-        return (i < 0) ? string : string.substring(i + 1);
+        String label = (i < 0) ? string : string.substring(i + 1);
+        return string.charAt(0) == '$' && label.charAt(0) != '$' ? "$" + label : label;
     }
 
     /** Returns the substring without "this/". May not start with "this/" in skolems. */
