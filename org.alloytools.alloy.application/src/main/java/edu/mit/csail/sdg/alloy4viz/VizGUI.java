@@ -967,18 +967,14 @@ public final class VizGUI implements ComponentListener {
             }
             case TEXT : {
                 List<String> textualOutput = IntStream.range(current, current + numPanes).mapToObj(x -> myStates.get(0).getOriginalInstance().originalA4.toString(x)).collect(Collectors.toList());
-                content = getTextComponent(textualOutput);
+                content = getTextComponent(textualOutput, true);
                 break;
             }
             case TABLE : {
                 List<String> textualOutput = IntStream.range(current, current + numPanes).mapToObj(x -> myStates.get(0).getOriginalInstance().originalA4.format(x)).collect(Collectors.toList());
-                content = getTextComponent(textualOutput);
+                content = getTextComponent(textualOutput, false);
                 break;
             }
-            // case XML: {
-            // content=getTextComponent(xmlFileName);
-            // break;
-            // }
             default : {
                 if (myGraphPanel == null || numPanes != myGraphPanel.numPanels())
                     myGraphPanel = new VizGraphPanel(frame, myStates, false);
@@ -1128,12 +1124,11 @@ public final class VizGUI implements ComponentListener {
     /**
      * Helper method returns a the JTextAreas containing the given texts.
      */
-    private JComponent getTextComponent(List<String> texts) {
+    private JComponent getTextComponent(List<String> texts, boolean wrap) {
         JPanel diagramsScrollPanels = new JPanel();
         diagramsScrollPanels.setLayout(new BoxLayout(diagramsScrollPanels, BoxLayout.LINE_AXIS));
         for (int i = 0; i < texts.size(); i++) {
-
-            final JTextArea ta = OurUtil.textarea(texts.get(i), 10, 10, false, false);
+            final JTextArea ta = OurUtil.textarea(texts.get(i), 10, 10, false, wrap);
 
             try {
                 List<Entry<Integer,Integer>> dfs = new ArrayList<>();

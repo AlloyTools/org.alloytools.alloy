@@ -84,6 +84,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.swing.Action;
 import javax.swing.Box;
@@ -202,6 +203,8 @@ import kodkod.engine.satlab.SATFactory;
  *           binaries; added the option to select the decompose strategy
  */
 public final class SimpleGUI implements ComponentListener, Listener {
+
+    final static Pattern TYPED_P = Pattern.compile("([A-Z]{3,6}):");
 
     MacUtil macUtil;
 
@@ -1014,7 +1017,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
             menuItem(runmenu, "Show Metamodel", 'M', 'M', doShowMetaModel());
             if (Version.experimental)
                 menuItem(runmenu, "Show Parse Tree", 'P', doShowParseTree());
-            menuItem(runmenu, "Open Evaluator", 'V', doLoadEvaluator());
         } finally {
             wrap = false;
         }
@@ -1165,6 +1167,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * This method stops the current run or check (how==0 means DONE, how==1 means
      * FAIL, how==2 means STOP).
      */
+
     Runner doStop(Integer how) {
         if (wrap)
             return wrapMe(how);
@@ -1190,7 +1193,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             else if (subrunningTask == 3)
                 viz.loadXML(f, true);
             else if (AutoVisualize.get() || subrunningTask == 1)
-                doVisualize("XML: " + f);
+                doVisualize(f);
         } else {
             viz.noNewInstance();
         }
@@ -1259,20 +1262,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
             return wrapMe();
         if (latestInstance.length() == 0)
             log.logRed("No previous instances are available for viewing.\n\n");
-        else
-            doVisualize("XML: " + latestInstance);
-        return null;
-    }
-
-    /**
-     * This method happens when the user tries to load the evaluator from the main
-     * GUI.
-     */
-    private Runner doLoadEvaluator() {
-        if (wrap)
-            return wrapMe();
-        log.logRed("Note: the evaluator is now in the visualizer.\n" + "Just click the \"Evaluator\" toolbar button\n" + "when an instance is shown in the visualizer.\n");
-        log.flush();
+        else {
+            doVisualize(latestInstance);
+        }
         return null;
     }
 
@@ -1308,7 +1300,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 for (String f : viz.getInstances()) {
                     JMenuItem it = new JMenuItem("Instance: " + viz.getInstanceTitle(f), null);
                     it.setIcon((isViz && f.equals(viz.getXMLfilename())) ? iconYes : iconNo);
-                    it.addActionListener(doVisualize("XML: " + f));
+                    it.addActionListener(doVisualize(f));
                     w.add(it);
                 }
         } finally {
@@ -1654,6 +1646,11 @@ public final class SimpleGUI implements ComponentListener, Listener {
     Runner doVisualize(String arg) {
         if (wrap)
             return wrapMe(arg);
+
+        if (!TYPED_P.matcher(arg).lookingAt()) {
+            arg = "XML: " + arg;
+        }
+
         text.clearShade();
         if (arg.startsWith("MSG: ")) { // MSG: message
             OurDialog.showtext("Detailed Message", arg.substring(5));
@@ -2185,7 +2182,11 @@ public final class SimpleGUI implements ComponentListener, Listener {
         log.logLink("[what is new]", "https://alloytools.org/alloy6.html");
         log.log(" ");
         log.logLink("[spec]", "https://alloytools.org/spec.html");
-        log.log(" " + Version.getShortversion() + " built " + Version.buildDate() + "\n\n");
+        log.log(" " + Version.getShortversion() + " built " + Version.buildDate());
+        if (AlloyCore.isDebug()) {
+            log.log(" [in debug mode]");
+        }
+        log.log("\n\n");
 
         // If on Mac, then register an application listener
         try {
@@ -2377,9 +2378,5 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 r.run();
             }
         };
-    }
-
-    private FindReplace getOrderedTab() {
-        return null;
     }
 }

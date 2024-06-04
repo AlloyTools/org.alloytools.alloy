@@ -30,7 +30,7 @@ import java.util.NoSuchElementException;
  * <b>Thread Safety:</b> Safe.
  */
 
-public final class SimTuple implements Iterable<SimAtom> {
+public final class SimTuple implements Iterable<SimAtom>, Comparable<SimTuple> {
 
     /** Stores the tuple. */
     private SimAtom[] array;
@@ -381,5 +381,17 @@ public final class SimTuple implements Iterable<SimAtom> {
                 throw new UnsupportedOperationException();
             }
         };
+    }
+
+    @Override
+    public int compareTo(SimTuple o) {
+        for (int i = 0; i < arity(); i++) {
+            SimAtom a = get(i);
+            SimAtom b = o.get(i);
+            int n = a.compareTo(b);
+            if (n != 0)
+                return n;
+        }
+        return 0;
     }
 }

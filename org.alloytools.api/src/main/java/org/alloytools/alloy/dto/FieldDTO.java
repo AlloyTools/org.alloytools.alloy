@@ -34,4 +34,6 @@ public class FieldDTO {
      */
     public String  type;
 
+    public int     arity;
+
 }

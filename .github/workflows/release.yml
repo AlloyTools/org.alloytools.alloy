@@ -3,7 +3,6 @@ name: release
 on:
   push:
     branches: ["release"]
-    tags: [ 'v*' ]
 
 env:
   LC_ALL: en_US.UTF-8
@@ -13,33 +12,34 @@ env:
 jobs:
   build:
     name: build on OpenJDK Linux
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
-      - name: Git Checkout
-        uses: actions/checkout@v1
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: 17
-      - name: Build
-        shell: bash
+          distribution: temurin
+      - shell: bash
         run: ./gradlew --parallel release
-      - name: Macos
-        shell: bash
-        run: cd org.alloytools.alloy.dist;./macos
-      - name: save-tests
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v2
+      - if: ${{ always() }}
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: '*/target/*reports/tests/'
-      - name: Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+      - uses: hydraulic-software/conveyor/actions/build@v14.2
         with:
+            signing_key: ${{ secrets.CONVEYOR_ROOT_KEY }}
+            command: make site
+            extra_flags: -f org.alloytools.alloy.dist/conveyor/conveyor.conf
+            agree_to_license: 1
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          name: Alloy
+          body: Alloy is an open source language and analyzer for software modeling. It has been used in a wide range of applications, from finding holes in security mechanisms to designing telephone switching networks.
           prerelease: false
-          draft: false
+          draft: true
           files: |
+             output/**
              org.alloytools.alloy.dist/target/*.jar
-             org.alloytools.alloy.dist/target/*.dmg
-             */target/reports

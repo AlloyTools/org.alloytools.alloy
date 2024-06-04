@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
@@ -61,10 +62,12 @@ import kodkod.solvers.api.NativeCode.Platform;
 @Description("The Alloy dispatcher" )
 public class AlloyDispatcher extends Env {
 
-    static final Justif  justif = new Justif(60, 0, 10, 20, 30);
+    public static int    exitCode = 0;
 
-    PrintStream          out    = System.out;
-    PrintStream          err    = System.err;
+    static final Justif  justif   = new Justif(60, 0, 10, 20, 30);
+
+    PrintStream          out      = System.out;
+    PrintStream          err      = System.err;
     AlloyContext         context;
     Optional<Manifest>   manifest;
     Logger               log;
@@ -110,6 +113,8 @@ public class AlloyDispatcher extends Env {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        if (exitCode != 0)
+            System.exit(exitCode);
     }
 
     public void __alloy(BaseOptions options) throws Exception {
@@ -155,6 +160,8 @@ public class AlloyDispatcher extends Env {
                     if (target instanceof Reporter && target != this) {
                         getInfo((Reporter) target);
                     }
+                    if (!getErrors().isEmpty())
+                        exitCode = 1;
                     report(System.err);
                     return;
                 }
@@ -162,7 +169,7 @@ public class AlloyDispatcher extends Env {
             error("no such command %s, use help to get a full list", subcommand);
             __help(null);
             report(System.err);
-
+            exitCode = 2;
         } finally {
             mains.forEach(o -> {
                 if (o instanceof AutoCloseable)
@@ -478,8 +485,8 @@ public class AlloyDispatcher extends Env {
             return mainClass.getConstructor(AlloyContext.class).newInstance(context);
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
             try {
-                return mainClass.newInstance();
-            } catch (InstantiationException | IllegalAccessException e2) {
+                return mainClass.getConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e2) {
                 throw new RuntimeException("Capability " + e + " specifies class " + mainClass + " but that class has no default constructor nor one that takes AlloyContext");
             }
         }
@@ -498,12 +505,18 @@ public class AlloyDispatcher extends Env {
             return manifest;
 
         try {
-            URL resource = AlloyDispatcher.class.getResource("/META-INF/MANIFEST.MF");
-            if (resource == null)
-                return Optional.empty();
+            Enumeration<URL> e = AlloyDispatcher.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
 
-            Manifest manifest = new Manifest(resource.openStream());
-            return this.manifest = Optional.of(manifest);
+            while (e.hasMoreElements()) {
+                URL nextElement = e.nextElement();
+                Manifest manifest = new Manifest(nextElement.openStream());
+                java.util.jar.Attributes mainAttributes = manifest.getMainAttributes();
+                String bsn = mainAttributes.getValue("Bundle-SymbolicName");
+                if ("org.alloytools.alloy.dist".equals(bsn)) {
+                    return this.manifest = Optional.of(manifest);
+                }
+            }
+            return Optional.empty();
         } catch (IOException e) {
             log.error("No Manifest found {}", e, e);
             return Optional.empty();

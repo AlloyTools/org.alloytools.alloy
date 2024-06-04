@@ -35,7 +35,7 @@ public interface Module extends Clause {
      * Returns the text of the "MODULE" line at the top of the file; "unknown" if
      * the line has not be parsed from the file yet.
      */
-    public String getModelName();
+    public String getModuleName();
 
     /**
      * Return the simplest path pointing to this Module ("" if this is the main
