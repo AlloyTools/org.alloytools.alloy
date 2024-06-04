@@ -77,6 +77,10 @@ public interface Module extends Clause {
     public SafeList<Func> getAllFunc();
 
     /**
+     *      * Return an unmodifiable list containing all functions defined in this module or a reachable submodule.
+     */
+    public SafeList<Func> getAllReachableUserDefinedFunc();
+    /**
      * Return an unmodifiable list of all assertions in this module.
      */
     public ConstList<Assert> getAllAssertions();

@@ -53,6 +53,7 @@ import edu.mit.csail.sdg.alloy4viz.VizGUI;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Module;
 import edu.mit.csail.sdg.ast.Sig;
+import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Solution;
@@ -227,6 +228,10 @@ public final class SimpleReporter extends A4Reporter {
                 span.log("   " + array[1] + "\n");
                 len2 = len3 = len4 = span.getLength();
             }
+            if (array[0].equals("scopes")) {
+                span.log("   " + array[1]);
+                len3 = len4 = span.getLength();
+            }
             if (array[0].equals("translate")) {
                 span.log("   " + array[1]);
                 len3 = len4 = span.getLength();
@@ -385,8 +390,33 @@ public final class SimpleReporter extends A4Reporter {
     public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
         startTime = System.currentTimeMillis();
         startCount = 0;
+        startStep = -1;
+        seenStep = -1;
         cb("translate", "Solver=" + solver + (maxtrace < 1 ? "" : " Steps=" + mintrace + ".." + maxtrace) + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + " Mode=" + strat + "\n");
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public void actualScopes(Iterable<Sig> sigs, Map<PrimSig,Integer> scopes, Set<Sig> exacts) {
+
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (Sig s : sigs)
+            if (!s.builtin && s.isSubset == null) {
+                if (!first)
+                    sb.append(", ");
+                else
+                    first = false;
+                if (exacts.contains(s))
+                    sb.append("exactly " + scopes.get(s) + " " + Util.tailThis(s.label));
+                else if (scopes.keySet().contains(s))
+                    sb.append(scopes.get(s) + " " + Util.tailThis(s.label));
+                else
+                    sb.append(Util.tailThis(s.label) + "????");
+            }
+        cb("scopes", "Actual scopes: " + sb.toString() + "\n");
+    }
+
 
     /** {@inheritDoc} */
     @Override
@@ -598,7 +628,7 @@ public final class SimpleReporter extends A4Reporter {
 
     /** Helper method to write out a full XML file. */
     private static void writeXML(A4Reporter rep, Module mod, String filename, A4Solution sol, Map<String,String> sources) throws Exception {
-        sol.writeXML(rep, filename, mod.getAllFunc(), sources);
+        sol.writeXML(rep, filename, mod.getAllReachableUserDefinedFunc(), sources);
         if (AlloyCore.isDebug())
             validate(filename);
     }

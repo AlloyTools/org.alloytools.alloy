@@ -22,12 +22,8 @@
  */
 package org.alloytools.solvers.natv.electrod;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
@@ -70,7 +66,9 @@ import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.IntOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.TemporalOperator;
+import kodkod.ast.visitor.AbstractDetector;
 import kodkod.ast.visitor.VoidVisitor;
+import kodkod.engine.bool.BooleanFactory;
 import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
@@ -111,21 +109,22 @@ public class ElectrodPrinter {
 	 *            the problem's formula.
 	 * @param bounds
 	 *            the problem's bounds.
-	 * @param rep 
+	 * @param old_opt
 	 * @return the printed Electrod problem.
 	 * @throws InvalidUnboundedProblem
 	 *             if the problem is not supported by Electrod.
 	 */
-	public static String print(Formula formula, PardinusBounds bounds, Reporter rep)
+	public static String print(Formula formula, PardinusBounds bounds, Map<Relation,String> rel2name, Options old_opt)
 			throws InvalidUnboundedProblem {
 		// use a reporter to intercept the symmetry breaking predicate
+		List<List<Entry<Relation, Tuple>>> originals = new ArrayList<>();
+		List<List<Entry<Relation, Tuple>>> permuteds = new ArrayList<>();
 		Options opt = new ExtendedOptions();
-		StringBuilder temp = new StringBuilder();
 		Reporter reporter = new AbstractReporter() {
 			
 			@Override
 			public void warning(String warning) {
-				rep.warning(warning);
+				old_opt.reporter().warning(warning);
 			}
 			
 			@Override
@@ -133,21 +132,18 @@ public class ElectrodPrinter {
 					List<Entry<Relation, Tuple>> _permuted) {
 				if (_original.size()+_permuted.size()==0)
 					return;
-				String tmp = printLexList(_original);
-				temp.append(tmp.substring(0,tmp.length()-1));
-				temp.append(" <= ");
-				temp.append(printLexList(_permuted).substring(1));
-				temp.append(";\n");
+				originals.add(new ArrayList<>(_original));
+				permuteds.add(new ArrayList<>(_permuted));
 			}
 			
 			@Override
 			public void detectedSymmetries(Set<IntSet> parts) {
-				rep.detectedSymmetries(parts);
+				old_opt.reporter().detectedSymmetries(parts);
 			}
 			
 			@Override
 			public void debug(String debug) {
-				rep.debug(debug);
+				old_opt.reporter().debug(debug);
 			}
 
 		};
@@ -161,28 +157,55 @@ public class ElectrodPrinter {
 //					((BinaryExpression) upp).left().equals(func.domain()) && ((BinaryExpression) upp).right().equals(func.range()))
 //				System.out.println(func.relation() + " : " + func.domain() +" -> "+func.targetMult()+" "+func.range());
 //		}
-		
 
-		// retrieve the additional formula imposed by the symbolic
-		// bounds, depending on execution stage
-		Formula symbForm = Formula.TRUE;
-		// if decomposed mode, the amalgamated bounds are always considered
-		if (opt.decomposed() && bounds.amalgamated() != null)
-			symbForm = bounds.amalgamated().resolve(opt.reporter());
-		// otherwise use regular bounds
-		else
-			symbForm = bounds.resolve(opt.reporter());
-		// NOTE: this is already being performed inside the translator, but is not accessible
-
-		Whole t = Translator.translate(formula.and(symbForm), bounds, opt);
+		Whole t = Translator.translate(formula, bounds, opt);
 		bounds = (PardinusBounds) t.bounds();
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(printUniverse(bounds.universe()));
-		sb.append(printBounds(bounds));
-		sb.append(printSymmetries(temp.toString()));
-		sb.append(printConstraint(formula.and(symbForm)));
+		sb.append(printBounds(bounds,rel2name));
+		if (areShiftsUsed(formula))
+			sb.append(printShifts(old_opt));
+		sb.append(printSymmetries(originals,permuteds,rel2name));
+		sb.append(printConstraint(formula,rel2name));
 		return sb.toString();
+	}
+
+	/**
+	 * Whether or not shift operators are used.
+	 */
+	private static boolean areShiftsUsed(Formula formula) {
+		boolean intTriggerNode = formula.accept(new AbstractDetector(new HashSet()) {
+			@Override
+			public Boolean visit(BinaryIntExpression binExpr) {
+				if (binExpr.op() == IntOperator.SHA ||
+						binExpr.op() == IntOperator.SHR ||
+						binExpr.op() == IntOperator.SHL)
+					return true;
+				return super.visit(binExpr);
+			}
+		});
+
+		return intTriggerNode;
+	}
+
+	private static String printShifts(Options opt) {
+		BooleanFactory fact = BooleanFactory.constantFactory(opt);
+		StringBuilder shl = new StringBuilder(), shr = new StringBuilder(), sha = new StringBuilder();
+		shl.append("const Int##SHL :3 { ");
+		shr.append("const Int##SHR :3 { ");
+		sha.append("const Int##SHA :3 { ");
+		for (int i = (int) -Math.pow(2,fact.bitwidth()-1); i < (int) Math.pow(2,fact.bitwidth()-1); i++) {
+			for (int j = (int) -Math.pow(2,fact.bitwidth()-1); j < (int) Math.pow(2, fact.bitwidth() - 1); j++) {
+				shl.append(String.format("( %d %d %d ) ", i, j, fact.integer(i).shl(fact.integer(j)).value()));
+				shr.append(String.format("( %d %d %d ) ", i, j, fact.integer(i).shr(fact.integer(j)).value()));
+				sha.append(String.format("( %d %d %d ) ", i, j, fact.integer(i).sha(fact.integer(j)).value()));
+			}
+		}
+		shl.append("}\n");
+		shr.append("}\n");
+		sha.append("}\n\n");
+		return shl.append(shr).append(sha).toString();
 	}
 
 	/**
@@ -205,20 +228,20 @@ public class ElectrodPrinter {
 	/**
 	 * Prints the goal formula, either a run or check command. At the Kodkod
 	 * level, every thing is a run command (checks are simply negated goals).
-	 * 
-	 * @param formula
-	 *            the goal formula.
+	 *
+	 * @param formula    the goal formula.
+	 * @param rel2name
 	 * @return the goal in Electrod's concrete syntax.
 	 */
-	private static String printConstraint(Formula formula) {
+	private static String printConstraint(Formula formula, Map<Relation,String> rel2name) {
 		StringBuilder sb = new StringBuilder("run\n");
 		if (formula instanceof NaryFormula && ((NaryFormula) formula).op() == FormulaOperator.AND) {
 			for (int i = 0; i < ((NaryFormula) formula).size(); i++) {
-				sb.append(printFormula(((NaryFormula) formula).child(i)));
+				sb.append(printFormula(((NaryFormula) formula).child(i),rel2name));
 				sb.append(";\n");
 			}
 		} else {
-			sb.append(printFormula(formula));
+			sb.append(printFormula(formula,rel2name));
 			sb.append(";\n");
 		}
 		return sb.toString();
@@ -232,11 +255,20 @@ public class ElectrodPrinter {
 	 *            the symmetries.
 	 * @return the symmetries in Electrod's concrete syntax or empty.
 	 */
-	private static String printSymmetries(String syms) {
-		if (syms.length() == 0)
-			return syms;
+	private static String printSymmetries(List<List<Entry<Relation, Tuple>>> originals, List<List<Entry<Relation, Tuple>>> permuteds, Map<Relation,String> rel2name) {
+		StringBuilder temp = new StringBuilder();
+		for (int i = 0; i < originals.size(); i++) {
+			String tmp = printLexList(originals.get(i),rel2name);
+			temp.append(tmp.substring(0, tmp.length() - 1));
+			temp.append(" <= ");
+			temp.append(printLexList(permuteds.get(i),rel2name).substring(1));
+			temp.append(";\n");
+		}
+
+		if (temp.length() == 0)
+			return temp.toString();
 		StringBuilder sb = new StringBuilder("sym\n");
-		sb.append(normRel(syms));
+		sb.append(temp);
 		sb.append("\n");
 		return sb.toString();
 	}
@@ -244,12 +276,12 @@ public class ElectrodPrinter {
 	/**
 	 * Prints the bounds of the declared relations, distinguishing between
 	 * static and variable relations.
-	 * 
-	 * @param bounds
-	 *            the bounds.
+	 *
+	 * @param bounds     the bounds.
+	 * @param rel2name
 	 * @return the bounds in Electrod's concrete syntax.
 	 */
-	private static String printBounds(Bounds bounds) {
+	private static String printBounds(Bounds bounds, Map<Relation,String> rel2name) {
 		StringBuilder sb = new StringBuilder();
 		Bounds bnd = bounds;
 		for (Relation r : bnd.relations()) {
@@ -257,7 +289,11 @@ public class ElectrodPrinter {
 				sb.append("var ");
 			else
 				sb.append("const ");
-			sb.append(normRel(r.toString()));
+			String label = normRel(r.toString());
+			while (rel2name.containsValue(label))
+				label = label+"_";
+			rel2name.put(r,label);
+			sb.append(label);
 			sb.append(" :");
 			sb.append(r.arity());
 			sb.append(" ");
@@ -320,12 +356,12 @@ public class ElectrodPrinter {
 	 *            the detected symmetries.
 	 * @return the symmetries in Electrod's concrete syntax.
 	 */
-	private static String printLexList(List<Entry<Relation, Tuple>> syms) {
+	private static String printLexList(List<Entry<Relation, Tuple>> syms, Map<Relation,String> rel2name) {
 		StringBuilder sb = new StringBuilder("");
 		sb.append("[ ");
 		for (Entry<Relation, Tuple> t : syms) {
 			sb.append("( "); 
-			sb.append(t.getKey());
+			sb.append(rel2name.get(t.getKey()));
 			sb.append(printTuple(t.getValue()));
 			sb.append(") ");
 		}
@@ -357,8 +393,8 @@ public class ElectrodPrinter {
 	 *            the formula.
 	 * @return the formula in Electrod's concrete syntax.
 	 */
-	private static String printFormula(Formula formula) {
-		final LTL2Electrod formatter = new LTL2Electrod(0,80);
+	private static String printFormula(Formula formula, Map<Relation,String> rel2name) {
+		final LTL2Electrod formatter = new LTL2Electrod(0,80,rel2name);
 		formula.accept(formatter);
 		return formatter.tokens.toString();
 	
@@ -372,6 +408,7 @@ public class ElectrodPrinter {
 	private static class LTL2Electrod implements VoidVisitor {
 			final StringBuilder tokens;
 			private final int lineLength;
+			private final Map<Relation, String> rel2name;
 			private int indent, lineStart;
 			private Formula lastFormula;
 			
@@ -379,12 +416,13 @@ public class ElectrodPrinter {
 			 * Constructs a new tokenizer.
 			 * @ensures no this.tokens
 			 */
-			LTL2Electrod(int offset, int line) {
+			LTL2Electrod(int offset, int line, Map<Relation,String> rel2name) {
 				assert offset >= 0 && offset < line;
 				this.tokens = new StringBuilder();
 				this.lineLength = line;
 				this.lineStart = 0;
 				this.indent = offset;
+				this.rel2name = rel2name;
 				indent();
 			}
 			
@@ -440,8 +478,7 @@ public class ElectrodPrinter {
 			/*--------------LEAVES---------------*/
 			/** @ensures this.tokens' = concat[ this.tokens, node ] */
 			public void visit(Relation node) { 
-				String s = String.valueOf(node);
-				append(normRel(s)); 
+				append(rel2name.get(node));
 			}
 
 			/** @ensures this.tokens' = concat[ this.tokens, node ] */
@@ -531,11 +568,10 @@ public class ElectrodPrinter {
 			public void visit(UnaryIntExpression node)  { 
 				final IntExpression child = node.intExpr();
 				final IntOperator op = node.op();
-				final boolean parens = 
-					(op==IntOperator.ABS) || (op==IntOperator.SGN) || 
-					parenthesize(child);
-				append(node.op());
-				visitChild(child, parens);
+				append("fun/"+op.name());
+				append("[");
+				visitChild(child, false);
+				append("]");
 			}
 			
 			/** @ensures appends the given op and child to this.tokens; the child is 
@@ -581,9 +617,7 @@ public class ElectrodPrinter {
 			private boolean parenthesize(ExprOperator op, Expression child) { 
 				return child instanceof IfExpression ||
 					   child instanceof NaryExpression ||
-				       (child instanceof BinaryExpression && 
-				        (op==ExprOperator.JOIN || 
-				         ((BinaryExpression)child).op()!=op));
+				       child instanceof BinaryExpression;
 			}
 			
 			/** @ensures appends the tokenization of the given node to this.tokens */
@@ -615,9 +649,12 @@ public class ElectrodPrinter {
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			public void visit(BinaryIntExpression node) {
 				final IntOperator op = node.op();
-				visitChild(node.left(), parenthesize(op, node.left()));
-				infix(op);
-				visitChild(node.right(), parenthesize(op, node.right()));
+				append("fun/"+op.name());
+				append("[");
+				visitChild(node.left(), false);
+				append(",");
+				visitChild(node.right(), false);
+				append("]");
 			}
 			
 			/** @return true if the given formula needs to be parenthesized if a 
@@ -715,11 +752,11 @@ public class ElectrodPrinter {
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			public void visit(IfIntExpression node) {
 				visitChild(node.condition(), parenthesize(node.condition()));
-				infix("=>");
+				infix("iimplies");
 				indent++;
 				newline();
 				visitChild(node.thenExpr(), parenthesize(node.thenExpr()));
-				infix("else");
+				infix("ielse");
 				newline();
 				visitChild(node.elseExpr(), parenthesize(node.elseExpr()));
 				indent--;
@@ -779,11 +816,14 @@ public class ElectrodPrinter {
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			public void visit(NaryIntExpression node) {
 				final IntOperator op = node.op();
-				visitChild(node.child(0), parenthesize(op, node.child(0)));
+				append("fun/"+op.name());
+				append("[");
+				visitChild(node.child(0), false);
 				for(int i = 1, size = node.size(); i < size; i++) {
-					infix(op);
-					visitChild(node.child(i), parenthesize(op, node.child(i)));
+					append(",");
+					visitChild(node.child(i), false);
 				}
+				append("]");
 			}
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			// [HASLab] break conjuncts if top level
@@ -818,11 +858,10 @@ public class ElectrodPrinter {
 			 *   tokenize[node.intExpr], "]" ] **/
 			// [HASLab] integer relations
 			public void visit(IntToExprCast node) {
-				throw new InvalidUnboundedProblem(lastFormula);
-//				append("Int");
-//				append("[");
-//				node.intExpr().accept(this);
-//				append("]");
+				append("Int");
+				append("[");
+				node.intExpr().accept(this);
+				append("]");
 			}
 			
 			/** @throws InvalidUnboundedProblem 
@@ -832,12 +871,11 @@ public class ElectrodPrinter {
 			public void visit(ExprToIntCast node) {
 				switch(node.op()) { 
 				case SUM:
-					throw new InvalidUnboundedProblem(lastFormula);
-//					append("int");
-//					append("[");
-//					node.expression().accept(this);
-//					append("]");
-//					break;
+					append("int");
+					append("[");
+					node.expression().accept(this);
+					append("]");
+					break;
 				case CARDINALITY : 
 					append("#");
 					append("(");
@@ -880,12 +918,11 @@ public class ElectrodPrinter {
 
 	};
 
+
 	/**
 	 * Converts identifiers into a version that is compatible with Electrod by
 	 * removing '/', '.' and '$' symbols.
-	 * 
-	 * TODO: what if id already has # symbols?
-	 * 
+	 *
 	 * @param id the identifier.
 	 * @return the normalized identifier.
 	 */
@@ -894,15 +931,15 @@ public class ElectrodPrinter {
 			return "unnamed#unnamed";
 		else if (Arrays.asList(protected_keywords).contains(id))
 			id = "p#" + id;
-		return id.replace("/", "##").replace(".", "#").replace("$", "skolem#");
+		return id.replace("/", "##").replace(".", "#")
+				.replaceFirst("^\\$", "skolem#").replace("$","#")
+				.replace("\"","$").replace("<empty>","empty");
 	}
 
 	/**
 	 * Converts identifiers that are compatible with Electrod back to their Kodkod
 	 * internal representation.
-	 * 
-	 * * TODO: what if id already has # symbols?
-	 * 
+	 *
 	 * @param id the identifier.
 	 * @return the denormalized identifier.
 	 */

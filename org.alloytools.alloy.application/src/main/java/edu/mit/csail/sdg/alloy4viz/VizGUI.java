@@ -43,33 +43,27 @@ import java.awt.geom.Path2D;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.JToolBar;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
+import javax.swing.text.Highlighter.HighlightPainter;
 
 import edu.mit.csail.sdg.alloy4.A4Preferences.IntPref;
 import edu.mit.csail.sdg.alloy4.A4Preferences.StringPref;
@@ -308,6 +302,7 @@ public final class VizGUI implements ComponentListener {
 
     /** The list of XML files loaded in this session so far. */
     private final List<String> xmlLoaded = new ArrayList<String>();
+    private final List<String> thmLoaded = new ArrayList<String>();
 
     /**
      * Return the list of XML files loaded in this session so far.
@@ -345,6 +340,7 @@ public final class VizGUI implements ComponentListener {
         else
             toolbar.add(OurUtil.makeH(5));
     }
+
 
     // ======== The Preferences
     // ======================================================================================//
@@ -657,7 +653,7 @@ public final class VizGUI implements ComponentListener {
             forkMenu = menuItem(instanceMenu, "Show New Fork", 'F', 'F', doFork());
             // [electrum] trace navigation buttons
             leftNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, doNavLeft());
-            rightNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, doNavRight());
+            rightNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_RIGHT, KeyEvent.VK_RIGHT, doNavRight());
             thememenu = menu(mb, "&Theme", doRefreshTheme());
             if (standalone || windowmenu == null)
                 windowmenu = menu(mb, "&Window", doRefreshWindow());
@@ -812,7 +808,7 @@ public final class VizGUI implements ComponentListener {
         }
         projectionButton.setEnabled(true);
         projectionPopup.removeAll();
-        VizState myState = myStates.get(statepanes - 1);
+        VizState myState = myStates.get(0);
         final Set<AlloyType> projected = myState.getProjectedTypes();
         for (final AlloyType t : myState.getOriginalModel().getTypes())
             if (myState.canProject(t)) {
@@ -868,7 +864,7 @@ public final class VizGUI implements ComponentListener {
                 vizButton.setEnabled(false);
         }
         // [electrum] this info is the same in all states
-        final AlloyInstance oInst = myStates.get(statepanes - 1).getOriginalInstance();
+        final AlloyInstance oInst = myStates.get(0).getOriginalInstance();
         final boolean isMeta = oInst.isMetamodel;
         final boolean isTrace = oInst.originalA4.getMaxTrace() >= 0;
         final boolean hasConfigs = oInst.originalA4.hasConfigs();
@@ -921,10 +917,39 @@ public final class VizGUI implements ComponentListener {
         // on the right
         if (frame != null)
             frame.setTitle(makeVizTitle());
-        // [electrum] all visualizations focus on current state
+        int numPanes = isTrace && !isMeta ? statepanes : 1;
+
+
+        if (current != lastParsed) {
+            for (int i = 0; i < getVizState().size(); i++) {
+                File f = new File(getXMLfilename());
+                try {
+                    if (!f.exists())
+                        throw new IOException("File " + getXMLfilename() + " does not exist.");
+
+                    if (current + i < 0) {
+                        getVizState().set(i, null);
+                    } else {
+                        AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, current + i);
+                        if (getVizState().get(i) != null)
+                            getVizState().get(i).loadInstance(myInstance);
+                        else {
+                            getVizState().set(i, new VizState(getVizState().get(getVizState().size() - 1)));
+                            getVizState().get(i).loadInstance(myInstance);
+                        }
+                    }
+                } catch (Throwable e) {
+                    OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
+                    doCloseAll();
+                    return;
+                }
+            }
+            lastParsed = current;
+        }
+
         switch (currentMode) {
             case Tree : {
-                final VizTree t = new VizTree(myStates.get(statepanes - 1).getOriginalInstance().originalA4, makeVizTitle(), fontSize, current);
+                final VizTree t = new VizTree(myStates.get(0).getOriginalInstance().originalA4, makeVizTitle(), fontSize, current);
                 final JScrollPane scroll = OurUtil.scrollpane(t, Color.BLACK, Color.WHITE, new OurBorder(true, false, true, false));
                 scroll.addFocusListener(new FocusListener() {
 
@@ -941,56 +966,27 @@ public final class VizGUI implements ComponentListener {
                 break;
             }
             case TEXT : {
-                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.toString(current);
+                List<String> textualOutput = IntStream.range(current, current + numPanes).mapToObj(x -> myStates.get(0).getOriginalInstance().originalA4.toString(x)).collect(Collectors.toList());
                 content = getTextComponent(textualOutput, true);
                 break;
             }
             case TABLE : {
-                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.format(current);
+                List<String> textualOutput = IntStream.range(current, current + numPanes).mapToObj(x -> myStates.get(0).getOriginalInstance().originalA4.format(x)).collect(Collectors.toList());
                 content = getTextComponent(textualOutput, false);
                 break;
             }
             default : {
-                List<VizState> numPanes = isTrace && !isMeta ? myStates : myStates.subList(statepanes - 1, statepanes);
-                if (myGraphPanel == null || numPanes.size() != myGraphPanel.numPanels()) {
-                    if (isTrace && !isMeta) // [electrum] test whether trace
-                        myGraphPanel = new VizGraphPanel(frame, myStates, false);
-                    else
-                        myGraphPanel = new VizGraphPanel(frame, myStates.subList(statepanes - 1, statepanes), false);
-                } else {
-                    if (isTrace && !isMeta) {
-                        for (int i = 0; i < statepanes; i++) {
-                            File f = new File(getXMLfilename());
-                            try {
-                                if (!f.exists())
-                                    throw new IOException("File " + getXMLfilename() + " does not exist.");
+                if (myGraphPanel == null || numPanes != myGraphPanel.numPanels())
+                    myGraphPanel = new VizGraphPanel(frame, myStates, false);
 
-                                if (current + i < 0) {
-                                    getVizState().set(i, null);
-                                } else {
-                                    AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, current + i);
-                                    if (getVizState().get(i) != null)
-                                        getVizState().get(i).loadInstance(myInstance);
-                                    else {
-                                        getVizState().set(i, new VizState(getVizState().get(statepanes - 1))); // [electrum] get the previous state (including theme)
-                                        getVizState().get(i).loadInstance(myInstance);
-                                    }
-                                }
-                            } catch (Throwable e) {
-                                OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
-                                doCloseAll();
-                                return;
-                            }
-                        }
-                    }
-                    myGraphPanel.seeDot(frame, false);
-                    myGraphPanel.remakeAll(frame);
-                }
+                myGraphPanel.seeDot(frame, false);
+                myGraphPanel.remakeAll(frame);
+
                 content = myGraphPanel;
             }
         }
 
-        // [electrum] update the trace overview
+        // update the trace overview
         if (isTrace && !isMeta) {
             JComponent aux = content;
 
@@ -1026,7 +1022,7 @@ public final class VizGUI implements ComponentListener {
         JComponent left = null;
         if (settingsOpen == 1) {
             if (myCustomPanel == null)
-                myCustomPanel = new VizCustomizationPanel(splitpane, myStates.get(statepanes - 1));
+                myCustomPanel = new VizCustomizationPanel(splitpane, myStates.get(0));
             else
                 myCustomPanel.remakeAll();
             left = myCustomPanel;
@@ -1086,8 +1082,8 @@ public final class VizGUI implements ComponentListener {
      */
     private String makeVizTitle() {
         // [electrum] this info is the same in all states
-        String filename = (!myStates.isEmpty() ? myStates.get(statepanes - 1).getOriginalInstance().filename : "");
-        String commandname = (!myStates.isEmpty() ? myStates.get(statepanes - 1).getOriginalInstance().commandname : "");
+        String filename = (!myStates.isEmpty() ? myStates.get(0).getOriginalInstance().filename : "");
+        String commandname = (!myStates.isEmpty() ? myStates.get(0).getOriginalInstance().commandname : "");
         int i = filename.lastIndexOf('/');
         if (i >= 0)
             filename = filename.substring(i + 1);
@@ -1126,27 +1122,64 @@ public final class VizGUI implements ComponentListener {
     }
 
     /**
-     * Helper method returns a JTextArea containing the given text.
-     *
-     * @param b
+     * Helper method returns a the JTextAreas containing the given texts.
      */
-    private JComponent getTextComponent(String text, boolean wrap) {
-        final JTextArea ta = OurUtil.textarea(text, 10, 10, false, wrap);
-        final JScrollPane ans = new JScrollPane(ta, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED) {
+    private JComponent getTextComponent(List<String> texts, boolean wrap) {
+        JPanel diagramsScrollPanels = new JPanel();
+        diagramsScrollPanels.setLayout(new BoxLayout(diagramsScrollPanels, BoxLayout.LINE_AXIS));
+        for (int i = 0; i < texts.size(); i++) {
+            final JTextArea ta = OurUtil.textarea(texts.get(i), 10, 10, false, wrap);
 
-            private static final long serialVersionUID = 0;
+            try {
+                List<Entry<Integer,Integer>> dfs = new ArrayList<>();
+                if (i != 0)
+                    dfs = findDiffs(texts.get(i - 1), texts.get(i), currentMode);
 
-            @Override
-            public void setFont(Font font) {
-                super.setFont(font);
+                Highlighter highlighter = ta.getHighlighter();
+                HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+                for (Entry<Integer,Integer> df : dfs)
+                    highlighter.addHighlight(df.getKey(), df.getKey() + df.getValue(), painter);
+            } catch (BadLocationException e) {
+                e.printStackTrace();
             }
-        };
-        ans.setBorder(new OurBorder(true, false, true, false));
-        String fontName = OurDialog.getProperFontName("Lucida Console", "Monospaced");
-        Font font = new Font(fontName, Font.PLAIN, fontSize);
-        ans.setFont(font);
-        ta.setFont(font);
-        return ans;
+
+            final JScrollPane ans = new JScrollPane(ta, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED) {
+
+                private static final long serialVersionUID = 0;
+
+                @Override
+                public void setFont(Font font) {
+                    super.setFont(font);
+                }
+            };
+            ans.setBorder(new OurBorder(true, false, true, false));
+            String fontName = OurDialog.getProperFontName("Lucida Console", "Monospaced");
+            Font font = new Font(fontName, Font.PLAIN, fontSize);
+            ans.setFont(font);
+            ta.setFont(font);
+            JScrollPane diagramScrollPanel = OurUtil.scrollpane(ans, new OurBorder(true, true, true, false));
+            diagramsScrollPanels.add(diagramScrollPanel);
+        }
+
+        return diagramsScrollPanels;
+    }
+
+    /*
+     * Detects relations whose textual representation has changed between two steps.
+     * Returns positions of changes in the post state.
+     */
+    static private List<Entry<Integer,Integer>> findDiffs(String s1, String s2, VisualizerMode currentMode) {
+        List<Entry<Integer,Integer>> res = new ArrayList<>();
+        String delim = currentMode == VisualizerMode.TABLE ? "\n\n" : "\n";
+
+        Set<String> cs1 = new HashSet<String>(Arrays.asList(s1.split(delim)));
+        Set<String> cs2 = new HashSet<String>(Arrays.asList(s2.split(delim)));
+
+        for (String c : cs2)
+            if (!cs1.contains(c))
+                res.add(new SimpleEntry<Integer,Integer>(s2.indexOf(c), c.length()));
+
+        return res;
     }
 
     // /** Helper method that reads a file and then return a JTextArea
@@ -1168,6 +1201,10 @@ public final class VizGUI implements ComponentListener {
         return myGraphPanel.alloyGetViewer();
     }
 
+    public void noNewInstance() {
+        updateDisplay();
+    }
+
     /** Load the XML instance. */
     public void loadXML(final String fileName, boolean forcefully) {
         loadXML(fileName, forcefully, current);
@@ -1181,11 +1218,10 @@ public final class VizGUI implements ComponentListener {
         if (!forcefully)
             seg_iteration = false;
         if (forcefully || !xmlFileName.equals(this.xmlFileName)) {
-            // [electrum] update all viz states
-            for (int i = 0; i < statepanes; i++) {
-                try {
-                    if (!f.exists())
-                        throw new IOException("File " + xmlFileName + " does not exist.");
+            try {
+                if (!f.exists())
+                    throw new IOException("File " + xmlFileName + " does not exist.");
+                for (int i = 0; i < statepanes; i++) {
                     if (i >= myStates.size()) {
                         AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state + i);
                         myStates.add(new VizState(myInstance));
@@ -1198,17 +1234,23 @@ public final class VizGUI implements ComponentListener {
                             vstate.loadInstance(myInstance);
                         myStates.set(i, vstate);
                     }
-                } catch (Throwable e) {
-                    xmlLoaded.remove(fileName);
-                    xmlLoaded.remove(xmlFileName);
-                    OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
-                    if (xmlLoaded.size() > 0) {
-                        loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false, state + i);
-                        return;
+                    boolean isMeta = myStates.get(i).getOriginalInstance().isMetamodel;
+                    boolean isTrace = myStates.get(i).getOriginalInstance().originalA4.getMaxTrace() >= 0;
+                    if (!isTrace || isMeta) {
+                        myStates.retainAll(Arrays.asList(myStates.get(0)));
+                        break;
                     }
-                    doCloseAll();
+                }
+            } catch (Throwable e) {
+                xmlLoaded.remove(fileName);
+                xmlLoaded.remove(xmlFileName);
+                OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
+                if (xmlLoaded.size() > 0) {
+                    loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false, state);
                     return;
                 }
+                doCloseAll();
+                return;
             }
             repopulateProjectionPopup();
             xml2title.put(xmlFileName, makeVizTitle());
@@ -1227,6 +1269,7 @@ public final class VizGUI implements ComponentListener {
             frame.setTitle("Alloy Visualizer " + Version.version() + " loading... Please wait...");
             OurUtil.show(frame);
         }
+        lastParsed = current;
         updateDisplay();
     }
 
@@ -1272,7 +1315,7 @@ public final class VizGUI implements ComponentListener {
         }
         filename = Util.canon(filename);
         try {
-            myStates.get(statepanes - 1).savePaletteXML(filename); // [electrum] same theme in all states
+            myStates.get(0).savePaletteXML(filename); // [electrum] same theme in all states
             filename = Util.canon(filename); // Since the canon name may have
                                             // changed
             addThemeHistory(filename);
@@ -1497,6 +1540,29 @@ public final class VizGUI implements ComponentListener {
         return null;
     }
 
+    private Expr tupleToExpr(A4TupleSet ts, Map<String, ExprVar> reifs) {
+        Expr tupleset = null;
+        for (A4Tuple t : ts) {
+            Expr tuple = null;
+            for (int ai = 0; ai < t.arity(); ai++) {
+                Expr atom;
+                if (t.atom(ai).matches("-?\\d+")) {
+                    atom = ExprConstant.makeNUMBER(Integer.valueOf(t.atom(ai)));
+                } else {
+                    atom = reifs.computeIfAbsent("_" + t.atom(ai).replace("$", "").replace("/", "_"), k -> ExprVar.make(null, k));
+                }
+                tuple = tuple == null ? atom : tuple.product(atom);
+            }
+            tupleset = tupleset == null ? tuple : tupleset.plus(tuple);
+        }
+        if (tupleset == null) {
+            tupleset = ExprConstant.EMPTYNESS;
+            for (int ai = 0; ai < ts.arity() - 1; ai++)
+                tupleset = tupleset.product(ExprConstant.EMPTYNESS);
+        }
+        return tupleset;
+    }
+
     /**
      * Export the current instance as an Alloy formula that exactly represents it.
      */
@@ -1512,63 +1578,43 @@ public final class VizGUI implements ComponentListener {
         A4Solution inst = myStates.get(myStates.size() - 1).getOriginalInstance().originalA4;
 
         // calculate the values of the static relations
-        StringJoiner config = new StringJoiner(" and ");
+        StringJoiner config = new StringJoiner("\n  ");
+        config.add("// configuration");
         for (Sig s : inst.getAllReachableSigs()) {
-            if (s.isPrivate != null || s.isVariable != null || s.equals(Sig.UNIV) || s.equals(Sig.NONE))
-                continue;
-            A4TupleSet ts = inst.eval(s);
-            Expr tupleset = null;
-            for (A4Tuple t : ts) {
-                Expr tuple = null;
-                for (int ai = 0; ai < t.arity(); ai++) {
-                    Expr atom;
-                    if (t.atom(ai).matches("-?\\d+")) {
-                        atom = ExprConstant.makeNUMBER(Integer.valueOf(t.atom(ai)));
-                    } else {
-                        atom = reifs.computeIfAbsent("_" + t.atom(ai).replace("$", "").replace("/", "_"), k -> ExprVar.make(null, k));
-                    }
-                    tuple = tuple == null ? atom : tuple.product(tuple);
-                }
-                tupleset = tupleset == null ? tuple : tupleset.plus(tuple);
+            if (!(s.isPrivate != null || s.isVariable != null || s.equals(Sig.UNIV) || s.equals(Sig.NONE))) {
+                A4TupleSet ts = inst.eval(s);
+                config.add(s.equal(tupleToExpr(ts, reifs)).toString());
             }
-            if (tupleset == null) {
-                tupleset = ExprConstant.EMPTYNESS;
-                for (int ai = 0; ai < ts.arity() - 1; ai++)
-                    tupleset = tupleset.product(ExprConstant.EMPTYNESS);
+            for (Sig.Field f : s.getFields()) {
+                if (f.isPrivate != null || f.isVariable != null)
+                    continue;
+                A4TupleSet ts = inst.eval(f);
+                config.add(f.equal(tupleToExpr(ts,reifs)).toString());
             }
-            config.add(s.equal(tupleset).toString());
         }
 
         // calculate the values of the variable relations
         List<String> states = new ArrayList<String>();
-        for (int i = 0; i < inst.getTraceLength(); i++) {
-            StringJoiner state = new StringJoiner(" and ");
-            for (Sig s : inst.getAllReachableSigs()) {
-                if (s.isPrivate != null || (s.isVariable == null && !s.equals(Sig.UNIV)))
-                    continue;
-                A4TupleSet ts = inst.eval(s, i);
-                Expr tupleset = null;
-                for (A4Tuple t : ts) {
-                    Expr tuple = null;
-                    for (int ai = 0; ai < t.arity(); ai++) {
-                        Expr atom;
-                        if (t.atom(ai).matches("-?\\d+")) {
-                            atom = ExprConstant.makeNUMBER(Integer.valueOf(t.atom(ai)));
-                        } else {
-                            atom = reifs.computeIfAbsent("_" + t.atom(ai).replace("$", "").replace("/", "_"), k -> ExprVar.make(null, k));
-                        }
-                        tuple = tuple == null ? atom : tuple.product(tuple);
+        if (inst.getMaxTrace() > 0) {
+            for (int i = 0; i < inst.getTraceLength(); i++) {
+                StringJoiner state = new StringJoiner("\n  ");
+                for (Sig s : inst.getAllReachableSigs()) {
+                    if (!(s.isPrivate != null || (s.isVariable == null && !s.equals(Sig.UNIV)))) {
+                        A4TupleSet ts = inst.eval(s, i);
+                        state.add(s.equal(tupleToExpr(ts, reifs)).toString());
                     }
-                    tupleset = tupleset == null ? tuple : tupleset.plus(tuple);
+                    for (Sig.Field f : s.getFields()) {
+                        if (f.isPrivate != null || f.isVariable == null)
+                            continue;
+                        A4TupleSet ts = inst.eval(f, i);
+                        state.add(f.equal(tupleToExpr(ts, reifs)).toString());
+                    }
                 }
-                if (tupleset == null) {
-                    tupleset = ExprConstant.EMPTYNESS;
-                    for (int ai = 0; ai < ts.arity() - 1; ai++)
-                        tupleset = tupleset.product(ExprConstant.EMPTYNESS);
-                }
-                state.add(s.equal(tupleset).toString());
+                states.add("{\n  // state " + i + "\n  " + state.toString() + "\n  }");
             }
-            states.add(state.toString());
+        } else {
+            A4TupleSet ts = inst.eval(Sig.UNIV);
+            config.add(Sig.UNIV.equal(tupleToExpr(ts, reifs)).toString());
         }
         StringBuilder sb = new StringBuilder();
         if (!reifs.isEmpty()) {
@@ -1593,12 +1639,13 @@ public final class VizGUI implements ComponentListener {
         for (String s : states)
             statesj.add(s);
         sb.append(statesj.toString());
-        sb.append("\n\n  ");
+        sb.append("\n\n");
         // print looping suffix
         if (inst.getMaxTrace() >= 0) {
+            sb.append("  // enforce loop\n  ");
             for (int i = 0; i < inst.getLoopState(); i++)
                 sb.append("after ");
-            sb.append(" {\n");
+            sb.append("always {\n");
             for (int i = inst.getLoopState(); i < inst.getTraceLength(); i++) {
                 StringBuilder sa = new StringBuilder("");
                 for (int j = inst.getLoopState(); j < inst.getTraceLength(); j++)
@@ -1606,13 +1653,12 @@ public final class VizGUI implements ComponentListener {
                 sa.append("(");
                 sa.append(states.get(i));
                 sa.append(")");
-                sb.append("    (" + states.get(i) + ") implies " + sa.toString() + "\n");
+                sb.append("  (" + states.get(i) + ") implies " + sa.toString() + "\n");
             }
             sb.append("  }\n");
         }
         sb.append("}\n");
-
-        OurDialog.showtext("Text Viewer", sb.toString());
+        OurDialog.showtext("Instance as predicate", sb.toString());
         return null;
     }
 
@@ -1732,9 +1778,9 @@ public final class VizGUI implements ComponentListener {
     private Runner doNavRight() {
         if (wrap)
             return wrapMe();
-        int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
-        int lop = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getLoopState();
-        int lmx = current + 1 + statepanes > lst ? current + 1 + statepanes : lst;
+        int lst = getVizState().get(0).getOriginalInstance().originalA4.getTraceLength();
+        int lop = getVizState().get(0).getOriginalInstance().originalA4.getLoopState();
+        int lmx = current + 1 + getVizState().size() > lst ? current + 1 + getVizState().size() : lst;
         int lox = lmx - (lst - lop);
         current = normalize(current + 1, lmx, lox);
         updateDisplay();
@@ -1875,10 +1921,10 @@ public final class VizGUI implements ComponentListener {
     private Runner doApply() {
         if (!myStates.isEmpty()) {
             // [electrum] apply theme to all states
-            for (int i = 0; i < myStates.size() - 1; i++) {
-                VizState ss = myStates.get(statepanes - 1);
-                myStates.set(i, new VizState(ss));
-                myStates.get(i).loadInstance(ss.getOriginalInstance());
+            for (int i = 1; i < myStates.size(); i++) {
+                VizState old = myStates.get(1);
+                myStates.set(i, new VizState(myStates.get(0)));
+                myStates.get(i).loadInstance(old.getOriginalInstance());
             }
         }
         if (!wrap)
@@ -1999,6 +2045,8 @@ public final class VizGUI implements ComponentListener {
      */
     private int    current          = 0;
 
+    private int lastParsed = -1;
+
     /*
      * Draws a graph depicting the shape of the trace being visualized. States are
      * clickable for navigation.
@@ -2023,9 +2071,10 @@ public final class VizGUI implements ComponentListener {
                 int offsety = 2 + heighti / 2;
                 // center and apply offset according to current state
                 int offsetx = this.getWidth() / 2 + ((dist - 2 * radius) / 2) - (dist * (current + 1));
-                int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
-                int lop = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getLoopState();
-                int lmx = current + statepanes > lst ? current + statepanes : lst;
+                int lst = getVizState().get(getVizState().size() - 1).getOriginalInstance().tracelen;
+                int lol = getVizState().get(getVizState().size() - 1).getOriginalInstance().looplen;
+                int lop = (lst - lol);
+                int lmx = current + getVizState().size() > lst ? current + getVizState().size() : lst;
                 int lox = lmx - (lst - lop);
                 Ellipse2D loop = null, last = null;
                 for (int i = 0; i < lmx; i++) {
@@ -2036,7 +2085,7 @@ public final class VizGUI implements ComponentListener {
                     if (i == lox)
                         loop = circl;
                     Color tmp = g2.getColor();
-                    int max = normalize(current + statepanes - 1, lmx, lox);
+                    int max = normalize(current + getVizState().size() - 1, lmx, lox);
                     int min = normalize(current, lmx, lox);
                     if ((min <= max && i >= min && i <= max) || (min > max && (i >= min || (i <= max && i >= lox)))) {
                         g2.setColor(new Color(255, 255, 255));

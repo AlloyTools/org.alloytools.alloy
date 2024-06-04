@@ -390,8 +390,7 @@ public final class SimInstance extends VisitReturn<Object> {
         if (s.isAbstract != null && !s.children().isEmpty())
             throw new ErrorAPI("Cannot add an atom to an abstract parent sig.");
         String label = sig.label + "$";
-        if (label.startsWith("this/"))
-            label = label.substring(5);
+        label = Util.tailThis(label);
         for (int i = 0;; i++) {
             SimAtom atom = SimAtom.make(label + i);
             if (hasAtom(atom))

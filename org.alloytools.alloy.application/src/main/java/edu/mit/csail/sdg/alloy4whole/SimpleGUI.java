@@ -1192,9 +1192,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 viz.loadXML(f, true, 0);
             else if (subrunningTask == 3)
                 viz.loadXML(f, true);
-            else if (AutoVisualize.get() || subrunningTask == 1) {
+            else if (AutoVisualize.get() || subrunningTask == 1)
                 doVisualize(f);
-            }
+        } else {
+            viz.noNewInstance();
         }
         return null;
     }

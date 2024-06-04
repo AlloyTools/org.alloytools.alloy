@@ -120,7 +120,6 @@ import kodkod.instance.Tuple;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
-import kodkod.util.ints.IndexedEntry;
 
 /**
  * This class stores a SATISFIABLE or UNSATISFIABLE solution. It is also used as
@@ -345,9 +344,6 @@ public final class A4Solution {
         this.maxseq = maxseq;
         this.maxtrace = maxtrace;
         this.mintrace = mintrace;
-        // [electrum] test whether unbounded solver
-        if (maxtrace == Integer.MAX_VALUE && !opt.solver.unbounded())
-            throw new ErrorAPI("Bounded engines do not support open bounds on steps.");
         if (bitwidth < 0)
             throw new ErrorSyntax("Cannot specify a bitwidth less than 0.");
         if (bitwidth > 30)
@@ -425,7 +421,7 @@ public final class A4Solution {
         solver_opts.setCoreGranularity(opt.coreGranularity);
         solver_opts.setSymmetryBreaking(sym);
         solver_opts.setSkolemDepth(opt.skolemDepth);
-        solver_opts.setBitwidth(bitwidth > 0 ? bitwidth : (int) Math.ceil(Math.log(atoms.size())) + 1);
+        solver_opts.setBitwidth(bitwidth > 0 ? bitwidth : (int) Math.ceil(Math.log(atoms.size()+1) / Math.log(2)) + 1);
         solver_opts.setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);
 
         solver_opts.setSolver(opt.solver.doOptions(solver_opts));
@@ -439,7 +435,11 @@ public final class A4Solution {
         }
         String check = getOriginalCommand().replace(' ', '_').replace('$', '-');
         solver_opts.setUniqueName(file + "-" + check + "-" + dateFormat.format(new Date()) + "-" + this.hashCode());
-        solver = new PardinusSolver(solver_opts);
+        try {
+            solver = new PardinusSolver(solver_opts);
+        } catch (InvalidSolverParamException e) {
+            throw new ErrorAPI(e.getMessage(),e);
+        }
     }
 
     /**
@@ -1377,7 +1377,7 @@ public final class A4Solution {
                     continue; // Something is wrong; let's skip it
                 while (t.arity() < r.arity())
                     t = UNIV.type().product(t);
-                String n = Util.tail(r.name());
+                String n = Util.tailThis(r.name());
                 while (n.length() > 0 && n.charAt(0) == '$')
                     n = n.substring(1);
                 skolems.add(n);
@@ -1472,7 +1472,7 @@ public final class A4Solution {
         }
         for (PrimSig c : s.children())
             rename(frame, c, nexts, un);
-        String signame = un.make(s.label.startsWith("this/") ? s.label.substring(5) : s.label);
+        String signame = un.make(Util.tailThis(s.label));
         // [electrum] collect atoms from every state
         List<Tuple> list = new ArrayList<Tuple>();
         for (int i = 0; i < frame.getTraceLength(); i++)
@@ -1509,7 +1509,7 @@ public final class A4Solution {
      */
     // [electrum] this is the method now called, iteratively, by the static reader;
     // it reads a state at a time, and the solution is built incrementally
-    A4Solution solve(final A4Reporter rep, A4Solution pre_sol, int loop) throws Err, IOException {
+    A4Solution solve(final A4Reporter rep, A4Solution pre_sol, int looplen) throws Err, IOException {
         // construct the instance from the current state
         Universe static_uni;
         if (pre_sol != null)
@@ -1532,8 +1532,10 @@ public final class A4Solution {
         }
         instances.add(inst);
 
-        if (loop >= instances.size())
-            loop = instances.size() - 1;
+        int loop = (instances.size()-looplen);
+        // loop may be invalid until trace is complete
+        if (loop < 0)
+            loop = instances.size()-1;
 
         // create temporal instance
         TemporalInstance prev = new TemporalInstance(instances, loop, 1);
@@ -1565,7 +1567,7 @@ public final class A4Solution {
         rep.debug("Simplifying the bounds...\n");
         if (opt.inferPartialInstance && simp != null && formulas.size() > 0 && !simp.simplify(rep, this, formulas))
             addFormula(Formula.FALSE, Pos.UNKNOWN);
-        rep.translate(opt.solver.id(), bitwidth, maxseq, mintrace, maxtrace, solver.options().skolemDepth(), solver.options().symmetryBreaking(), A4Preferences.Decompose.values()[opt.decompose_mode].toString());
+        rep.translate(opt.solver.id(), solver.options().bitwidth(), maxseq, mintrace, maxtrace, solver.options().skolemDepth(), solver.options().symmetryBreaking(), A4Preferences.Decompose.values()[opt.decompose_mode].toString());
         fgoal = Formula.and(formulas);
         rep.debug("Generating the solution...\n");
         kEnumerator = null;
@@ -1616,6 +1618,12 @@ public final class A4Solution {
 
         fgoal = Formula.and(formulas);
 
+        PardinusBounds b;
+        if (solver.options().decomposed())
+            b = PardinusBounds.splitAtTemporal(bounds);
+        else
+            b = bounds;
+
         Solution sol;
         if (opt.solver instanceof KKTransformer) {
             sol = doKK(rep, opt);
@@ -1624,18 +1632,12 @@ public final class A4Solution {
         } else if (tryBookExamples && solver.solver instanceof AbstractKodkodSolver) {
             sol = tryBook(rep, cmd);
         } else if (!solver.options().solver().incremental()) {
-            sol = solver.solve(fgoal, bounds);
+            sol = solver.solve(fgoal, b);
         } else
             sol = null;
 
         if (sol == null) {
             final long start = System.nanoTime();
-            PardinusBounds b;
-            if (solver.options().decomposed())
-                b = PardinusBounds.splitAtTemporal(bounds);
-            else
-                b = bounds;
-
             try {
                 kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, b));
             } catch (InvalidMutableExpressionException e) {
@@ -1646,6 +1648,8 @@ public final class A4Solution {
             } catch (InvalidUnboundedProblem e) {
                 Pos p = ((Expr) k2pos(e.node())).pos;
                 throw new ErrorAPI(p, "Invalid specification for complete backend.\n" + e.getMessage());
+            } catch (CapacityExceededException ex) {
+                throw TranslateAlloyToKodkod.rethrow(ex);
             }
             sol = kEnumerator.next();
             this.duration = System.nanoTime() - start;
@@ -1769,30 +1773,11 @@ public final class A4Solution {
             return answer;
         Instance sol = eval.instance();
         StringBuilder sb = new StringBuilder();
-        sb.append("---INSTANCE---");
-        if (sol instanceof TemporalInstance) {
-            sb.append("\nloop=");
-            sb.append(getLoopState());
-            sb.append("\nend=");
-            sb.append(getTraceLength() - 1);
-        }
-        sb.append("\nintegers={");
-        boolean firstTuple = true;
-        for (IndexedEntry<TupleSet> e : sol.intTuples()) {
-            if (firstTuple)
-                firstTuple = false;
-            else
-                sb.append(", ");
-            // No need to print e.index() since we've ensured the Int atom's
-            // String representation is always equal to ""+e.index()
-            Object atom = e.value().iterator().next().atom(0);
-            sb.append(atom2name(atom));
-        }
-        sb.append("}\n");
         try {
             if (sol instanceof TemporalInstance && state < 0) {
+                sb.append("---Trace---\n");
                 for (int i = 0; i < getTraceLength(); i++) {
-                    sb.append("------State " + i + "-------\n");
+                    sb.append("------State " + i + (i == getLoopState() ? " (loop)" : "") + "-------\n");
                     for (Sig s : sigs) {
                         sb.append(s.label).append("=").append(eval(s, i)).append("\n");
                         for (Field f : s.getFields())
@@ -1804,6 +1789,13 @@ public final class A4Solution {
                 }
             } else {
                 state = Math.max(0, state);
+
+                int lln = getTraceLength() - getLoopState();
+                state = state > getLoopState() ? (((state - getLoopState()) % lln) + getLoopState()) : state;
+
+                if (!eval.options().temporal())
+                    sb.append("---Instance---\n");
+
                 for (Sig s : sigs) {
                     sb.append(s.label).append("=").append(eval(s, state)).append("\n");
                     for (Field f : s.getFields())
@@ -1841,8 +1833,9 @@ public final class A4Solution {
     }
 
     /**
-     * If this solution is UNSAT, return itself; else return the next solution
-     * according to the selected operation (which could be SAT or UNSAT).
+     * If this solution is UNSAT as a result of a next/next config, return itself;
+     * else return the next solution according to the selected operation (which
+     * could be SAT or UNSAT).
      *
      * @throws ErrorAPI if the solver was not an incremental solver
      */
@@ -1851,11 +1844,11 @@ public final class A4Solution {
             throw new ErrorAPI("This solution is not yet solved, so next() is not allowed.");
         if (eval == null)
             return this;
-        if (p == -3) {
-            if (nextCache == null)
-                nextCache = new A4Solution(this, -3);
+        if (nextCache == null && (p == -3 || p == -1))
+            nextCache = new A4Solution(this, p);
+
+        if (nextCache != null)
             return nextCache;
-        }
 
         return new A4Solution(this, p); // [electrum] do not cache, may have different arguments
     }
@@ -1996,15 +1989,15 @@ public final class A4Solution {
         if (eval == null)
             return "---OUTCOME---\nUnsatisfiable.\n";
 
-        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, state);
-        return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
+        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, skolems, state);
+        return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toList()));
     }
 
     public Table toTable(int state) {
         if (!satisfiable())
             return new Table(0, 0, 0);
 
-        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, state);
+        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, skolems, state);
 
         Table result = new Table(table.size() + 1, 2, 1);
         result.set(0, 0, "sig");

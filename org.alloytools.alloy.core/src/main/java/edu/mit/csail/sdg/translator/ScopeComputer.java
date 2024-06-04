@@ -352,8 +352,7 @@ final class ScopeComputer {
             n = n - lower;
             // Pick a name for them
             String name = sig.label;
-            if (name.startsWith("this/"))
-                name = name.substring(5);
+            name = Util.tailThis(name);
             name = un.make(name);
             // Now, generate each atom using the format "SIGNAME$INDEX"
             // By prepending the index with 0 so that they're the same width, we
@@ -532,6 +531,7 @@ final class ScopeComputer {
         for (int i = 0; set.size() < sc.maxstring; i++)
             set.add("\"String" + i + "\"");
         sc.atoms.addAll(set);
+        rep.actualScopes(sigs, sc.sig2scope, sc.exact.keySet());
         A4Solution sol = new A4Solution(cmd.toString(), sc.bitwidth, sc.mintrace, sc.maxtrace, sc.maxseq, set, sc.atoms, rep, opt, cmd.expects);
         return new Pair<A4Solution,ScopeComputer>(sol, sc);
     }

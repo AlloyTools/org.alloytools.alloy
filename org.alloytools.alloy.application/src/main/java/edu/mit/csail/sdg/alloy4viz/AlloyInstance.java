@@ -122,6 +122,8 @@ public final class AlloyInstance {
      * This always stores an empty unmodifiable set of tuples.
      */
     private static final Set<AlloyTuple>             noTuple = Collections.unmodifiableSet(new TreeSet<AlloyTuple>());
+    public final int tracelen;
+    public final int looplen;
 
     /**
      * Create a new instance.
@@ -139,12 +141,14 @@ public final class AlloyInstance {
      *            not in the model. So there's no need to explicitly filter them out
      *            prior to passing "atom2sets" and "rel2tuples" to the constructor.)
      */
-    public AlloyInstance(A4Solution originalA4, String filename, String commandname, AlloyModel model, Map<AlloyAtom,Set<AlloySet>> atom2sets, Map<AlloyRelation,Set<AlloyTuple>> rel2tuples, boolean isMetamodel) {
+    public AlloyInstance(A4Solution originalA4, String filename, String commandname, AlloyModel model, Map<AlloyAtom,Set<AlloySet>> atom2sets, Map<AlloyRelation,Set<AlloyTuple>> rel2tuples, boolean isMetamodel, int tracelen, int looplen) {
         this.originalA4 = originalA4;
         this.filename = filename;
         this.commandname = commandname;
         this.model = model;
         this.isMetamodel = isMetamodel;
+        this.tracelen = tracelen;
+        this.looplen = looplen;
         // First, construct atom2sets (Use a treemap because we want its keyset
         // to be sorted)
         {

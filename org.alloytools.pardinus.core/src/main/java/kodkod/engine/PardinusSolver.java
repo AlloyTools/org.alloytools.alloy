@@ -79,12 +79,12 @@ public class PardinusSolver implements
 	public PardinusSolver(ExtendedOptions options) {
 		if (options == null)
 			throw new NullPointerException();
-		
+
 		if (!options.temporal() && options.unbounded())
-			throw new IllegalArgumentException("Unbounded solver only for temporal problems.");
+			throw new InvalidSolverParamException("Unbounded solver only for temporal problems.");
 		
 		if (options.targetoriented() && !options.solver().maxsat())
-			throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");			
+			throw new InvalidSolverParamException("A max sat solver is required for target-oriented solving.");
 		
 		this.options = options;
 		this.solver = solver();
@@ -132,10 +132,7 @@ public class PardinusSolver implements
 		assert !options.unbounded() || options.solver().unbounded();
 		
 		if (options.unbounded() && !options.solver().unbounded())
-			throw new IllegalArgumentException("Cannot run complete with purely bounded solver.");
-
-		if (!options.temporal() && options.solver().unbounded())
-			throw new IllegalArgumentException("Cannot run static with complete model checkers.");
+			throw new InvalidSolverParamException("Bounded engines do not support complete model checking.");
 
 		if (options.decomposed()) {
 
@@ -154,8 +151,8 @@ public class PardinusSolver implements
 			if (options.temporal()) {
 				return getTemporalSolver(options);
 			} else {
-				ExtendedSolver solver = new ExtendedSolver(options);
-				return solver;				
+				return getStaticSolver(options);
+
 			}
 			
 		}
@@ -164,10 +161,18 @@ public class PardinusSolver implements
 	
 	private TemporalSolver<ExtendedOptions> getTemporalSolver(ExtendedOptions options) {
 		SATFactory s = options.solver();
-		if ( s instanceof TemporalSolverFactory) {
+		if (s instanceof TemporalSolverFactory) {
 			return ((TemporalSolverFactory)s).getTemporalSolver(options);
 		} else
 			return new TemporalPardinusSolver(options);
+	}
+
+	private AbstractSolver<PardinusBounds,ExtendedOptions> getStaticSolver(ExtendedOptions options) {
+		SATFactory s = options.solver();
+		if (s instanceof TemporalSolverFactory) {
+			return StaticWrapper.wrap((TemporalSolverFactory) s, options);
+		} else
+			return new ExtendedSolver(options);
 	}
 
 	/**

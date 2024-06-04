@@ -66,7 +66,7 @@ public final class StaticInstanceReader {
     private final LinkedHashMap<Sig,AlloyType>       sig2type    = new LinkedHashMap<Sig,AlloyType>();
 
     /**
-     * This maps each Sig to its corresponding unique VIsualizer AlloyAtom (if
+     * This maps each Sig to its corresponding unique Visualizer AlloyAtom (if
      * isMeta is true).
      */
     private final LinkedHashMap<Sig,AlloyAtom>       sig2atom    = new LinkedHashMap<Sig,AlloyAtom>();
@@ -75,11 +75,22 @@ public final class StaticInstanceReader {
      * This stores the "extends" relationship among sigs (if isMeta is true).
      */
     private final LinkedHashSet<AlloyTuple>          exts        = new LinkedHashSet<AlloyTuple>();
+    private final LinkedHashSet<AlloyTuple>          mems        = new LinkedHashSet<AlloyTuple>();
+
+    private final LinkedHashSet<AlloyAtom>          absts        = new LinkedHashSet<AlloyAtom>();
+    private final LinkedHashSet<AlloyAtom>          ones        = new LinkedHashSet<AlloyAtom>();
+    private final LinkedHashSet<AlloyAtom>          lones        = new LinkedHashSet<AlloyAtom>();
+    private final LinkedHashSet<AlloyAtom>          somes        = new LinkedHashSet<AlloyAtom>();
+    private final LinkedHashSet<AlloyAtom>          vars        = new LinkedHashSet<AlloyAtom>();
+    private final LinkedHashSet<AlloyAtom>          enums        = new LinkedHashSet<AlloyAtom>();
+    private final LinkedHashSet<AlloyAtom>          enummems        = new LinkedHashSet<AlloyAtom>();
 
     /**
      * This stores the "in" relationship among sigs (if isMeta is true).
      */
     private final LinkedHashSet<AlloyTuple>          ins         = new LinkedHashSet<AlloyTuple>();
+
+    private final LinkedHashSet<AlloyTuple>          eqs         = new LinkedHashSet<AlloyTuple>();
 
     /**
      * This stores the set of Visualizer AlloySet objects we created.
@@ -90,6 +101,11 @@ public final class StaticInstanceReader {
      * This maps each Visualizer AlloyRelation to its set of (possibly 0) tuples.
      */
     private final Map<AlloyRelation,Set<AlloyTuple>> rels        = new LinkedHashMap<AlloyRelation,Set<AlloyTuple>>();
+
+    /**
+     * This registers all elements that are not empty along the complete trace.
+     */
+    private final Set<AlloyElement> nonempty_elems = new LinkedHashSet<AlloyElement>();
 
     /**
      * For each sig A and B, if A extends B, and B is not univ, then (A,B) will be
@@ -112,8 +128,7 @@ public final class StaticInstanceReader {
      * Create a new AlloyType whose label is unambiguous with any existing one.
      */
     private AlloyType makeType(String label, boolean isOne, boolean isAbstract, boolean isBuiltin, boolean isPrivate, boolean isMeta, boolean isEnum, boolean isVar) {
-        if (label.startsWith("this/"))
-            label = label.substring(5);
+        label = Util.tailThis(label);
         while (true) {
             AlloyType ans = new AlloyType(label, isOne, isAbstract, isBuiltin, isPrivate, isMeta, isEnum, isVar);
             if (!sig2type.values().contains(ans))
@@ -125,11 +140,12 @@ public final class StaticInstanceReader {
     /**
      * Create a new AlloySet whose label is unambiguous with any existing one.
      */
-    private AlloySet makeSet(String label, boolean isPrivate, boolean isMeta, boolean isVar, AlloyType type) {
+    private AlloySet makeSet(String label, boolean isPrivate, boolean isMeta, boolean isVar, boolean isSkolem, AlloyType type) {
+        label = Util.tail(label);
         while (label.equals(Sig.UNIV.label) || label.equals(Sig.SIGINT.label) || label.equals(Sig.SEQIDX.label) || label.equals(Sig.STRING.label))
             label = label + "'";
         while (true) {
-            AlloySet ans = new AlloySet(label, isPrivate, isMeta, isVar, type);
+            AlloySet ans = new AlloySet(label, isPrivate, isMeta, isVar, isSkolem, type);
             if (!sets.contains(ans))
                 return ans;
             label = label + "'";
@@ -139,11 +155,12 @@ public final class StaticInstanceReader {
     /**
      * Create a new AlloyRelation whose label is unambiguous with any existing one.
      */
-    private AlloyRelation makeRel(String label, boolean isPrivate, boolean isMeta, boolean isVar, List<AlloyType> types) {
+    private AlloyRelation makeRel(String label, boolean isPrivate, boolean isMeta, boolean isVar, boolean isSkolem, List<AlloyType> types) {
+        label = Util.tail(label);
         while (label.equals(Sig.UNIV.label) || label.equals(Sig.SIGINT.label) || label.equals(Sig.SEQIDX.label) || label.equals(Sig.STRING.label))
             label = label + "'";
         while (true) {
-            AlloyRelation ans = new AlloyRelation(label, isPrivate, isMeta, isVar, types);
+            AlloyRelation ans = new AlloyRelation(label, isPrivate, isMeta, isVar, isSkolem, types);
             if (!rels.containsKey(ans))
                 return ans;
             label = label + "'";
@@ -193,8 +210,39 @@ public final class StaticInstanceReader {
         sig2atom.put(s, atom);
         if (s.parent != Sig.UNIV && s.parent != null)
             ts.put(type, sigMETA(s.parent));
-        if (s.parent != null)
-            exts.add(new AlloyTuple(atom, sig2atom.get(s.parent)));
+        if (s.parent != null) {
+            if (!s.isEnumMember())
+                exts.add(new AlloyTuple(atom, sig2atom.get(s.parent)));
+            else
+                mems.add(new AlloyTuple(atom, sig2atom.get(s.parent)));
+        }
+        if (s.isEnum != null) {
+            enums.add(atom);
+            atom2sets.get(atom).add(AlloySet.ENUM);
+        }else if (s.isAbstract != null) {
+            absts.add(atom);
+            atom2sets.get(atom).add(AlloySet.ABSTRACT);
+        }
+        if (s.isEnumMember()) {
+            enummems.add(atom);
+            atom2sets.get(atom).add(AlloySet.ENUMMEM);
+        } else if (s.isOne != null) {
+            ones.add(atom);
+            atom2sets.get(atom).add(AlloySet.ONE);
+        }
+        if (s.isLone != null) {
+            lones.add(atom);
+            atom2sets.get(atom).add(AlloySet.LONE);
+        }
+        if (s.isSome != null) {
+            somes.add(atom);
+            atom2sets.get(atom).add(AlloySet.SOME);
+        }
+        if (s.isVariable != null) {
+            vars.add(atom);
+            atom2sets.get(atom).add(AlloySet.VAR);
+        }
+
         Iterable<PrimSig> children = (s == Sig.UNIV ? toplevels : s.children());
         for (PrimSig sub : children)
             sigMETA(sub);
@@ -221,7 +269,26 @@ public final class StaticInstanceReader {
                 sigMETA((SubsetSig) p);
             else
                 sigMETA((PrimSig) p);
-            ins.add(new AlloyTuple(atom, sig2atom.get(p)));
+            if (!s.exact)
+                ins.add(new AlloyTuple(atom, sig2atom.get(p)));
+            else
+                eqs.add(new AlloyTuple(atom, sig2atom.get(p)));
+        }
+        if (s.isOne != null) {
+            ones.add(atom);
+            atom2sets.get(atom).add(AlloySet.ONE);
+        }
+        if (s.isLone != null) {
+            lones.add(atom);
+            atom2sets.get(atom).add(AlloySet.LONE);
+        }
+        if (s.isSome != null) {
+            somes.add(atom);
+            atom2sets.get(atom).add(AlloySet.SOME);
+        }
+        if (s.isVariable != null) {
+            vars.add(atom);
+            atom2sets.get(atom).add(AlloySet.VAR);
         }
     }
 
@@ -239,6 +306,7 @@ public final class StaticInstanceReader {
                                                               // associated
                                                               // with the most
                                                               // specific sig
+
         for (A4Tuple z : ts) {
             String atom = z.atom(0);
             int i, dollar = atom.lastIndexOf('$');
@@ -252,20 +320,31 @@ public final class StaticInstanceReader {
             atom2sets.put(at, new LinkedHashSet<AlloySet>());
             string2atom.put(atom, at);
         }
+
+        for (int i = 0; i < sol.getTraceLength(); i++)
+            if (((A4TupleSet) (sol.eval(s.minus(sum), i))).size() > 0) {
+                nonempty_elems.add(sig(s));
+                break;
+            }
     }
 
     /**
      * Construct an AlloySet or AlloyRelation corresponding to the given expression.
      */
-    private void setOrRel(A4Solution sol, String label, Expr expr, boolean isPrivate, boolean isMeta, boolean isVar, int state) throws Err {
+    private void setOrRel(A4Solution sol, String label, Expr expr, boolean isPrivate, boolean isMeta, boolean isVar, boolean isSkolem, int state) throws Err {
         for (List<PrimSig> ps : expr.type().fold()) {
             if (ps.size() == 1) {
                 PrimSig t = ps.get(0);
-                AlloySet set = makeSet(label, isPrivate, isMeta, isVar, sig(t));
+                AlloySet set = makeSet(label, isPrivate, isMeta, isVar, isSkolem, sig(t));
                 sets.add(set);
                 for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(t), state))) {
                     atom2sets.get(string2atom.get(tp.atom(0))).add(set);
                 }
+                for (int i = 0; i < sol.getTraceLength(); i++)
+                    if (((A4TupleSet) (sol.eval(expr.intersect(t), i))).size() > 0) {
+                        nonempty_elems.add(set);
+                        break;
+                    }
             } else {
                 Expr mask = null;
                 List<AlloyType> types = new ArrayList<AlloyType>(ps.size());
@@ -276,7 +355,7 @@ public final class StaticInstanceReader {
                     else
                         mask = mask.product(ps.get(i));
                 }
-                AlloyRelation rel = makeRel(label, isPrivate, isMeta, isVar, types);
+                AlloyRelation rel = makeRel(label, isPrivate, isMeta, isVar, isSkolem, types);
                 Set<AlloyTuple> ts = new LinkedHashSet<AlloyTuple>();
                 for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(mask), state))) {
                     AlloyAtom[] atoms = new AlloyAtom[tp.arity()];
@@ -288,6 +367,12 @@ public final class StaticInstanceReader {
                     ts.add(new AlloyTuple(atoms));
                 }
                 rels.put(rel, ts);
+                for (int i = 0; i < sol.getTraceLength(); i++)
+                    if (((A4TupleSet) (sol.eval(expr.intersect(mask), i))).size() > 0) {
+                        nonempty_elems.add(rel);
+                        break;
+                    }
+
             }
         }
     }
@@ -326,12 +411,12 @@ public final class StaticInstanceReader {
                     atoms(sol, (PrimSig) s, state);
             for (Sig s : sol.getAllReachableSigs())
                 if (s instanceof SubsetSig)
-                    setOrRel(sol, s.label, s, s.isPrivate != null, s.isMeta != null, s.isVariable != null, state);
+                    setOrRel(sol, s.label, s, s.isPrivate != null, s.isMeta != null, s.isVariable != null, false, state);
             for (Sig s : sol.getAllReachableSigs())
                 for (Field f : s.getFields())
-                    setOrRel(sol, f.label, f, f.isPrivate != null, f.isMeta != null, f.isVariable != null, state);
+                    setOrRel(sol, f.label, f, f.isPrivate != null, f.isMeta != null, f.isVariable != null, false, state);
             for (ExprVar s : sol.getAllSkolems())
-                setOrRel(sol, s.label, s, false, false, false, state);
+                setOrRel(sol, s.label, s, false, false, false, true, state);
         }
         if (isMeta) {
             sigMETA(Sig.UNIV);
@@ -347,7 +432,7 @@ public final class StaticInstanceReader {
                             types.add(sig(ps.get(i)));
                             tuple[i] = sig2atom.get(ps.get(i));
                         }
-                        AlloyRelation rel = makeRel(f.label, f.isPrivate != null, false, f.isVariable != null, types);
+                        AlloyRelation rel = makeRel(f.label, f.isPrivate != null, false, f.isVariable != null, false, types);
                         rels.put(rel, Util.asSet(new AlloyTuple(tuple)));
                     }
                 }
@@ -355,6 +440,26 @@ public final class StaticInstanceReader {
                 sig2type.put(null, AlloyType.SET);
                 rels.put(AlloyRelation.IN, ins);
             }
+            if (eqs.size() > 0) {
+                sig2type.put(null, AlloyType.SET);
+                rels.put(AlloyRelation.EQ, eqs);
+            }
+
+            if (absts.size() > 0)
+                sets.add(AlloySet.ABSTRACT);
+            if (ones.size() > 0)
+                sets.add(AlloySet.ONE);
+            if (lones.size() > 0)
+                sets.add(AlloySet.LONE);
+            if (somes.size() > 0)
+                sets.add(AlloySet.SOME);
+            if (vars.size() > 0)
+                sets.add(AlloySet.VAR);
+            if (enums.size() > 0)
+                sets.add(AlloySet.ENUM);
+            if (enummems.size() > 0)
+                sets.add(AlloySet.ENUMMEM);
+
             AlloyAtom univAtom = sig2atom.get(Sig.UNIV);
             AlloyAtom intAtom = sig2atom.get(Sig.SIGINT);
             AlloyAtom seqAtom = sig2atom.get(Sig.SEQIDX);
@@ -411,9 +516,14 @@ public final class StaticInstanceReader {
             if (exts.size() > 0) {
                 rels.put(AlloyRelation.EXTENDS, exts);
             }
+            if (mems.size() > 0) {
+                rels.put(AlloyRelation.MEMBER, mems);
+            }
         }
-        AlloyModel am = new AlloyModel(sig2type.values(), sets, rels.keySet(), ts);
-        ans = new AlloyInstance(sol, sol.getOriginalFilename(), sol.getOriginalCommand(), am, atom2sets, rels, isMeta);
+        AlloyModel am = new AlloyModel(sig2type.values(), sets, rels.keySet(), nonempty_elems, ts);
+        int tracelen = Integer.valueOf(inst.getAttribute("tracelength"));
+        int looplen = Integer.valueOf(inst.getAttribute("looplength"));
+        ans = new AlloyInstance(sol, sol.getOriginalFilename(), sol.getOriginalCommand(), am, atom2sets, rels, isMeta,tracelen,looplen);
     }
 
     /** Parse the file into an AlloyInstance if possible. */

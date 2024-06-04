@@ -32,7 +32,9 @@ public enum DotPalette {
                         /** Martha palette. */
                         MARTHA("Martha"),
                         /** Neon palette. */
-                        NEON("Neon");
+                        NEON("Neon"),
+                        /** Color-blind palette. */
+                        TOL_LIGHT("Tol");
 
     /** The text to display. */
     private final String displayText;

@@ -27,6 +27,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,16 +65,18 @@ public class ElectrodReader {
     private int            loop;
     public int             nbvars, ctime, atime;
     private PardinusBounds bounds;
+    private final Map<Relation,String> rel2name;
 
     /**
      * Initializes the Electrod solution reader with the original problem bounds.
      *
      * @param bounds the original bounds of the solved problem.
      */
-    public ElectrodReader(PardinusBounds bounds) {
+    public ElectrodReader(PardinusBounds bounds, Map<Relation,String> rel2name) {
         this.insts = new ArrayList<Instance>();
         this.loop = -1;
         this.bounds = bounds;
+        this.rel2name = rel2name;
     }
 
     /**
@@ -162,10 +165,11 @@ public class ElectrodReader {
         Instance inst = new Instance(bounds.universe());
 
         for (Relation r : bounds.relations()) {
+
             NodeList e = null;
             for (int i = 0; i < node.getChildNodes().getLength(); i++) {
                 if (node.getChildNodes().item(i).getNodeName().equals("rel")) {
-                    String nm = ElectrodPrinter.normRel(r.toString());
+                    String nm = rel2name.get(r);
                     if (node.getChildNodes().item(i).getAttributes().getNamedItem("name").getNodeValue().equals(nm))
                         e = node.getChildNodes().item(i).getChildNodes();
                 }

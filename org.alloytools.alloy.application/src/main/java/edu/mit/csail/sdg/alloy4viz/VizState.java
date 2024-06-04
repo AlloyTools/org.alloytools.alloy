@@ -66,6 +66,7 @@ public final class VizState {
         useOriginalNames = old.useOriginalNames;
         hidePrivate = old.hidePrivate;
         hideMeta = old.hideMeta;
+        hideSkolem = old.hideSkolem;
         fontSize = old.fontSize;
         nodePalette = old.nodePalette;
         edgePalette = old.edgePalette;
@@ -145,20 +146,31 @@ public final class VizState {
         hideUnconnected.put(seqidx, true);
         // Provide some nice defaults for meta model stuff
         AlloyType set = AlloyType.SET;
-        AlloyRelation ext = AlloyRelation.EXTENDS, in = AlloyRelation.IN;
+        AlloySet some = AlloySet.SOME, one = AlloySet.ONE, lone = AlloySet.LONE, var = AlloySet.VAR;
+        AlloyRelation ext = AlloyRelation.EXTENDS, in = AlloyRelation.IN, eq = AlloyRelation.EQ, mem = AlloyRelation.MEMBER;
         shape.put(null, DotShape.BOX);
         nodeColor.put(null, DotColor.YELLOW);
         nodeStyle.put(null, DotStyle.SOLID);
+        nodeStyle.put(var, DotStyle.DASHED);
         shape.put(set, DotShape.ELLIPSE);
         nodeColor.put(set, DotColor.BLUE);
         label.put(set, "");
         edgeColor.put(ext, DotColor.BLACK);
         weight.put(ext, 100);
         layoutBack.put(ext, true);
+        edgeColor.put(mem, DotColor.BLACK);
+        weight.put(mem, 100);
+        layoutBack.put(mem, true);
         edgeColor.put(in, DotColor.BLACK);
         weight.put(in, 100);
         layoutBack.put(in, true);
-        applyDefaultVar(); // [electrum] dashed style for variable elements
+        edgeColor.put(eq, DotColor.BLACK);
+        weight.put(eq, 100);
+        layoutBack.put(eq, true);
+        // there are no sub-relations, must be done manually
+        for (AlloyRelation r : currentModel.getRelations())
+            if (edgeStyle.get(r) == null && r.isVar)
+                edgeStyle.put(r, DotStyle.DASHED);
         // Done
         cache.clear();
         changedSinceLastSave = false;
@@ -453,6 +465,24 @@ public final class VizState {
         }
     }
 
+    /** Whether to hide skolemized sigs/fields/relations. */
+    private boolean hideSkolem = false;
+
+    /**
+     * Returns whether we will hide skolemized sigs/fields/relations.
+     */
+    public boolean hideSkolem() {
+        return hideSkolem;
+    }
+
+    /** Sets whether we will hide skolemized sigs/fields/relations. */
+    public void hideSkolem(Boolean newValue) {
+        if (newValue != null && hideSkolem != newValue) {
+            change();
+            hideSkolem = newValue;
+        }
+    }
+
     /*
      * ========================================================= ================
      * ===================
@@ -702,7 +732,7 @@ public final class VizState {
     public DotColor nodeColor(AlloyAtom a, AlloyInstance i) {
         for (AlloySet s : i.atom2sets(a)) {
             DotColor v = nodeColor.get(s);
-            if (v != null)
+            if (v != null && !(hideSkolem && s.isSkolem))
                 return v;
         }
         return nodeColor.resolve(a.getType());
@@ -711,7 +741,7 @@ public final class VizState {
     public DotStyle nodeStyle(AlloyAtom a, AlloyInstance i) {
         for (AlloySet s : i.atom2sets(a)) {
             DotStyle v = nodeStyle.get(s);
-            if (v != null)
+            if (v != null && !(hideSkolem && s.isSkolem))
                 return v;
         }
         return nodeStyle.resolve(a.getType());
@@ -720,7 +750,7 @@ public final class VizState {
     public DotShape shape(AlloyAtom a, AlloyInstance i) {
         for (AlloySet s : i.atom2sets(a)) {
             DotShape v = shape.get(s);
-            if (v != null)
+            if (v != null && !(hideSkolem && s.isSkolem))
                 return v;
         }
         return shape.resolve(a.getType());
@@ -730,12 +760,18 @@ public final class VizState {
         // If it's in 1 or more set, then TRUE if at least one of them is TRUE.
         // If it's in 0 set, then travel up the chain of AlloyType and return
         // the first non-null value.
-        if (i.atom2sets(a).size() > 0) {
-            for (AlloySet s : i.atom2sets(a))
+        boolean any = false;
+        for (AlloySet s : i.atom2sets(a)) {
+            if (!(hideSkolem && s.isSkolem)) {
+                any = true;
                 if (nodeVisible.resolve(s))
                     return true;
-            return false;
+            }
         }
+
+        if (any)
+            return false;
+
         return nodeVisible.resolve(a.getType());
     }
 }

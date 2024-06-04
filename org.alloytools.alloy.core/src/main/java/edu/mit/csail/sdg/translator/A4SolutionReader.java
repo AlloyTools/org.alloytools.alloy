@@ -322,6 +322,7 @@ public final class A4SolutionReader {
         if (!node.is("skolem"))
             throw new IOException("ID " + id + " is not a skolem.");
         String label = label(node);
+        Attr isPrivate = yes(node, "private") ? Attr.PRIVATE : null;
         Expr type = null;
         for (XMLNode sub : node)
             if (sub.is("types")) {
@@ -363,14 +364,14 @@ public final class A4SolutionReader {
         final int bitwidth = Integer.parseInt(inst.getAttribute("bitwidth"));
         final int maxseq = Integer.parseInt(inst.getAttribute("maxseq"));
         final int tracelength;
-        final int backloop;
+        final int looplen;
         final int maxtrace;
         final int mintrace;
         try {
             mintrace = Integer.parseInt(inst.getAttribute("mintrace"));
             maxtrace = Integer.parseInt(inst.getAttribute("maxtrace"));
             tracelength = Integer.parseInt(inst.getAttribute("tracelength"));
-            backloop = Integer.parseInt(inst.getAttribute("backloop"));
+            looplen = Integer.parseInt(inst.getAttribute("looplength"));
         } catch (Exception ex) {
             throw new ErrorSyntax("Missing trace attributes.");
         }
@@ -494,7 +495,7 @@ public final class A4SolutionReader {
                     sol.kr2type(r, v.type());
                 }
                 // Done!
-                sol.solve(null, prev, backloop); // [electrum] merge current solution with previous, if any
+                sol.solve(null, prev, looplen); // [electrum] merge current solution with previous, if any
             }
     }
 

@@ -454,9 +454,11 @@ final class BoundsComputer {
         // [electrum] Add possible symbolic bounds
         if (Version.experimental)
             for (Sig s : sigs) {
-                sol.addSymbolicBound(s);
-                for (Field f : s.getFields())
-                    sol.addSymbolicBound(f);
+                if (s.isMeta == null) {
+                    sol.addSymbolicBound(s);
+                    for (Field f : s.getFields())
+                        sol.addSymbolicBound(f);
+                }
             }
 
         // Add any additional SIZE constraints

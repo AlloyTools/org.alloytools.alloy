@@ -3,11 +3,13 @@ package org.alloytools.solvers.natv.electrod;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import kodkod.ast.Formula;
+import kodkod.ast.Relation;
 import kodkod.engine.AbortedException;
 import kodkod.engine.InvalidSolverParamException;
 import kodkod.engine.Solution;
@@ -16,6 +18,7 @@ import kodkod.engine.TemporalSolver;
 import kodkod.engine.UnboundedSolver;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Reporter;
+import kodkod.engine.fol2sat.Skolemizer;
 import kodkod.engine.satlab.ExternalSolver;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.SATSolver;
@@ -25,6 +28,8 @@ import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 import kodkod.solvers.api.NativeCode;
 import kodkod.solvers.api.TemporalSolverFactory;
+
+import static kodkod.util.nodes.AnnotatedNode.annotateRoots;
 
 abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
 
@@ -41,10 +46,11 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
             if (options == null)
                 throw new NullPointerException();
             this.options = options;
-            if (!options.unbounded()) {
-                if (options.minTraceLength() != 1)
-                    throw new InvalidSolverParamException("Electrod bounded model checking must start at length 1.");
-            }
+            if (!options.unbounded() && options.minTraceLength() != 1)
+                throw new InvalidSolverParamException("Electrod bounded model checking must start at length 1.");
+            if (options.noOverflow())
+                throw new InvalidSolverParamException("Electrod model checking does not support preventing integer overflows.");
+
         }
 
         /**
@@ -58,14 +64,26 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
          * {@inheritDoc}
          */
         public Solution solve(Formula formula, PardinusBounds bounds) throws InvalidUnboundedProblem, InvalidUnboundedSolution {
-            Reporter rep = options.reporter();
-
             if (!options.decomposed() && bounds.amalgamated != null)
                 bounds = bounds.amalgamated();
 
             options.reporter().solvingCNF(-1, -1, -1, -1);
 
-            String electrod = ElectrodPrinter.print(formula, bounds, rep);
+            // retrieve the additional formula imposed by the symbolic
+            // bounds, depending on execution stage
+            Formula symbForm = Formula.TRUE;
+            // if decomposed mode, the amalgamated bounds are always considered
+            if (options.decomposed() && bounds.amalgamated() != null)
+                symbForm = bounds.amalgamated().resolve(options.reporter());
+                // otherwise use regular bounds
+            else
+                symbForm = bounds.resolve(options.reporter());
+            // NOTE: this is already being performed inside the translator, but is not accessible
+            formula = formula.and(symbForm);
+
+            formula = Skolemizer.skolemize(annotateRoots(formula), bounds, options).node();
+            Map<Relation, String> rel2name = new HashMap<>();
+            String electrod = ElectrodPrinter.print(formula, bounds, rel2name, options);
             Solution solution;
             if (solverId == null) {
                 try {
@@ -79,7 +97,7 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
                 }
             } else {
                 String xml = execute(this, electrod, bounds);
-                ElectrodReader rd = new ElectrodReader(bounds);
+                ElectrodReader rd = new ElectrodReader(bounds,rel2name);
                 TemporalInstance temporalInstance = rd.read(xml);
                 Statistics stats = new Statistics(rd.nbvars, 0, 0, rd.ctime, rd.atime);
                 solution = temporalInstance == null ? Solution.unsatisfiable(stats, null) : Solution.satisfiable(stats, temporalInstance);

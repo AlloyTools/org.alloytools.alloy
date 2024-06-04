@@ -15,8 +15,6 @@
 
 package edu.mit.csail.sdg.ast;
 
-import static edu.mit.csail.sdg.alloy4.TableView.clean;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -197,11 +195,16 @@ public final class Func extends Expr implements Clause {
             for (int j = i + 1; j < n; j++)
                 if (get(i) == get(j))
                     throw new ErrorSyntax(get(j).span(), "The same variable cannot appear more than once in a predicate/function's parameter list.");
-        for (Decl d : this.decls)
+        for (Decl d : this.decls) {
             if (d.expr != null && d.expr.hasCall())
                 throw new ErrorSyntax(d.expr.span(), "Parameter declaration cannot contain predicate/function calls.");
+            if (d.expr != null && d.expr.hasTemporal())
+                throw new ErrorSyntax(d.expr.span(), "Parameter declaration cannot contain temporal operators.");
+        }
         if (returnDecl.hasCall())
             throw new ErrorSyntax(returnDecl.span(), "Return type declaration cannot contain predicate/function calls.");
+        if (returnDecl.hasTemporal())
+            throw new ErrorSyntax(returnDecl.span(), "Return type declaration cannot contain temporal operators.");
     }
 
     /** The predicate/function body; never null. */
@@ -275,11 +278,13 @@ public final class Func extends Expr implements Clause {
     }
 
     ExprVar labelExpr = null;
-    public Expr labelExpr(){
-        if(labelExpr == null)
+
+    public Expr labelExpr() {
+        if (labelExpr == null)
             labelExpr = ExprVar.make(labelPos, label);
         return labelExpr;
-    } 
+    }
+
     /** {@inheritDoc} */
     @Override
     public List< ? extends Browsable> getSubnodes() {
@@ -295,7 +300,7 @@ public final class Func extends Expr implements Clause {
     }
 
     public String explainOld() {
-        if (clean(label).contains("run$")) {
+        if (Util.tailThis(label).contains("run$")) {
             return null;
         }
 
@@ -306,7 +311,7 @@ public final class Func extends Expr implements Clause {
         else
             sb.append("fun ");
 
-        sb.append(clean(label)).append("[");
+        sb.append(Util.tailThis(label)).append("[");
 
         if (decls.size() > 0 || !isPred) {
 
@@ -341,13 +346,11 @@ public final class Func extends Expr implements Clause {
         else
             sb.append("fun ");
 
-        sb.append(clean(label));
+        sb.append(Util.tailThis(label));
 
-        if (decls.size() > 0 ) {
+        if (decls.size() > 0) {
             sb.append(" [\n");
-            sb.append(decls.stream()
-                      .flatMap(decl -> decl.names.stream().map(e -> " " + e + " : " + decl.expr.type))
-                      .collect(Collectors.joining(",\n")));
+            sb.append(decls.stream().flatMap(decl -> decl.names.stream().map(e -> " " + e + " : " + decl.expr.type)).collect(Collectors.joining(",\n")));
             sb.append("\n]");
         }
         if (!isPred) {
@@ -364,7 +367,7 @@ public final class Func extends Expr implements Clause {
             for (int i = 0; i < indent; i++) {
                 out.append(' ');
             }
-            out.append( isPred? "pred " : "field ").append(label).append('\n');
+            out.append(isPred ? "pred " : "field ").append(label).append('\n');
         }
     }
 
