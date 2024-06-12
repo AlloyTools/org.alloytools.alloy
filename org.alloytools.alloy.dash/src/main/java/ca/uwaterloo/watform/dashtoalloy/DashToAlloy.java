@@ -31,7 +31,7 @@ public class DashToAlloy {
             
         if (DashOptions.isTcmc ) {
             AddTcmc.addTcmcFact(d);
-            AddAllSnapshotsDifferentFact.addAllSnapshotsDifferentFact(d);
+            AddAllSnapshotsDifferentPredFact.addAllSnapshotsDifferentPred(d);
             // other methods only consider reachable snapshots so no extra
             // predicate is needed
             AddTcmc.addStrongNoStutterPred(d);
@@ -41,7 +41,7 @@ public class DashToAlloy {
 
         } else if (DashOptions.isTraces) {
             AddTraces.addTracesFact(d);
-            AddAllSnapshotsDifferentFact.addAllSnapshotsDifferentFact(d);
+            AddAllSnapshotsDifferentPredFact.addAllSnapshotsDifferentFact(d);
             AddTraces.addStrongNoStutterPred(d);
 
         } else if (DashOptions.isElectrum) {
