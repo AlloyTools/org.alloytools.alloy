@@ -170,8 +170,6 @@ public class TemporalInstance extends Instance {
 	 * 
 	 * @assumes some instance.loop
 	 * @param instance the expanded static solution to the problem
-	 * @param tmptrans temporal translation information, including original variable
-	 *                 relations
 	 * @throws IllegalArgumentException no instance.loop
 	 */
 	public TemporalInstance(Instance instance, PardinusBounds extbounds) {
@@ -214,6 +212,7 @@ public class TemporalInstance extends Instance {
 				}
 				inst.add(r, ts);
 			}
+			// TODO: skolems are not added to the individual states
 
 			for (IndexedEntry<TupleSet> entry : extbounds.intBounds()) {
 				Tuple t = static_universe.factory().tuple(entry.value().iterator().next().atom(0));

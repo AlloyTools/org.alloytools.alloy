@@ -25,12 +25,7 @@ package kodkod.instance;
 import static java.util.Collections.unmodifiableMap;
 import static kodkod.util.ints.Ints.unmodifiableSequence;
 
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import kodkod.ast.Relation;
 import kodkod.util.ints.IntSet;
@@ -178,6 +173,12 @@ public class Bounds implements Cloneable {
 	 */
 	public Set<Relation> relations() {
 		return relations;
+	}
+
+	public Collection<Relation> skolems() {
+		ArrayList<Relation> ans = new ArrayList<Relation>(relations.size());
+		for (Relation r: relations) if (r.isSkolem()) ans.add(r);
+		return ans;
 	}
 
 	/**

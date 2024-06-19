@@ -22,14 +22,7 @@
  */
 package kodkod.instance;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import kodkod.ast.ConstantExpression;
 import kodkod.ast.Expression;
@@ -120,7 +113,14 @@ public class Instance implements Cloneable {
 	public Set<Relation> relations() {
 		return tuples.keySet();
 	}
-	
+
+	public Collection<Relation> skolems() {
+		Set<Relation> rels = relations();
+		ArrayList<Relation> ans = new ArrayList<Relation>(rels.size());
+		for (Relation r: rels) if (r.isSkolem()) ans.add(r);
+		return ans;
+	}
+
 	/**
 	 * Returns the integers mapped by this instance.  The returned set 
 	 * does not support addition.  It supports remval if this is not an
