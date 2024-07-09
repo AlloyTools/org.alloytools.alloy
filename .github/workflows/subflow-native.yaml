@@ -5,22 +5,17 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin
+      - uses: actions/setup-docker-on-macos
       - run: |
-          brew install gmp
-          export HOMEBREW_NO_INSTALL_CLEANUP=true
-          brew install docker
-          brew install colima
-          colima start
           ./gradlew --parallel compileJava
           make -C org.alloytools.pardinus.native/native-code install
-          colima stop
       - uses: actions/upload-artifact@v4
         with:
           name: native
