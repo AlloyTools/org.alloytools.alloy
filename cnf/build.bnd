@@ -22,7 +22,7 @@ Bundle-Vendor:			AlloyTools at Github
 Bundle-DocURL: 			http://alloytools.org
 Bundle-License:			MIT
 
-base.version:           6.3.0
+base.version:           6.2.0
 Bundle-Version:         ${base.version}.${tstamp}
 
 # Remove -SNAPSHOT for release version
