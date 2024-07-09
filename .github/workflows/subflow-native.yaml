@@ -16,6 +16,7 @@ jobs:
           brew install gmp
           export HOMEBREW_NO_INSTALL_CLEANUP=true
           brew install docker
+          brew install colima
           colima start
           ./gradlew --parallel compileJava
           make -C org.alloytools.pardinus.native/native-code install
