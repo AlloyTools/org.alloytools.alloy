@@ -59,7 +59,8 @@ public class NativeCode {
 	final static File cache;
 
 	static {
-		Runtime.getRuntime().addShutdownHook(new Thread(NativeCode::close, "native-code-cleanup") {} );
+		Runtime.getRuntime().addShutdownHook(new Thread(NativeCode::close, "native-code-cleanup") {
+		});
 		String libraryPath = System.getProperty("java.library.path");
 		if (libraryPath != null) {
 			for (String s : libraryPath.split(File.pathSeparator)) {
@@ -176,19 +177,21 @@ public class NativeCode {
 
 			String lib = mapLibrary.apply(genericName);
 
+			File file = new File(cache, lib);
+			if (file.isFile())
+				return Optional.of(file);
+
+			if (extract(lib, file)) {
+				file.setExecutable(true);
+				return Optional.of(file);
+			}
+
 			for (File dir : LIBRARYPATH) {
-				File file = new File(dir, lib);
+				file = new File(dir, lib);
 				if (file.isFile())
 					return Optional.of(file);
 			}
-
-			File file = new File(cache, lib);
-			if (!file.isFile()) {
-				if (!extract(lib, file))
-					return Optional.empty();
-				file.setExecutable(true);
-			}
-			return Optional.of(file);
+			return Optional.empty();
 		}
 
 		public boolean extract(String actualName, File file) {
@@ -256,9 +259,10 @@ public class NativeCode {
 		return LIBRARYPATH.stream().map(File::getAbsolutePath).collect(Collectors.joining(File.pathSeparator));
 	}
 
-	final static AtomicBoolean closing = new AtomicBoolean(false); 
+	final static AtomicBoolean closing = new AtomicBoolean(false);
+
 	public static void close() {
-		if ( closing.getAndSet(true))
+		if (closing.getAndSet(true))
 			return;
 		try {
 			Files.walkFileTree(cache.toPath(), new SimpleFileVisitor<Path>() {
@@ -267,6 +271,7 @@ public class NativeCode {
 					Files.deleteIfExists(file);
 					return super.visitFile(file, attrs);
 				}
+
 				@Override
 				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 					Files.delete(dir);

@@ -22,6 +22,7 @@
  */
 package kodkod.engine.satlab;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -72,6 +73,7 @@ import kodkod.solvers.api.NativeCode;
 public abstract class SATFactory implements Serializable, Comparable<SATFactory> {
 	private final static org.slf4j.Logger log = LoggerFactory.getLogger(SATFactory.class);
 	private static final long serialVersionUID = 1L;
+    protected final static boolean isWindows = File.separatorChar == '\\';
 	protected static final String[] EMPTY = new String[0];
 	static List<SATFactory> solvers;
 
@@ -234,7 +236,6 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 			return true;
 
 		try {
-			instance();
 			for (String library : getLibraries()) {
 				if (!NativeCode.platform.getLibrary(library).isPresent())
 					return false;
@@ -243,6 +244,7 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 				if (!NativeCode.platform.getExecutable(executable).isPresent())
 					return false;
 			}
+			instance();
 			return true;
 		} catch (java.lang.UnsatisfiedLinkError e) {
 			log.debug("lib {} gave error {}", id(), e.getMessage());
@@ -348,5 +350,4 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	public boolean isTransformer() {
 		return false;
 	}
-
 }

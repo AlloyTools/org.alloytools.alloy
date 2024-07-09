@@ -13,6 +13,7 @@ REPOS_PATHS = $(addsuffix /repo/.git/config,$(REPOS))
 
 install: clean darwin linux windows
 	-rm -rf ../native
+	cp -rf dependencies/* native/
 	cp -rf native ..
 
 clean:
@@ -23,9 +24,12 @@ native :
 
 headers:
 	mkdir headers
-	javah -classpath $(CLASSPATH) -o headers/AlloyGlucose.h 		org.alloytools.solvers.natv.glucose.Glucose
-	javah -classpath $(CLASSPATH) -o headers/AlloyMiniSat.h 		org.alloytools.solvers.natv.minisat.MiniSat
-	javah -classpath $(CLASSPATH) -o headers/AlloyMiniSatProver.h 	org.alloytools.solvers.natv.minisatprover.MiniSatProver
+	javac -classpath $(CLASSPATH) -h . -d ../target ../src/main/java/org/alloytools/solvers/natv/glucose/Glucose.java
+	mv org_alloytools_solvers_natv_glucose_Glucose.h headers/AlloyGlucose.h
+	javac -classpath $(CLASSPATH) -h . -d ../target ../src/main/java/org/alloytools/solvers/natv/minisat/MiniSat.java
+	mv org_alloytools_solvers_natv_minisat_MiniSat.h headers/AlloyMiniSat.h
+	javac -classpath $(CLASSPATH) -h . -d ../target ../src/main/java/org/alloytools/solvers/natv/minisatprover/MiniSatProver.java
+	mv org_alloytools_solvers_natv_minisatprover_MiniSatProver.h headers/AlloyMiniSatProver.h
 
 $(DIRS):
 	mkdir -p $@
