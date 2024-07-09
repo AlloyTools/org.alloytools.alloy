@@ -3,6 +3,7 @@
 # All native code will end up in ../native/OS/ARCH. OS=[darwin,linux,windows], ARCH=[amd64,arm64]
 #
 
+
 DIRS = native/linux/amd64 native/windows/amd64 native/darwin/amd64 native/darwin/arm64
 REPOS= minisat glucose lingeling minisatprover
 CLASSPATH = ../target/classes:../../org.alloytools.pardinus.core/target/classes
