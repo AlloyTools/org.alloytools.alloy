@@ -967,12 +967,12 @@ public final class VizGUI implements ComponentListener {
             }
             case TEXT : {
                 List<String> textualOutput = IntStream.range(current, current + numPanes).mapToObj(x -> myStates.get(0).getOriginalInstance().originalA4.toString(x)).collect(Collectors.toList());
-                content = getTextComponent(textualOutput);
+                content = getTextComponent(textualOutput, true);
                 break;
             }
             case TABLE : {
                 List<String> textualOutput = IntStream.range(current, current + numPanes).mapToObj(x -> myStates.get(0).getOriginalInstance().originalA4.format(x)).collect(Collectors.toList());
-                content = getTextComponent(textualOutput);
+                content = getTextComponent(textualOutput, false);
                 break;
             }
             default : {
