@@ -48,10 +48,10 @@ public class AddSingleEventInputPred {
 	public static void addSingleEventInputPred(DashModule d) {
 		if (d.hasEnvironmentalEvents()) {
 			Expr e;
-			Expr b = createFalse();
+			Expr b = createFalseCond();
 			for (int i=0;i <= d.getMaxDepthParams(); i++) {
 				if (d.hasEventsAti(i)) {
-					e = createTrue();
+					e = createTrueCond();
 			    	for (int j=0;j <= d.getMaxDepthParams(); j++) {
 			            if (d.hasEventsAti(j)) {
 			            	if (i==j) {

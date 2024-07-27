@@ -35,7 +35,8 @@ public class AddTransPost {
     /*
     pred post_t1[s,s':Snapshot] {
         forall i: confi' = confi - exitedi + enteredi
-        forall i : scopesUsedi' = scopesUsedi + scopesUsed
+        forall i : takeni' = {t1}  // scopesUsed takes care of other trans in scope
+                                   // not being allowed to be taken in this big step
         action_t1[s,s']
         testIfNextStable[s,s',t1,t1_send_ev] => {
             s'.stable = True
@@ -113,6 +114,7 @@ public class AddTransPost {
         if (d.getTransDo(tfqn) != null)
             body.add(translateExpr(d.getTransDo(tfqn),d));
 
+        // forall i : takeni' = {t1} 
         Expr ex;
         DashRef dr;
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
@@ -222,7 +224,7 @@ public class AddTransPost {
                     rhs));
             }
         }
-        //if (case1.isEmpty()) c1 = createTrue();
+
         c1 = createAndFromList(case1);
 
         // case 2
@@ -240,7 +242,7 @@ public class AddTransPost {
                             rhs));
             }
         }
-        //if (case2.isEmpty()) c2 = createTrue();
+
         c2 = createAndFromList(case2);
 
         Expr stableTrueAndScopesUsedEmpty;
@@ -262,6 +264,8 @@ public class AddTransPost {
         //       and (eventsi' :> EnvironmentalEvent = eventsi :> EnvironmentalEvent)
         List<Expr> case3 = new ArrayList<Expr>();  
         Expr c3;
+        List<DashRef> sU = d.scopesUsed(tfqn);
+        List<Expr> u;
         // have to be initialized to something
         Expr intEvExpr = createNone();
         Expr envEvExpr = createNone(); 
@@ -284,22 +288,37 @@ public class AddTransPost {
             } else {
                 if (d.hasEnvironmentalEventsAti(i)) case3.add(envEvExpr);
             }
-            case3.add(createEquals(nextScopesUsed(i),createNoneArrow(i)));
+            if (d.hasConcurrency()) {
+                // scopesUsedi' = scopesUsed
+                u = DashRef.hasNumParams(sU,i).stream()
+                    .map(x -> translateDashRefToArrow(replaceScope(x)))
+                    .collect(Collectors.toList());
+                if (!u.isEmpty()) case3.add(createEquals(nextScopesUsed(i),createUnionFromList(u)));
+            }
         }
-        //if (case3.isEmpty()) c3 = createTrue();
         c3 = createAndFromList(case3);
 
         // case 4
-        // forall i. eventsi' = eventsi + t1_send (if i)
-        //           eventsi' = eventsi (if not i)
+ 
+       // case 4
+        // intermediate small step
+
+
         List<Expr> case4 = new ArrayList<Expr>();  
-        List<DashRef> sU = d.scopesUsed(tfqn);
-        List<Expr> u;
         Expr e;
+
+        // forall i .
         for (int i=0;i <= d.getMaxDepthParams(); i++) {
+            // add t1's gen event to the events
+            // env events don't change
             if (d.hasEventsAti(i)) {
                 if (ev != null && ev.getParamValues().size() == i) 
+                    // eventsi' = eventsi + t1_send (if i)
                     case4.add(createEquals(nextEvents(i),createUnion(curEvents(i), translateDashRefToArrow(ev))));
+                else 
+                    // eventsi' = eventsi (if not i)
+                    // no events are generated so no change in events
+                    case4.add(createEquals(nextEvents(i),curEvents(i)));
             }
             if (d.hasConcurrency()) {
                 // scopesUsedi' = scopesUsedi + scopesUsed
@@ -312,11 +331,10 @@ public class AddTransPost {
             }
         }
 
-        //if (case4.isEmpty()) c4 = createTrue();
+ 
         Expr c4 = createAndFromList(case4);
 
-        // env_vars_unchanged[s,s']
-        
+        // env_vars_unchanged[s,s']     
         List<String> allVarBuffers = d.getAllVarNames();
         allVarBuffers.addAll(d.getAllBufferNames());
         // might just return true if allVarBuffers is empty
@@ -374,8 +392,10 @@ public class AddTransPost {
         DashRef ev = d.getTransSend(tfqn);
         for (int i=0; i <= d.getMaxDepthParams(); i++) {
             //TODO optimization: could only have scopesUsedi for i that has scopesUsed
+            //TODO not putting in replaceScope here caused bugs
+            //     this should probably be wrapped up and used many places
             List<Expr> u = DashRef.hasNumParams(sU,i).stream()
-                .map(x -> translateDashRefToArrow(x))
+                .map(x -> translateDashRefToArrow(replaceScope(x)))
                 .collect(Collectors.toList());
 
             if (u.size() ==0 ) args.add(createNoneArrow(i));

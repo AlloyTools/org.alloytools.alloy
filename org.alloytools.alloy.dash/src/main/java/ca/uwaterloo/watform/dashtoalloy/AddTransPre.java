@@ -87,7 +87,7 @@ public class AddTransPre {
             int sz = ev.getParamValues().size();
             Expr ifBranch;
             if (d.isInternalEvent(ev.getName())) {
-                ifBranch = createFalse();
+                ifBranch = createFalseCond();
             } else {
                 ifBranch = createIn(translateDashRefToArrow(ev),
                         createRangeRes(

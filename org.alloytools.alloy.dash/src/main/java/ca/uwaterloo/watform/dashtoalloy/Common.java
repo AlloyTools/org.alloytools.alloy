@@ -114,7 +114,7 @@ public class Common {
         List<String>cop = Collections.nCopies(i,DashStrings.identifierName);
         return (Decl) new DeclExt(
                         DashStrings.scopeName + i,
-                        createArrowStringList(DashUtilFcns.newListWith(cop, DashStrings.stateLabelName)));
+                        createArrowStringList(DashUtilFcns.newListWith(cop, DashStrings.scopeLabelName)));
     }
 
     // common vars

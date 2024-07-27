@@ -35,6 +35,8 @@ import ca.uwaterloo.watform.alloyasthelper.ExprToString;
 
 public class ExprHelper  {
 
+    private static Boolean optimizationsOn = false;
+
     // tests ------------------------------------
     public static boolean isExprBinary(Expr e) {
         return (e instanceof ExprBinary);
@@ -140,13 +142,19 @@ public class ExprHelper  {
 
     // constructors -----------------------------------
 
-    // useful in development
-    public static Expr createNullExpr() {
+    // useful in development when optimizations are turned off
+    // when we want to use true/false as a condition (rather than)
+    // a value, we have to create an expression that is always true/false
+    public static Expr createTrueCond() {
         return createEquals(createTrue(),createTrue());
     }
-    public static ExprVar createTrue() {
-        return ExprVar.make(Pos.UNKNOWN,  DashStrings.trueName);
-    } 
+
+    public static Expr createFalseCond() {
+        return createEquals(createTrue(), createFalse());
+    }
+
+    // use the library functions isTrue/isFalse to say
+    // a value must be true/false
     public static Expr createIsTrue(Expr e) {
         List<Expr> elist = new ArrayList<Expr>();
         elist.add(e);
@@ -157,9 +165,15 @@ public class ExprHelper  {
         elist.add(e);
         return createPredCall(DashStrings.isFalse,elist);
     }
+
+    // the values true/false
+    public static ExprVar createTrue() {
+       return ExprVar.make(Pos.UNKNOWN,  DashStrings.trueName);
+    } 
     public static ExprVar createFalse() {
         return ExprVar.make(Pos.UNKNOWN,  DashStrings.falseName);
     } 
+
     public static ExprVar createNone() {
         return ExprVar.make(Pos.UNKNOWN,  DashStrings.noneName);
     } 
@@ -299,7 +313,7 @@ public class ExprHelper  {
         return ret;
     }
     public static Expr createEquals(Expr left, Expr right) {
-        if (sEquals(left,right)) return (Expr) createTrue();
+        if (optimizationsOn && sEquals(left,right)) return (Expr) createTrueCond();
         else return (Expr) ExprBinary.Op.EQUALS.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
     public static ExprBinary createNotEquals(Expr left, Expr right) {
@@ -307,10 +321,12 @@ public class ExprHelper  {
     }
 
     public static Expr createAnd(Expr left, Expr right) {
-        if (sEquals(left, createFalse())) return createFalse();
-        if (sEquals(right, createFalse())) return createFalse();
-        if (sEquals(left, createTrue())) return right;
-        if (sEquals(right, createTrue())) return left;
+        if (optimizationsOn) {
+            if (sEquals(left, createFalseCond())) return createFalseCond();
+            if (sEquals(right, createFalseCond())) return createFalseCond();
+            if (sEquals(left, createTrueCond())) return right;
+            if (sEquals(right, createTrueCond())) return left;
+        }
         return (Expr) ExprBinary.Op.AND.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
     public static Expr createAndList(List<Expr> args) {
@@ -320,7 +336,8 @@ public class ExprHelper  {
 
     public static Expr createAndFromList(List<Expr> elist) {
         // does simplifications
-        if (elist.isEmpty()) return createTrue();
+        // how get back a real true expr rather than just boolean value at the e3nd??
+        if (elist.isEmpty()) return createTrueCond();
         Expr ret = elist.get(0);
         for (Expr el: elist.subList(1,elist.size())) {
             ret = createAnd(ret,el);
@@ -328,14 +345,16 @@ public class ExprHelper  {
         return ret;
     }
     public static Expr createOr(Expr left, Expr right) {
-        if (sEquals(left, createTrue())) return createTrue();
-        if (sEquals(right, createTrue())) return createTrue();
-        if (sEquals(left, createFalse())) return right;
-        if (sEquals(right, createFalse())) return left;
+        if (optimizationsOn) {
+            if (sEquals(left, createTrueCond())) return createTrueCond();
+            if (sEquals(right, createTrueCond())) return createTrueCond();
+            if (sEquals(left, createFalseCond())) return right;
+            if (sEquals(right, createFalseCond())) return left;
+        }
         return (Expr) ExprBinary.Op.OR.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
     public static Expr createOrFromList(List<Expr> elist) {
-        if (elist.isEmpty()) return createTrue();
+        if (elist.isEmpty()) return createTrueCond();
         Expr ret = elist.get(0);
         for (Expr el: elist.subList(1,elist.size())) {
             ret = createOr(ret,el);
@@ -412,13 +431,15 @@ public class ExprHelper  {
     // but it can be convenient in our code to use them
     // so let's just simplify them out in formulas
     public static Expr createITE(Expr cond, Expr impliesExpr, Expr elseExpr) {
-        if (sEquals(cond, createTrue()))  return (Expr) impliesExpr;
-        if (sEquals(cond,createFalse())) return (Expr) elseExpr;
-        if (sEquals(impliesExpr,createTrue())) return createOr(cond, createAnd(createNot(cond),elseExpr));
-        if (sEquals(impliesExpr,createFalse())) return createAnd(createNot(cond),elseExpr);
-        if (sEquals(elseExpr,createTrue())) return createOr(createAnd(cond,impliesExpr), createNot(cond));
-        if (sEquals(elseExpr,createFalse())) return createAnd(cond,impliesExpr);
-        else return (Expr) ExprITE.make(Pos.UNKNOWN, cond, impliesExpr, elseExpr);
+        if (optimizationsOn) {
+            if (sEquals(cond, createTrueCond()))  return (Expr) impliesExpr;
+            if (sEquals(cond,createFalseCond())) return (Expr) elseExpr;
+            if (sEquals(impliesExpr,createTrueCond())) return createOr(cond, createAnd(createNot(cond),elseExpr));
+            if (sEquals(impliesExpr,createFalseCond())) return createAnd(createNot(cond),elseExpr);
+            if (sEquals(elseExpr,createTrueCond())) return createOr(createAnd(cond,impliesExpr), createNot(cond));
+            if (sEquals(elseExpr,createFalseCond())) return createAnd(cond,impliesExpr);
+        }
+        return (Expr) ExprITE.make(Pos.UNKNOWN, cond, impliesExpr, elseExpr);
     }
 
 
