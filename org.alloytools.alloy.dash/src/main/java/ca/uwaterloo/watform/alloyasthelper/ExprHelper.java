@@ -35,11 +35,17 @@ import ca.uwaterloo.watform.alloyasthelper.ExprToString;
 
 public class ExprHelper  {
 
-    private static Boolean optimizationsOn = false;
+    // These optimizations do simple Boolean simplifications such as true && a == a
+    // But for debugging and seeing the Alloy translation of Dash
+    // it is useful to turn them off
+    private static Boolean optimizationsOn = true;
 
     // tests ------------------------------------
     public static boolean isExprBinary(Expr e) {
         return (e instanceof ExprBinary);
+    }
+    public static boolean isExprEquals(Expr e) {
+        return ((e instanceof ExprBinary) && ((ExprBinary) e).op.equals(ExprBinary.Op.EQUALS));
     }
     public static boolean isExprUnary(Expr e) {
         return (e instanceof ExprUnary);
@@ -145,12 +151,40 @@ public class ExprHelper  {
     // useful in development when optimizations are turned off
     // when we want to use true/false as a condition (rather than)
     // a value, we have to create an expression that is always true/false
+    // can't call createEquals here because that causes an infinite loop
+    // as createEquals has an optimization that calls createTrueCond
     public static Expr createTrueCond() {
-        return createEquals(createTrue(),createTrue());
+        return (Expr) ExprBinary.Op.EQUALS.make(Pos.UNKNOWN, Pos.UNKNOWN,  
+            createTrue(), createTrue());
     }
 
     public static Expr createFalseCond() {
-        return createEquals(createTrue(), createFalse());
+        return (Expr) ExprBinary.Op.EQUALS.make(Pos.UNKNOWN, Pos.UNKNOWN,  
+            createTrue(), createFalse());        
+    }
+
+    //testers: can't count on Expr equality to do the right thing
+    public static Boolean isTrueCond(Expr e) {
+        if (isExprEquals(e)) {
+            Expr eLeft = getLeft(e);
+            Expr eRight = getRight(e);
+            if (isExprVar(eLeft) && isExprVar(eRight)) {
+                if ((getVarName((ExprVar) eLeft) == DashStrings.trueName) && 
+                    (getVarName((ExprVar) eRight) == DashStrings.trueName)) return true;
+            }
+        }
+        return false;
+    }
+    public static Boolean isFalseCond(Expr e) {
+        if (isExprEquals(e)) {
+            Expr eLeft = getLeft(e);
+            Expr eRight = getRight(e);
+            if (isExprVar(eLeft) && isExprVar(eRight)) {
+                if (getVarName((ExprVar) eLeft) == DashStrings.trueName && 
+                    getVarName((ExprVar) eRight) == DashStrings.falseName) return true;
+            }        
+        }
+        return false;
     }
 
     // use the library functions isTrue/isFalse to say
@@ -322,10 +356,10 @@ public class ExprHelper  {
 
     public static Expr createAnd(Expr left, Expr right) {
         if (optimizationsOn) {
-            if (sEquals(left, createFalseCond())) return createFalseCond();
-            if (sEquals(right, createFalseCond())) return createFalseCond();
-            if (sEquals(left, createTrueCond())) return right;
-            if (sEquals(right, createTrueCond())) return left;
+            if (isFalseCond(left)) return createFalseCond();
+            if (isFalseCond(right)) return createFalseCond();
+            if (isTrueCond(left)) return right;
+            if (isTrueCond(right)) return left;
         }
         return (Expr) ExprBinary.Op.AND.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
@@ -346,10 +380,10 @@ public class ExprHelper  {
     }
     public static Expr createOr(Expr left, Expr right) {
         if (optimizationsOn) {
-            if (sEquals(left, createTrueCond())) return createTrueCond();
-            if (sEquals(right, createTrueCond())) return createTrueCond();
-            if (sEquals(left, createFalseCond())) return right;
-            if (sEquals(right, createFalseCond())) return left;
+            if (isTrueCond(left))return createTrueCond();
+            if (isTrueCond(right)) return createTrueCond();
+            if (isFalseCond(left)) return right;
+            if (isFalseCond(right)) return left;
         }
         return (Expr) ExprBinary.Op.OR.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
@@ -432,12 +466,12 @@ public class ExprHelper  {
     // so let's just simplify them out in formulas
     public static Expr createITE(Expr cond, Expr impliesExpr, Expr elseExpr) {
         if (optimizationsOn) {
-            if (sEquals(cond, createTrueCond()))  return (Expr) impliesExpr;
-            if (sEquals(cond,createFalseCond())) return (Expr) elseExpr;
-            if (sEquals(impliesExpr,createTrueCond())) return createOr(cond, createAnd(createNot(cond),elseExpr));
-            if (sEquals(impliesExpr,createFalseCond())) return createAnd(createNot(cond),elseExpr);
-            if (sEquals(elseExpr,createTrueCond())) return createOr(createAnd(cond,impliesExpr), createNot(cond));
-            if (sEquals(elseExpr,createFalseCond())) return createAnd(cond,impliesExpr);
+            if (isTrueCond(cond))  return (Expr) impliesExpr;
+            if (isFalseCond(cond)) return (Expr) elseExpr;
+            if (isTrueCond(impliesExpr)) return createOr(cond, createAnd(createNot(cond),elseExpr));
+            if (isFalseCond(impliesExpr)) return createAnd(createNot(cond),elseExpr);
+            if (isTrueCond(elseExpr)) return createOr(createAnd(cond,impliesExpr), createNot(cond));
+            if (isFalseCond(elseExpr)) return createAnd(cond,impliesExpr);
         }
         return (Expr) ExprITE.make(Pos.UNKNOWN, cond, impliesExpr, elseExpr);
     }
