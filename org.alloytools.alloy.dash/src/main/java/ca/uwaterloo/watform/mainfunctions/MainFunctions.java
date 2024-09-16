@@ -19,6 +19,8 @@ import ca.uwaterloo.watform.core.DashErrors;
 import ca.uwaterloo.watform.parser.DashUtil;
 import ca.uwaterloo.watform.parser.DashModule;
 
+import ca.uwaterloo.watform.predabstraction.PredicateAbstraction;
+
 
 // no io in these!
 // A4 reporter is not used in Dash stuff
@@ -140,9 +142,20 @@ public class MainFunctions {
 
     */
    public static A4Solution executeCommand(Command cmd, CompModule alloy, A4Reporter rep, A4Options options) {
-        //TODO this should be an option also
+        // TODO this should be an option also
         options.solver = A4Options.SatSolver.SAT4J;
         A4Solution ans = TranslateAlloyToKodkod.execute_command(rep, alloy.getAllReachableSigs(), cmd, options); 
         return ans;
+    }
+
+    // returns a deep copy of DashModule object
+    public static DashModule copyDash(DashModule d, A4Reporter rep) {
+        if(d == null){
+            DashErrors.emptyModule();
+            return d;
+        } 
+
+        DashModule dcopy = PredicateAbstraction.copyDashModule(d);
+        return dcopy;
     }
 }
