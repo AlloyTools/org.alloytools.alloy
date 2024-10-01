@@ -21,7 +21,7 @@ jobs:
           
       - name: Start Colima
         run: |
-          colima start
+          colima start --vm-type=vz
 
       - name: Build and Compile
         run: |
