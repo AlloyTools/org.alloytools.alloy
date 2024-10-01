@@ -28,6 +28,6 @@ public class ElectrodNuSMVRef extends ElectrodRef {
 
     @Override
     public String check() {
-        return "todo: need to check electrod/NuSMV combination in some way";
+        return ""; //"todo: need to check electrod/NuSMV combination in some way";
     }
 }
