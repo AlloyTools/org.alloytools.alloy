@@ -2,10 +2,11 @@ name: subflow-native
 
 on:
   workflow_call:
-
+  
 jobs:
   build:
     runs-on: macos-13
+      
     steps:
       - uses: actions/checkout@v4
       
@@ -16,12 +17,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install gmp docker colima --no-install-cleanup
-          echo "/usr/local/bin" >> $GITHUB_PATH  # Ensure Docker and Colima bins are in PATH if needed
-
+          brew install gmp docker colima
+          
       - name: Start Colima
         run: |
-          colima start --cpu 4 --memory 4GB  # Adjust resources as needed
+          colima start --cpu 2 --memory 4GB 
 
       - name: Build and Compile
         run: |
