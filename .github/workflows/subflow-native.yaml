@@ -21,7 +21,7 @@ jobs:
           
       - name: Start Colima
         run: |
-          colima start --cpu 2 --memory 4GB 
+          colima start
 
       - name: Build and Compile
         run: |
