@@ -8,21 +8,32 @@ jobs:
     runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin
-      - run: |
-          brew install gmp
-          export HOMEBREW_NO_INSTALL_CLEANUP=true
-          brew install docker
-          brew install colima
-          colima start
+
+      - name: Install dependencies
+        run: |
+          brew install gmp docker colima --no-install-cleanup
+          echo "/usr/local/bin" >> $GITHUB_PATH  # Ensure Docker and Colima bins are in PATH if needed
+
+      - name: Start Colima
+        run: |
+          colima start --cpu 4 --memory 4GB  # Adjust resources as needed
+
+      - name: Build and Compile
+        run: |
           ./gradlew --parallel compileJava
           make -C org.alloytools.pardinus.native/native-code install
+
+      - name: Stop Colima
+        if: always()  # Ensures this step runs even if the previous steps fail
+        run: |
           colima stop
+
       - uses: actions/upload-artifact@v4
         with:
           name: native
           path: org.alloytools.pardinus.native/native/
-
