@@ -21,6 +21,7 @@ jobs:
           
       - name: Start Colima
         run: |
+          colima delete default -f
           colima start --vm-type=vz
 
       - name: Build and Compile
@@ -31,7 +32,7 @@ jobs:
       - name: Stop Colima
         if: always()  # Ensures this step runs even if the previous steps fail
         run: |
-          colima stop
+          colima stop -f
 
       - uses: actions/upload-artifact@v4
         with:
