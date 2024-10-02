@@ -106,7 +106,7 @@ darwin: \
 	native/darwin/arm64/plingeling \
 	native/darwin/amd64/plingeling 
 
-linux: $(DIRS) $(REPOS) native headers
+linux: $(DIRS) $(REPOS) $(REPOS_PATHS) native headers 
 	./dockcross_linux bash -c "make build_linux_inner"
 
 build_linux_inner:
@@ -128,7 +128,7 @@ build_linux_inner:
 	cp build/plingeling native/linux/amd64/plingeling
 
 
-windows: $(DIRS) $(REPOS) headers
+windows: $(DIRS) $(REPOS) $(REPOS_PATHS) headers
 	./dockcross_windows bash -c "make build_windows_inner"
 
 build_windows_inner:
