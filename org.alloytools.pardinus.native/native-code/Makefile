@@ -12,13 +12,14 @@ REPOS_PATHS = $(addsuffix /repo/.git/config,$(REPOS))
 
 .PHONY: all native darwin linux windows go
 
-install: clean darwin linux windows
-	-rm -rf ../native
+install: clean darwin linux windows copy
+
+copy:
 	cp -rf dependencies/* native/
 	cp -rf native ..
 
 clean:
-	rm -rf build native headers $(addsuffix /repo,$(REPOS))
+	rm -rf build native headers $(addsuffix /repo,$(REPOS)) ./native
 
 native : 
 	mkdir -p $(DIRS)
