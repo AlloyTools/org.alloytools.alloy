@@ -6,7 +6,7 @@ on:
   
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-13
       
     steps:
       - uses: actions/checkout@v4
@@ -16,10 +16,13 @@ jobs:
           java-version: 17
           distribution: temurin
 
-      - name: Install dependencies
+      - name: Install CLI deps
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1"
         run: |
-          brew install docker
-          brew install colima
+          brew install --overwrite python@3.12 docker coreutils lima colima
+          
       - name: Start Colima
         run: |
           colima start --arch arm64 --vm-type=qemu
