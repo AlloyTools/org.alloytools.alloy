@@ -6,7 +6,7 @@ on:
   
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-latest
       
     steps:
       - uses: actions/checkout@v4
@@ -21,7 +21,10 @@ jobs:
           HOMEBREW_NO_AUTO_UPDATE: "1"
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1"
         run: |
-          brew install --overwrite python@3.12 docker coreutils lima colima
+          brew unlink qemu
+          brew install --HEAD qemu
+          brew install --HEAD lima
+          brew install --HEAD colima
           
       - name: Start Colima
         run: |
@@ -35,8 +38,8 @@ jobs:
       - name: Stop Colima
         if: always()  # Ensures this step runs even if the previous steps fail
         run: |
-          cat /Users/runner/.colima/_lima/colima/serial*.log\
           colima stop -f
+          cat /Users/runner/.colima/_lima/colima/serial*.log
 
       - uses: actions/upload-artifact@v4
         with:
