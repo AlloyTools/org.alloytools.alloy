@@ -38,3 +38,8 @@ jobs:
           delete-branch: true
           branch: native
           base: master
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native
+          path: org.alloytools.pardinus.native/native/
