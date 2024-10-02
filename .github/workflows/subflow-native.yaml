@@ -25,7 +25,7 @@ jobs:
           
       - name: Start Colima
         run: |
-          colima start --vm-type=vz
+          colima start --memory 4 --vm-type=vz --vz-rosetta
 
       - name: Build and Compile
         run: |
@@ -36,7 +36,7 @@ jobs:
         if: always()  # Ensures this step runs even if the previous steps fail
         run: |
           colima stop -f
-          cat /Users/runner/.colima/_lima/colima/serial*.log
+          cat Users/runner/.colima/_lima/colima/ha.stderr.log
 
       - uses: actions/upload-artifact@v4
         with:
