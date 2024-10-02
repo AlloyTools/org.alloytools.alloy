@@ -17,15 +17,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew update
-          brew install gmp
           brew install docker
           brew install colima
-          sudo curl -L -o /opt/homebrew/Cellar/lima/0.22.0/bin/limactl https://github.com/mikekazakov/lima-nohvf/raw/master/limactl && sudo chmod +x /opt/homebrew/Cellar/lima/0.22.0/bin/limactl
-          
       - name: Start Colima
         run: |
-          colima delete default -f
           colima start --network-address --arch arm64 --vm-type=qemu
 
       - name: Build and Compile
