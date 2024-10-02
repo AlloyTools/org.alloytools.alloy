@@ -22,7 +22,7 @@ jobs:
           make -C org.alloytools.pardinus.native/native-code clean darwin copy
       - uses: actions/upload-artifact@v4
         with:
-          name: native
+          name: native-darwin
           path: org.alloytools.pardinus.native/native/
 
   linux-windows:
@@ -43,5 +43,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: native
+          name: native-linux-windows
           path: org.alloytools.pardinus.native/native/
