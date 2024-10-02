@@ -25,7 +25,7 @@ jobs:
           
       - name: Start Colima
         run: |
-          colima start --memory 4 --vm-type=vz --vz-rosetta
+          colima start --memory 4 --vm-type=vz
 
       - name: Build and Compile
         run: |
