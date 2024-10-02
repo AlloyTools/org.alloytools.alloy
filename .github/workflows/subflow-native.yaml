@@ -5,10 +5,12 @@ on:
   
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-latest
       
     steps:
       - uses: actions/checkout@v4
+      
+      - run: "sudo xcode-select -s /Applications/Xcode_$XC_VERSION.app"
       
       - uses: actions/setup-java@v4
         with:
@@ -17,12 +19,16 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install gmp docker colima
+          brew update
+          brew install gmp
+          brew install docker
+          brew install colima
+          sudo curl -L -o /opt/homebrew/Cellar/lima/0.22.0/bin/limactl https://github.com/mikekazakov/lima-nohvf/raw/master/limactl && sudo chmod +x /opt/homebrew/Cellar/lima/0.22.0/bin/limactl
           
       - name: Start Colima
         run: |
           colima delete default -f
-          colima start --vm-type=vz
+          colima start --network-address --arch arm64 --vm-type=qemu
 
       - name: Build and Compile
         run: |
