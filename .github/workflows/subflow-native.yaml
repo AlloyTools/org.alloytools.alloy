@@ -36,7 +36,7 @@ jobs:
         if: always()  # Ensures this step runs even if the previous steps fail
         run: |
           colima stop -f
-          cat Users/runner/.colima/_lima/colima/ha.stderr.log
+          find ~/.colima -type f -name "*.log" -print -exec cat /Users/runner/.colima/_lima/colima/ha.stderr.log {} \;
 
       - uses: actions/upload-artifact@v4
         with:
