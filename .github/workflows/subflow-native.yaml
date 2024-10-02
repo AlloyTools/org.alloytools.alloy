@@ -21,13 +21,11 @@ jobs:
           HOMEBREW_NO_AUTO_UPDATE: "1"
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1"
         run: |
-          brew install --HEAD qemu
-          brew install --HEAD lima
-          brew install --HEAD colima
+          brew install docker
           
       - name: Start Colima
         run: |
-          colima start --arch arm64 --vm-type=qemu
+          colima start --vm-type=vz
 
       - name: Build and Compile
         run: |
