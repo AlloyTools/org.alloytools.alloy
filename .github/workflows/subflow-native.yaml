@@ -32,6 +32,7 @@ jobs:
       - name: Stop Colima
         if: always()  # Ensures this step runs even if the previous steps fail
         run: |
+          cat /Users/runner/.colima/_lima/colima/serial*.log\
           colima stop -f
 
       - uses: actions/upload-artifact@v4
