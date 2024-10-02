@@ -5,7 +5,7 @@ on:
   workflow_call:
   
 jobs:
-  build:
+  macos:
     runs-on: macos-13
       
     steps:
@@ -16,27 +16,30 @@ jobs:
           java-version: 17
           distribution: temurin
 
-      - name: Install CLI deps
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: "1"
-          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1"
+      - name: Build and Compile
         run: |
-          brew install docker colima
-          
-      - name: Start Colima
-        run: |
-          colima start --memory 4 --vm-type=vz
+          ./gradlew --parallel compileJava
+          make -C org.alloytools.pardinus.native/native-code clean darwin copy
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native
+          path: org.alloytools.pardinus.native/native/
+
+  linux-windows:
+    runs-on: ubuntu
+      
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
 
       - name: Build and Compile
         run: |
           ./gradlew --parallel compileJava
-          make -C org.alloytools.pardinus.native/native-code install
-
-      - name: Stop Colima
-        if: always()  # Ensures this step runs even if the previous steps fail
-        run: |
-          colima stop -f
-          find ~/.colima -type f -name "*.log" -print -exec cat {} \;
+          make -C org.alloytools.pardinus.native/native-code clean linux windows copy
 
       - uses: actions/upload-artifact@v4
         with:
