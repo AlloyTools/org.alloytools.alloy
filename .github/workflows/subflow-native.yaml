@@ -22,7 +22,7 @@ jobs:
           brew install colima
       - name: Start Colima
         run: |
-          colima start --network-address --arch arm64 --vm-type=qemu
+          colima start --arch arm64 --vm-type=qemu
 
       - name: Build and Compile
         run: |
