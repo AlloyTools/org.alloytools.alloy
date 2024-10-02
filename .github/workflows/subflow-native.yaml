@@ -10,8 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - run: "sudo xcode-select -s /Applications/Xcode_$XC_VERSION.app"
-      
       - uses: actions/setup-java@v4
         with:
           java-version: 17
