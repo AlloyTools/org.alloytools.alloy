@@ -10,7 +10,9 @@
 
 package ca.uwaterloo.watform.core;
 
-public class DashStrings {
+import java.io.Serializable;
+
+public class DashStrings implements Serializable {
 
 	// pretty printing anywhere
 	public static String tab = "  ";

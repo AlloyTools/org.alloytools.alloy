@@ -2,6 +2,7 @@ package ca.uwaterloo.watform.parser;
 
 import java.util.Set;
 import java.util.List;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -24,7 +25,7 @@ import ca.uwaterloo.watform.parser.StateTable;
 import ca.uwaterloo.watform.parser.EventTable;
 import ca.uwaterloo.watform.parser.PredTable;
 
-public class VarTable {
+public class VarTable implements Serializable {
 
 	// stores Var, Buffer Decls in a HashMap based on the event FQN
 

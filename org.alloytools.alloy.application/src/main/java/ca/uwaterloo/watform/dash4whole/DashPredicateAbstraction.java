@@ -103,7 +103,7 @@ public class DashPredicateAbstraction {
             int index = inputFilename.lastIndexOf('.');
             if (index > 0) {
                 System.err.println("Expected a Dash file with 'dsh' extension: " + inputFilename);
-                break;
+                System.exit(-1);
             } else {
                 inputFilename = inputFilename + ".dsh";
             }
@@ -157,13 +157,11 @@ public class DashPredicateAbstraction {
                 d = MainFunctions.resolveDash(d, rep);
                 System.out.println("Resolved Dash"); 
 
-                DashModule dcopy = MainFunctions.copyDash(d, rep);
-
+                DashModule dcopy = MainFunctions.copyDash(d);
+                System.out.println("Deep copy of Dash model created");
                     
                 } catch (Exception e) {
                     DashUtilFcns.handleException(e);
                 }
-            }
-        }
     }
 }

@@ -11,6 +11,7 @@
 	org.alloytools.alloy.core;version=latest, \
 	com.io7m.jpplib.io7m-jpplib-core;version=0.7.4,\
 	org.apache.commons.io,\
+	org.apache.commons.lang3,\
 
 -testpath: \
 	biz.aQute.wrapper.junit, \

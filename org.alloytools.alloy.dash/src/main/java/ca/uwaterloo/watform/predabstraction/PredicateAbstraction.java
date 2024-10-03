@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.apache.commons.lang3.SerializationUtils;
+
 import ca.uwaterloo.watform.core.DashOptions;
 
 public class PredicateAbstraction {
@@ -35,7 +37,8 @@ public class PredicateAbstraction {
             
             // Method 2: Also needs to implement Serializable, Apache Commons Lang
 
-            // DashModule dcopy = org.apache.commons.lang.SerializationUtils.clone(d);
+            DashModule dcopy = (DashModule) SerializationUtils.clone(d);
+            return dcopy;
 
 
 
@@ -49,7 +52,7 @@ public class PredicateAbstraction {
             //   }
             
         } catch(Exception e) {
-            
+            return null;
         }
     }
 }

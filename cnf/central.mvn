@@ -28,3 +28,4 @@ biz.aQute.bnd:aQute.libg:6.1.0
 org.osgi:org.osgi.annotation.bundle:1.1.1
 org.osgi:osgi.annotation:8.0.1
 com.io7m.jpplib:io7m-jpplib-core:0.7.4
+org.apache.commons:commons-lang3:3.14.0

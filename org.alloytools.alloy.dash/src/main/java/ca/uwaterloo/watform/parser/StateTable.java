@@ -30,7 +30,7 @@ import ca.uwaterloo.watform.ast.*;
 import ca.uwaterloo.watform.parser.VarTable;
 import ca.uwaterloo.watform.dashtoalloy.Common;
 
-public class StateTable {
+public class StateTable implements Serializable {
 	private HashMap<String,StateElement> table;
 	private boolean isResolved;
 	private String root;

@@ -1,5 +1,6 @@
 package ca.uwaterloo.watform.ast;
 
+import java.io.Serializable;
 import java.util.*;
 
 import java.util.List;
@@ -25,7 +26,7 @@ import static ca.uwaterloo.watform.parser.ResolveExpr.*;
 
 //import ca.uwaterloo.watform.parser.BufferTable;
 
-public class DashState  extends Dash {
+public class DashState  extends Dash implements Serializable {
 
 	// stuff from parsing
 	public String name;

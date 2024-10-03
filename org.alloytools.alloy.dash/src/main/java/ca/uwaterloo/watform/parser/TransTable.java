@@ -29,7 +29,7 @@ import static ca.uwaterloo.watform.parser.ResolveExpr.*;
 
 
 
-public class TransTable {
+public class TransTable implements Serializable {
 
 	private HashMap<String,TransElement> table;
 	private boolean isResolved;

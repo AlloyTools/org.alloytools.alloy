@@ -149,7 +149,7 @@ public class MainFunctions {
     }
 
     // returns a deep copy of DashModule object
-    public static DashModule copyDash(DashModule d, A4Reporter rep) {
+    public static DashModule copyDash(DashModule d) {
         if(d == null){
             DashErrors.emptyModule();
             return d;
