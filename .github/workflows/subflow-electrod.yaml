@@ -2,7 +2,8 @@ name: subflow-electrod
 
 on:
   workflow_call:
-
+  workflow_dispatch:
+  
 jobs:
   binaries:
     runs-on: ${{ matrix.os }}
