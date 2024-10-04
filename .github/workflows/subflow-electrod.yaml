@@ -45,7 +45,7 @@ jobs:
           opam install . --deps-only --with-test
           opam exec -- dune build 
           mkdir -p native/${{ matrix.dir }}
-          sha1sum electrod.exe
+          md5 electrod.exe
           cp electrod.exe native/${{ matrix.dir }}/${{ matrix.file }}
  
       - uses: actions/upload-artifact@v4
