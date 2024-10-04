@@ -23,10 +23,11 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          path: org.alloytools.pardinus.native/native
-          merge-multiple: true
+          path: temp_native
 
       - run: |
+          cp -rf temp_native/* org.alloytools.pardinus.native/native
+          rm -rf temp_native
           git config user.name github-actions
           git config user.email github-actions@galloytools.org
 
