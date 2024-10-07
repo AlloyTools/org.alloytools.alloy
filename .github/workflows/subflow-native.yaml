@@ -18,7 +18,8 @@ jobs:
 
       - name: Build and Compile
         run: |
-          ./gradlew --parallel compileJava
+          ./gradlew --parallel compileJava          
+          rm -rf org.alloytools.pardinus.native/native-code/native
           make -C org.alloytools.pardinus.native/native-code clean darwin copy
       - uses: actions/upload-artifact@v4
         with:
@@ -39,6 +40,7 @@ jobs:
       - name: Build and Compile
         run: |
           ./gradlew --parallel compileJava
+          rm -rf org.alloytools.pardinus.native/native-code/native
           make -C org.alloytools.pardinus.native/native-code clean linux windows copy
 
       - uses: actions/upload-artifact@v4
