@@ -24,7 +24,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: native-darwin
-          path: org.alloytools.pardinus.native/native/
+          path: org.alloytools.pardinus.native/native-code/native
 
   linux-windows:
     runs-on: ubuntu-latest
@@ -46,4 +46,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: native-linux-windows
-          path: org.alloytools.pardinus.native/native/
+          path: org.alloytools.pardinus.native/native-code/native
