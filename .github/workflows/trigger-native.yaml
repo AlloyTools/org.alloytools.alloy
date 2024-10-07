@@ -26,11 +26,13 @@ jobs:
           path: temp_native
 
       - run: |
-          find org.alloytools.pardinus.native/native/ -type f -exec git hash-object -w {} \; -print
-          ls -Rl temp_native
-          cp -rf temp_native/*/* org.alloytools.pardinus.native/native/
-          ls -Rl org.alloytools.pardinus.native/native/
-          find org.alloytools.pardinus.native/native/ -type f -exec git hash-object -w {} \; -print
+          echo "Show what is downloaded"
+          find temp_native -type f -name "electrod*" -exec git hash-object -w {} \; -print
+          echo "Copy downloaded to native"
+          cp -rfv temp_native/*/* org.alloytools.pardinus.native/native/
+          echo "Show new native"
+          find org.alloytools.pardinus.native/native/ -type f -name "electrod*" -exec git hash-object -w {} \; -print
+          echo "Remove temp"
           rm -rf temp_native
           git config user.name github-actions
           git config user.email github-actions@galloytools.org
