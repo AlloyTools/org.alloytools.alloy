@@ -16,21 +16,18 @@ Alloy 6 is a [major new release](http://alloytools.org/alloy6.html) More documen
 
 # Requirements
 
-Alloy runs on all operating systems with a recent JVM (Java 6 or later). 
+Alloy runs on all operating systems with a recent JVM (Java 17 or later). 
 It is made available as a runnable jar file with both a cross-platform SAT solver
 ([Sat4j](http://www.sat4j.org/) and more efficient native SAT solvers ([minisat](http://minisat.se), [lingeling/plingeling](http://fmv.jku.at/lingeling/), [glucose](http://www.labri.fr/perso/lsimon/glucose/)).
-
-Note however that starting with macOS High Sierra, it is necessary to install a dedicated
-JVM to run Alloy on macOS. A `.pkg` file is provided for that purpose.
 
 # TL;DR
 
 Checkout the project and type `./gradlew build`. You find the executable JAR in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar after the build has finished.
 
-     $ java -version           # requires 1.8 (and NOT 1.9, gradle does not run on 1.9)
-     java version "1.8.0_144"
-     Java(TM) SE Runtime Environment (build 1.8.0_144-b01)
-     Java HotSpot(TM) 64-Bit Server VM (build 25.144-b01, mixed model
+     $ java -version           # requires Java 17
+     openjdk version "17.0.9" 2023-10-17 LTS
+     OpenJDK Runtime Environment (build 17.0.9+11-LTS)
+     OpenJDK 64-Bit Server VM (build 17.0.9+11-LTS, mixed mode, sharing)
      $ git clone --recursive https://github.com/AlloyTools/org.alloytools.alloy.git
      $ cd org.alloytools.alloy
      $ ./gradlew build
@@ -63,9 +60,9 @@ The workspace is divided into a number of projects:
 
 This workspace uses bnd. This means that the following have special meaning:
 
-* [cnf/build.xml](cnf/build.xml) – Settings shared between projects
+* [cnf/build.bnd](cnf/build.bnd) – Settings shared between projects
 * ./bnd.bnd – Settings for a project. This file will _drag_ in code in a JAR.
-* [cnf/central.xml](cnf/central.xml) – Dependencies from maven central
+* [cnf/central.mvn](cnf/central.mvn) – Dependencies from maven central
 
 ### Eclipse
 
@@ -82,7 +79,7 @@ Bndtools support. It should be enabled by default.
 2. Select the root folder (default folder name is `org.alloytools.alloy`).
 3. Choose "Import project from external model: Bnd/Bndtools" and click "Next"
 4. For "Select Bnd/Bndtools project to import", all projects should be checked by default, click "Next"
-5. For project SDK, Choose "1.8", Click Finish
+5. For project SDK, Choose "17", Click Finish
 6. Select folder `org/alloytools/kodkod/nativesat/jni` as `Resource Folder` by selecting module `org.alloytools.kodkod.nativesat`, selecting folder `jni` -> `right click` -> `Mark Directory As` -> `Resource Root`.
 
 Note: do *not* link the Gradle project, as this will prevent you from running
@@ -100,16 +97,14 @@ In the root of this workspace type `./gradlew`. This is a script that will downl
 
 ### Continuous Integration
 
-The workspace is setup to build after every commit using Travis. 
+The workspace is setup to build after every commit using Github Actions, see [workflows](.github/workflows). 
 
-It releases snapshots to `https://oss.sonatype.org/content/repositories/snapshots/org/alloytools/` for every CI build on Travis.
+It releases snapshots to `https://oss.sonatype.org/content/repositories/snapshots/org/alloytools/` for every CI build.
 
 ### Building the DMG file for OSX systems
 
-Currently only the executable jar in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar is build. In the `org.alloytools.alloy.dist` project, run `../gradlew macos`. This will leave the PKG file in `target/bundle`.
+Currently only the executable jar in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar is build. See the conveyor directory for the release executables.
 
 ## CONTRIBUTIONS
 
 Please read the [CONTRIBUTING](CONTRIBUTING.md) to understand how you can contribute.
-
-[javapackager]: https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/packager.html
