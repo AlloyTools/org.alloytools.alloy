@@ -24,7 +24,7 @@ public class MiniSatProverRef extends SATFactory {
     }
 
     @Override
-    public SATSolver instance() {
+    public SATSolver createSolver() {
         return new MiniSatProver();
     }
 

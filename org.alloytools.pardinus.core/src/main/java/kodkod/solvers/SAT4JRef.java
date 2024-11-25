@@ -26,7 +26,7 @@ public class SAT4JRef extends SATFactory {
 	}
 
 	@Override
-	public SATSolver instance() {
+	public SATSolver createSolver() {
 		return new SAT4J(SolverFactory.instance().defaultSolver());
 	}
 	@Override

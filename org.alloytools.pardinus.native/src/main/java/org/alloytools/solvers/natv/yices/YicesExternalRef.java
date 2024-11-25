@@ -22,7 +22,7 @@ public class YicesExternalRef extends SATFactory {
     }
 
     @Override
-    public WTargetSATSolver instance() {
+    public WTargetSATSolver createSolver() {
         return new PMaxYicesExternal("yices", null, false, 2000, "-d", "-e", "-ms", "-mw", "" + 2000);
     }
 

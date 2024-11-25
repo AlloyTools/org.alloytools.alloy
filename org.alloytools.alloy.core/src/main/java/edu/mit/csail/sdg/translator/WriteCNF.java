@@ -72,7 +72,7 @@ final public class WriteCNF implements SATSolver {
 
             /** {@inheritDoc} */
             @Override
-            public SATSolver instance() {
+            public SATSolver createSolver() {
                 return new WriteCNF(filename);
             }
 

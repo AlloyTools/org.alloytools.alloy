@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
@@ -73,7 +74,7 @@ import kodkod.solvers.api.NativeCode;
 public abstract class SATFactory implements Serializable, Comparable<SATFactory> {
 	private final static org.slf4j.Logger log = LoggerFactory.getLogger(SATFactory.class);
 	private static final long serialVersionUID = 1L;
-    protected final static boolean isWindows = File.separatorChar == '\\';
+	protected final static boolean isWindows = File.separatorChar == '\\';
 	protected static final String[] EMPTY = new String[0];
 	static List<SATFactory> solvers;
 
@@ -90,6 +91,8 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 		extensions.add(LightSat4JRef.INSTANCE);
 		extensions.add(PMaxSAT4JRef.INSTANCE);
 	}
+
+	transient Optional<Boolean> initialized = null;
 
 	protected SATFactory() {
 	}
@@ -134,11 +137,32 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	}
 
 	/**
+	 * Returns an instance of a SATSolver produced by this factory but wraps it in
+	 * logging
+	 * 
+	 * @return a SATSolver instance
+	 */
+	public final SATSolver instance() {
+		if ( !init()) {
+			log.error("failed to initialize {}", name());
+			throw new IllegalStateException("could not initialize SATSolver " + name());
+		}
+		
+		try {
+			log.debug("creating solver for {}", name());
+			return createSolver();
+		} catch (Throwable e) {
+			log.error("solver creation {}: {}", name(), e, e);
+			throw e;
+		}
+	}
+
+	/**
 	 * Returns an instance of a SATSolver produced by this factory.
 	 * 
 	 * @return a SATSolver instance
 	 */
-	public SATSolver instance() {
+	protected SATSolver createSolver() {
 		throw new UnsupportedOperationException(this + " is not a SATFactory that can create instances");
 	}
 
@@ -195,6 +219,7 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	 */
 	public static List<SATFactory> getSolvers() {
 		if (solvers == null) {
+			log.debug("getting & testing all solvers");
 			solvers = Collections.unmodifiableList(
 					getAllSolvers().stream().filter(SATFactory::isPresent).collect(Collectors.toList()));
 		}
@@ -235,6 +260,28 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 		if (isTransformer())
 			return true;
 
+		if (init()) {
+			try {
+				instance().free();
+				return true;
+			} catch (java.lang.UnsatisfiedLinkError e) {
+				log.debug("lib {} gave error {}", id(), e.getMessage());
+			} catch (Exception e) {
+				log.debug("not present {} : {}", id(), e.getMessage());
+			}
+		}
+		return false;
+	}
+
+	private synchronized boolean init() {
+		if (initialized == null) {
+			initialized = Optional.of(initUnused());
+		}
+		return initialized.get();
+	}
+
+	private boolean initUnused() {
+		log.debug("lib {} initialize", id());
 		try {
 			for (String library : getLibraries()) {
 				if (!NativeCode.platform.getLibrary(library).isPresent())
@@ -244,12 +291,11 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 				if (!NativeCode.platform.getExecutable(executable).isPresent())
 					return false;
 			}
-			instance();
 			return true;
 		} catch (java.lang.UnsatisfiedLinkError e) {
 			log.debug("lib {} gave error {}", id(), e.getMessage());
 		} catch (Exception e) {
-			log.debug("not present {}", id());
+			log.debug("not present {} : {}", id(), e.getMessage());
 		}
 		return false;
 	}

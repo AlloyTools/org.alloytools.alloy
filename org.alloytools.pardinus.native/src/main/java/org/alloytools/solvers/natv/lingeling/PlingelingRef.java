@@ -56,7 +56,7 @@ public class PlingelingRef extends SATFactory {
      * @return SATFactory that produces SATSolver wrappers for the Plingeling solver
      */
     @Override
-    public SATSolver instance() {
+    public SATSolver createSolver() {
         return new ExternalSolver("plingeling", null, false);
 
     }

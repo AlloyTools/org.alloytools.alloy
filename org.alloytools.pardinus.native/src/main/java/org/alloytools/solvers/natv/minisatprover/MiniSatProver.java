@@ -46,7 +46,7 @@ final public class MiniSatProver extends NativeSolver implements SATProver {
      * Constructs a new MiniSat prover wrapper.
      */
     public MiniSatProver() {
-        super(make());
+        super(NativeSolver.make("MiniSatProver", MiniSatProver::make));
         proof = null;
     }
 

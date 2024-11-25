@@ -18,7 +18,7 @@ public class LightSat4JRef extends SATFactory {
 		return "sat4j.light";
 	}
 
-	public SATSolver instance() {
+	public SATSolver createSolver() {
 		return new SAT4J(SolverFactory.instance().lightSolver());
 	}
 

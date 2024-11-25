@@ -21,7 +21,7 @@ public class YicesRef extends SATFactory {
     }
 
     @Override
-    public Yices instance() {
+    public Yices createSolver() {
         return new Yices();
     }
 

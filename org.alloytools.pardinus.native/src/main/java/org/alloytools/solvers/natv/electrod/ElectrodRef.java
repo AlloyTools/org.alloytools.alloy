@@ -1,5 +1,7 @@
 package org.alloytools.solvers.natv.electrod;
 
+import static kodkod.util.nodes.AnnotatedNode.annotateRoots;
+
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -28,8 +30,6 @@ import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 import kodkod.solvers.api.NativeCode;
 import kodkod.solvers.api.TemporalSolverFactory;
-
-import static kodkod.util.nodes.AnnotatedNode.annotateRoots;
 
 abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
 
@@ -75,14 +75,14 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
             // if decomposed mode, the amalgamated bounds are always considered
             if (options.decomposed() && bounds.amalgamated() != null)
                 symbForm = bounds.amalgamated().resolve(options.reporter());
-                // otherwise use regular bounds
+            // otherwise use regular bounds
             else
                 symbForm = bounds.resolve(options.reporter());
             // NOTE: this is already being performed inside the translator, but is not accessible
             formula = formula.and(symbForm);
 
             formula = Skolemizer.skolemize(annotateRoots(formula), bounds, options).node();
-            Map<Relation, String> rel2name = new HashMap<>();
+            Map<Relation,String> rel2name = new HashMap<>();
             String electrod = ElectrodPrinter.print(formula, bounds, rel2name, options);
             Solution solution;
             if (solverId == null) {
@@ -97,7 +97,7 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
                 }
             } else {
                 String xml = execute(this, electrod, bounds);
-                ElectrodReader rd = new ElectrodReader(bounds,rel2name);
+                ElectrodReader rd = new ElectrodReader(bounds, rel2name);
                 TemporalInstance temporalInstance = rd.read(xml);
                 Statistics stats = new Statistics(rd.nbvars, 0, 0, rd.ctime, rd.atime);
                 solution = temporalInstance == null ? Solution.unsatisfiable(stats, null) : Solution.satisfiable(stats, temporalInstance);
@@ -138,7 +138,7 @@ abstract class ElectrodRef extends SATFactory implements TemporalSolverFactory {
 
 
     @Override
-    public SATSolver instance() {
+    public SATSolver createSolver() {
         return new ExternalSolver("electrod", null, true, "-t", solverId);
     }
 
