@@ -15,7 +15,8 @@ public class AlloyCore {
 
     final static boolean debug;
     static {
-        debug = "yes".equalsIgnoreCase(System.getProperty("debug")) || "true".equalsIgnoreCase(System.getProperty("debug"));
+        String debugString = System.getProperty("debug");
+        debug = "yes".equalsIgnoreCase(debugString) || "true".equalsIgnoreCase(debugString);
     }
 
     public static boolean isDebug() {

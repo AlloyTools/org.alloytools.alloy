@@ -1147,7 +1147,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             int newmem = SubMemory.get(), newstack = SubStack.get();
             if (newmem != subMemoryNow || newstack != subStackNow)
                 WorkerEngine.stop();
-            if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
+            if (AlloyCore.isDebug())
                 WorkerEngine.runLocally(task, cb);
             else
                 WorkerEngine.run(task, newmem, newstack, "", cb);
