@@ -37,7 +37,7 @@ public class GlucoseRef extends SATFactory {
     }
 
     @Override
-    public SATSolver instance() {
+    public SATSolver createSolver() {
         return new Glucose();
     }
 

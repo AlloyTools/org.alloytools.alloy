@@ -6,9 +6,9 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Optional;
+import java.util.function.Function;
 
 import aQute.lib.io.IO;
-import kodkod.solvers.api.NativeCode;
 
 /**
  * This class is the main class for the JAR. Its name is the name shown in the
@@ -22,7 +22,8 @@ import kodkod.solvers.api.NativeCode;
  */
 public class Alloy {
 
-    static ClassLoader old = Alloy.class.getClassLoader();
+    static ClassLoader                     old = Alloy.class.getClassLoader();
+    static Function<String,Optional<File>> getLibrary;
 
     static class AlloyClassLoader extends ClassLoader implements AutoCloseable {
 
@@ -42,8 +43,9 @@ public class Alloy {
 
         @Override
         protected String findLibrary(String libname) {
-            Optional<File> f = NativeCode.platform.getLibrary(libname);
-            return f.map(File::getAbsolutePath).orElse(null);
+            Optional<File> f = getLibrary.apply(libname);
+            String path = f.map(File::getAbsolutePath).orElse(null);
+            return path;
         }
 
         @Override
@@ -66,8 +68,18 @@ public class Alloy {
 
     }
 
+    @SuppressWarnings("unchecked" )
     public static void main(String args[]) throws Exception {
         try (AlloyClassLoader l1 = new AlloyClassLoader()) {
+            Class< ? > nativeCode = l1.loadClass("kodkod.solvers.api.NativeCode");
+            Method method = nativeCode.getMethod("getLibrary", String.class);
+            getLibrary = name -> {
+                try {
+                    return (Optional<File>) method.invoke(null, name);
+                } catch (Throwable t) {
+                    throw new RuntimeException(t);
+                }
+            };
             Class< ? > dispatcher = l1.loadClass("org.alloytools.alloy.core.infra.AlloyDispatcher");
             Method main = dispatcher.getMethod("main", String[].class);
             main.invoke(null, (Object) args);

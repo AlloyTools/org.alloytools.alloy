@@ -178,9 +178,6 @@ public abstract class AbstractKodkodSolver<B extends Bounds, O extends Options> 
 		
 	    if (Options.isDebug()) flushFormula(formula, bounds); // [AM] 	    
 
-		if (!options().solver().incremental())
-			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
-		
 		return iterator(formula, bounds, options());
 		
 	}

@@ -36,7 +36,7 @@ final class PMaxYicesNative extends NativeSolver implements WTargetSATSolver {
     protected long  array = 0;
 
     public PMaxYicesNative() {
-        super(make());
+        super(NativeSolver.make("PMaxYicesNative", PMaxYicesNative::make));
         makearray = true;
         array = allocArray();
         targetCount = 0;

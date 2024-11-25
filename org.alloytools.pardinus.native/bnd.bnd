@@ -1,6 +1,9 @@
 -includeresource \
     native=native, \
-    LICENSES=LICENSES
+    LICENSES=LICENSES, \
+    native/receipt;literal='${findfile;native;*}'
+    
 -buildpath: \
 	org.alloytools.pardinus.core,\
 	biz.aQute.bnd.annotation
+	

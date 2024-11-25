@@ -38,7 +38,7 @@ final public class Yices extends NativeSolver {
      * Constructs a new Yices wrapper.
      */
     public Yices() {
-        super(make());
+        super(NativeSolver.make("Yices", Yices::make));
         makearray = true;
         array = allocArray();
     }

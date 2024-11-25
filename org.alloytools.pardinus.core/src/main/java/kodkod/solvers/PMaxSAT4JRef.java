@@ -31,7 +31,7 @@ public class PMaxSAT4JRef extends SATFactory {
 	}
 
 	@Override
-	public SATSolver instance() {
+	public SATSolver createSolver() {
 		return new PMaxSAT4J(
 				org.sat4j.maxsat.SolverFactory.newDefault());
 	}

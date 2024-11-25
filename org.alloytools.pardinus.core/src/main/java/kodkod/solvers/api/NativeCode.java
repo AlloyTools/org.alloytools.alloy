@@ -21,7 +21,10 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import aQute.lib.collections.ExtList;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 
 /**
  * Alloy Native code
@@ -53,28 +56,39 @@ import aQute.lib.io.IO;
  * </ul>
  */
 public class NativeCode {
-	final static Logger logger = LoggerFactory.getLogger("alloy");
+	final static Logger logger = LoggerFactory.getLogger(NativeCode.class);
 	final static Set<File> PATH = new LinkedHashSet<>();
 	final static Set<File> LIBRARYPATH = new LinkedHashSet<>();
 	final static File cache;
 
 	static {
+		logger.debug("adding native-code cleanup hook");
 		Runtime.getRuntime().addShutdownHook(new Thread(NativeCode::close, "native-code-cleanup") {
 		});
 		String libraryPath = System.getProperty("java.library.path");
 		if (libraryPath != null) {
+			logger.debug("processing 'java.library.path' {}", libraryPath);
 			for (String s : libraryPath.split(File.pathSeparator)) {
 				File dir = new File(s);
-				if (dir.isDirectory())
+				if (dir.isDirectory()) {
 					LIBRARYPATH.add(dir);
+				} else {
+					logger.info("entry {} not a directory, not added to LIBRARYPATH", dir.getAbsolutePath());
+				}
 			}
-		}
+		} else 
+			logger.info("no 'java.library.path' set");
+			
 		String path = System.getenv("PATH");
 		if (path != null) {
+			logger.debug("processing env 'PATH' {}", path);
 			for (String s : path.split(File.pathSeparator)) {
 				File dir = new File(s);
-				if (dir.isDirectory())
+				if (dir.isDirectory()) {
 					PATH.add(dir);
+				} else {
+					logger.info("entry {} not a directory, not added to PATH", dir.getAbsolutePath());
+				}
 			}
 		}
 
@@ -83,11 +97,13 @@ public class NativeCode {
 			LIBRARYPATH.add(cache);
 			PATH.add(cache);
 		} catch (IOException e) {
+			logger.error("Could not create temp directory {}", e, e);
 			RuntimeException runtimeException = new RuntimeException(
 					"Failed to create temporary directory for binaries");
 			System.err.println(runtimeException);
 			throw runtimeException;
 		}
+		logger.debug("LIBRARYPATH {} PATH {} cache={}", LIBRARYPATH, PATH, cache);
 	}
 
 	public static class Platform {
@@ -107,17 +123,21 @@ public class NativeCode {
 				this.osarch = Pattern.compile(osarch, Pattern.CASE_INSENSITIVE);
 				this.osname = Pattern.compile(osnames, Pattern.CASE_INSENSITIVE);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("failed to compile pattern for osnames or osarch, either {} or {} ", osnames, osarch);
 				throw new RuntimeException(e);
 			}
 		}
 
 		public String mapLibrary(String base) {
-			return mapLibrary.apply(base);
+			String mappedName = mapLibrary.apply(base);
+			logger.debug("mapLibrary from {} to {}",base, mappedName);			
+			return mappedName;
 		}
 
 		public String mapExe(String base) {
-			return mapExe.apply(base);
+			String mappedName = mapExe.apply(base);
+			logger.debug("mapExe from {} to {}",base, mappedName);			
+			return mappedName;
 		}
 
 		@Override
@@ -126,34 +146,43 @@ public class NativeCode {
 		}
 
 		public Optional<File> getExecutable(String genericName) {
-			String path = System.getProperty("alloy.native.exe." + genericName);
+			String key = "alloy.native.exe." + genericName;
+			String path = System.getProperty(key);
 			if (path != null) {
 				if (path.equals("NO")) {
-					logger.warn("requested to ignore native exe {}", genericName);
+					logger.warn("getExecutable requested to ignore native exe {}", genericName);
 					return Optional.empty();
 				}
 				File f = IO.getFile(path);
 				if (f.isFile()) {
+					logger.debug("getExecutable uses system property {}={}",key, f.getAbsolutePath());			
 					return Optional.of(f);
 				}
 				logger.warn(
-						"for the generic exe {}, a property alloy.native.exe.{} was found: {} but this was not a proper file. Trying to find it on the path or internal",
+						"getExecutable for the generic exe {}, a property alloy.native.exe.{} was found: {} but this was not a proper file. Trying to find it on the path or internal",
 						genericName, path, f.getAbsolutePath());
 			}
 			String exe = mapExe.apply(genericName);
+			logger.debug("getExecutable stem exe = {}",exe);			
 
 			for (File dir : PATH) {
 				File file = new File(dir, genericName);
-				if (file.canExecute())
+				if (file.canExecute()) {
+					logger.debug("getExecutable found in path  {}",file.getAbsolutePath());			
 					return Optional.of(file);
+				}
 			}
 
 			File file = new File(cache, exe);
-			if (!file.canExecute()) {
-				if (!extract(exe, file))
+			if (!file.canExecute()) {				
+				if (!extract(exe, file)) {
+					logger.debug("getExecutable file not found and not found in the JAR {}",exe);			
 					return Optional.empty();
+				}
 				file.setExecutable(true);
+				logger.debug("getExecutable extracted {}",exe);			
 			}
+			logger.debug("getExecutable file for {} found {}",exe, file.getAbsolutePath());			
 			return Optional.of(file);
 		}
 
@@ -161,37 +190,65 @@ public class NativeCode {
 			String path = System.getProperty("alloy.native.lib." + genericName);
 
 			if (path != null) {
+				logger.debug("getLibrary `alloy.native.lib` system property {}",path);			
 				if (path.equals("NO")) {
-					logger.warn("requested to ignore native lib {}", genericName);
+					logger.warn("getLibrary requested to ignore native lib {} with NO in `alloy.native.lib`", genericName);
 					return Optional.empty();
 				}
 				File f = new File(path);
 				if (f.isFile()) {
+					logger.debug("getLibrary found file for {}",path);			
 					return Optional.of(f);
 				}
 
 				logger.warn(
-						"for the generic lib {}, a property alloy.native.lib.{} was found: {} but this was not a proper file. Trying to find it on the path or internal",
+						"getLibrary for the generic lib {}, a property alloy.native.lib.{} was found: {} but this was not a proper file. Trying to find it on the path or internal",
 						genericName, path, f.getAbsolutePath());
 			}
 
 			String lib = mapLibrary.apply(genericName);
+			logger.debug("getLibrary mapping generic name to library name {}={}",genericName, lib);			
 
 			File file = new File(cache, lib);
-			if (file.isFile())
+			if (file.isFile()) {
+				logger.debug("getLibrary found {}={} (cache)",genericName, file.getAbsolutePath());			
 				return Optional.of(file);
+			}
 
 			if (extract(lib, file)) {
+				logger.debug("getLibrary extracted {}={}",genericName, file.getAbsolutePath());			
 				file.setExecutable(true);
 				return Optional.of(file);
 			}
 
 			for (File dir : LIBRARYPATH) {
 				file = new File(dir, lib);
-				if (file.isFile())
+				if (file.isFile()) {
+					logger.debug("getLibrary found in library path {}={}",genericName, file.getAbsolutePath());			
 					return Optional.of(file);
+				} 
 			}
+			logger.info("getLibrary  not found {}/{} in cache({}) embedded({}) libpath({})",genericName, lib, cache.list(), embedded(), LIBRARYPATH );			
 			return Optional.empty();
+		}
+
+		public String embedded() {
+			try {
+				URL receipt = Platform.class.getClassLoader().getResource("native/receipt");
+				if ( receipt == null) {
+					return "no 'native/receipt' resource";
+				}
+				String data = IO.collect(receipt.openStream());
+				if ( data == null) {
+					return "no 'native/receipt' data";
+				}
+				
+				String prefix = "native/"+id;
+				return Strings.splitAsStream(data).filter(s -> s.startsWith(prefix)).collect(Collectors.joining());
+			} catch( Exception e) {
+				logger.error("failed to parse receipt {}", e, e);
+				return "no valid native/rececipt in jar";
+			}
 		}
 
 		public boolean extract(String actualName, File file) {
@@ -200,15 +257,18 @@ public class NativeCode {
 			try {
 
 				URL url = Platform.class.getClassLoader().getResource(resource);
-				if (url == null)
+				if (url == null) {
+					logger.info("extract library {} not found to extract",resource);			
 					return false;
+				}
 
 				Path to = file.toPath();
 				Files.copy(url.openStream(), to, StandardCopyOption.REPLACE_EXISTING);
 				file.deleteOnExit();
+				logger.debug("extract library {} extracted to {}",url, to);			
 				return true;
 			} catch (Exception e) {
-				logger.error("Failed to extract native code from the jar. name=%s, file=%s: %s", actualName, file, e,
+				logger.error("extract failed to extract native code from the jar. name=%s, file=%s: %s", actualName, file, e,
 						e);
 				return false;
 			}
@@ -238,18 +298,24 @@ public class NativeCode {
 
 	public static Platform platform = findPlatform();
 
+	public static Optional<File> getLibrary(String libname) {
+		return platform.getLibrary(libname);
+	}
 	private static Platform findPlatform() {
 		String os = System.getProperty("os.name");
 		String arch = System.getProperty("os.arch");
 		for (Platform p : platforms) {
 			if (p.osarch.matcher(arch).matches() && p.osname.matcher(os).matches()) {
+				logger.debug("findPlatform {}", p);
 				return platform = p;
 			}
 		}
+		logger.error("findPlatform unknown {} {}", os, arch);
 		return new Platform("UNKNOWN-" + os + "/" + arch, ".*", ".*", s -> s, s -> s);
 	}
 
 	public static void clearCache() {
+		logger.debug("clearCache {}", new ExtList<>(cache.listFiles()));
 		for (File f : cache.listFiles()) {
 			f.delete();
 		}
@@ -264,6 +330,7 @@ public class NativeCode {
 	public static void close() {
 		if (closing.getAndSet(true))
 			return;
+		logger.debug("close");
 		try {
 			Files.walkFileTree(cache.toPath(), new SimpleFileVisitor<Path>() {
 				@Override
