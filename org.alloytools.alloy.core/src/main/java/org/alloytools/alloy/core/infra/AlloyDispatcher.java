@@ -118,8 +118,6 @@ public class AlloyDispatcher extends Env {
     }
 
     public void __alloy(BaseOptions options) throws Exception {
-        if (options.debug())
-            System.setProperty("debug", "yes");
 
         setslf4j(options.debug() ? Levels.debug : options.defaultLevel(Levels.error), options.log());
         log = LoggerFactory.getLogger("alloy");
@@ -526,7 +524,7 @@ public class AlloyDispatcher extends Env {
 
     static final Pattern TARGET_P = Pattern.compile("\\s*(?<name>[^=]+)\\s*=\\s*(?<level>off|trace|debug|info|warn|error)\\s*");
 
-    public void setslf4j(Levels deflt, String... targets) {
+    public static void setslf4j(Levels deflt, String... targets) {
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", deflt.toString());
         if (targets != null)
             for (String target : targets) {
@@ -611,7 +609,7 @@ public class AlloyDispatcher extends Env {
         }
 
         @Override
-        public SATSolver instance() {
+        public SATSolver createSolver() {
             return new ExternalSolver(this.executable, this.cnf, true, this.options);
         }
 

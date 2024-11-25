@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.alloytools.alloy.core.AlloyCore;
 import org.alloytools.alloy.dto.InstanceDTO;
 import org.alloytools.alloy.dto.SolutionDTO;
 import org.alloytools.util.table.Table;
@@ -1722,7 +1723,7 @@ public final class A4Solution {
     } )
     private Solution tryBook(final A4Reporter rep, Command cmd) {
         Solution sol;
-        A4Reporter r = "yes".equals(System.getProperty("debug")) ? rep : null;
+        A4Reporter r = AlloyCore.isDebug() ? rep : null;
         try {
             sol = BookExamples.trial(r, this, fgoal, (AbstractKodkodSolver) solver.solver, cmd.check);
         } catch (Throwable ex) {

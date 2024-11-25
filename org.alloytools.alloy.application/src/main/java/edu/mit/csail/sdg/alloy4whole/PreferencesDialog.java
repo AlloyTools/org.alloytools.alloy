@@ -86,11 +86,6 @@ public class PreferencesDialog extends JFrame {
 
     private static final long serialVersionUID = 5577892964740788892L;
     private JTabbedPane       tab;
-    // private JPanel editorPane;
-    // private JPanel solverPane;
-    // private JPanel miscPane;
-
-    final static boolean isDebug = "yes".equals(System.getProperty("debug"));
 
     private static class MyIntSpinnerModel extends AbstractSpinnerModel {
 
