@@ -38,11 +38,6 @@ public final class MiniSat extends NativeSolver {
         super(NativeSolver.make("MiniSat", MiniSat::make));
     }
 
-    static {
-        loadLibrary(MiniSat.class);
-    }
-
-
     /**
      * {@inheritDoc}
      *

@@ -206,8 +206,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
     final static Pattern TYPED_P = Pattern.compile("([A-Z]{3,6}):");
 
-    MacUtil macUtil;
-
     /**
      * The latest welcome screen; each time we update the welcome screen, we
      * increment this number.
@@ -935,9 +933,11 @@ public final class SimpleGUI implements ComponentListener, Listener {
             } else {
                 UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             }
-            SwingUtilities.updateComponentTreeUI(frame);
-            SwingUtilities.updateComponentTreeUI(prefDialog);
-            SwingUtilities.updateComponentTreeUI(viz.getFrame());
+            if (frame != null) {
+                SwingUtilities.updateComponentTreeUI(frame);
+                SwingUtilities.updateComponentTreeUI(prefDialog);
+                SwingUtilities.updateComponentTreeUI(viz.getFrame());
+            }
         } catch (Throwable e) {
         }
         return null;
@@ -1956,14 +1956,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
             System.setProperty("com.apple.macos.useScreenMenuBar", "true");
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
-        if (Util.onMac()) {
-            try {
-                macUtil = new MacUtil();
-                macUtil.addMenus(this);
-            } catch (NoClassDefFoundError e) {
-                // ignore
-            }
-        }
 
         doLookAndFeel();
 
@@ -2188,18 +2180,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
             log.log(" [in debug mode]");
         }
         log.log("\n\n");
-
-        // If on Mac, then register an application listener
-        try {
-            wrap = true;
-            if (Util.onMac()) {
-                macUtil.registerApplicationListener(doShow(), doAbout(), doOpenFile(""), doQuit());
-            }
-        } catch (Throwable t) {
-        } finally {
-            wrap = false;
-        }
-
 
         // Pre-load the preferences dialog
         prefDialog = new PreferencesDialog(log);

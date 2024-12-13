@@ -29,7 +29,7 @@ public class MiniSatRef extends SATFactory {
     @Override
     public String[] getLibraries() {
         return isWindows ? new String[] {
-                                         "msvcrt", "libwinpthread-1", "libgcc_s_seh-1", "libstdc++-6", "minisat"
+                                         "libwinpthread-1", "libgcc_s_seh-1", "libstdc++-6", "minisat"
         } : new String[] {
                           "minisat"
         };

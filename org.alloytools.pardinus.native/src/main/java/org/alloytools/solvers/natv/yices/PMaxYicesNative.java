@@ -42,10 +42,6 @@ final class PMaxYicesNative extends NativeSolver implements WTargetSATSolver {
         targetCount = 0;
     }
 
-    static {
-        loadLibrary(Yices.class);
-    }
-
     /**
      * Returns a pointer to an instance of Yices.
      *

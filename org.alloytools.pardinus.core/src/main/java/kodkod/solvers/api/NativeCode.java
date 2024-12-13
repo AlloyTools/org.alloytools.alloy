@@ -207,7 +207,7 @@ public class NativeCode {
 			}
 
 			String lib = mapLibrary.apply(genericName);
-			logger.debug("getLibrary mapping generic name to library name {}={}",genericName, lib);			
+			logger.debug("getLibrary library name {}={}",genericName, lib);			
 
 			File file = new File(cache, lib);
 			if (file.isFile()) {
@@ -216,7 +216,6 @@ public class NativeCode {
 			}
 
 			if (extract(lib, file)) {
-				logger.debug("getLibrary extracted {}={}",genericName, file.getAbsolutePath());			
 				file.setExecutable(true);
 				return Optional.of(file);
 			}

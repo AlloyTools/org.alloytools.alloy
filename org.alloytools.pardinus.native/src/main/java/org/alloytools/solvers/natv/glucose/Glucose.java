@@ -37,10 +37,6 @@ public final class Glucose extends NativeSolver {
         super(NativeSolver.make("Glucose", Glucose::make));
     }
 
-    static {
-        loadLibrary(Glucose.class);
-    }
-
     /**
      * {@inheritDoc}
      *
