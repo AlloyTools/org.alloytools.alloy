@@ -51,10 +51,6 @@ final public class MiniSatProver extends NativeSolver implements SATProver {
     }
 
 
-    static {
-        loadLibrary(MiniSatProver.class);
-    }
-
     /**
      * Returns a subset of the given trivial trace that consists only of axioms. A
      * trace is trivial iff its last clause is an empty clause. This means that the

@@ -412,7 +412,7 @@ public final class WorkerEngine {
         // @formatter:off
         return new String[] {
                              java,
-                             //"-agentlib:jdwp=transport=dt_socket,server=n,suspend=n,address=5006",
+                            // "-agentlib:jdwp=transport=dt_socket,server=n,suspend=n,address=5006",
                              "-Xmx" + newmem + "m",
                              "-Xss" + newstack + "k",
                              "-Djava.library.path=" + NativeCode.getLibraryPath(),

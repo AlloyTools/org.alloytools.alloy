@@ -43,10 +43,6 @@ final public class Yices extends NativeSolver {
         array = allocArray();
     }
 
-    static {
-        loadLibrary(Yices.class);
-    }
-
     /**
      * Returns a pointer to an instance of Yices.
      *

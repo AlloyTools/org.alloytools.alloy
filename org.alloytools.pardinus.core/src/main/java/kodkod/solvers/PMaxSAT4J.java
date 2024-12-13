@@ -46,13 +46,13 @@ import kodkod.engine.satlab.WTargetSATSolver;
  * 
  * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
-final public class PMaxSAT4J implements WTargetSATSolver { 
+final public class PMaxSAT4J implements WTargetSATSolver {
 	private WeightedMaxSatDecorator solver;
 	private IOptimizationProblem optproblem;
 	private ReadOnlyIVecInt wrapper;
 	private Boolean sat;
 	private int vars, clauses;
-	private Set<int[]> hardclauses = new HashSet<int[]>();  
+	private Set<int[]> hardclauses = new HashSet<int[]>();
 	private Map<Integer,Integer> softclauses = new HashMap<Integer,Integer>();
 	/**
 	 * Constructs a wrapper for the given instance of ISolver.
@@ -86,7 +86,7 @@ final public class PMaxSAT4J implements WTargetSATSolver {
 	public int numberOfClauses() {
 		return clauses;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#numberOfTargets()
@@ -130,7 +130,7 @@ final public class PMaxSAT4J implements WTargetSATSolver {
 	/**
 	 * {@inheritDoc}
 	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#addWeight(int,int)
-	 */	
+	 */
 	public boolean addWeight(int lit, int weight) {
 		softclauses.put(lit,weight);
 		clauses++;
@@ -151,14 +151,14 @@ final public class PMaxSAT4J implements WTargetSATSolver {
 		solver.setTimeout(1000);
 		try {
 			// add the target variables as soft clauses
-			for (Integer x : softclauses.keySet()) 
+			for (Integer x : softclauses.keySet())
 				solver.addSoftClause(softclauses.get(x),wrapper.wrap(new int[] { x }));
 			// add the problem variables as hard clauses
-			for (int[] x : hardclauses) 
+			for (int[] x : hardclauses)
 				solver.addHardClause(wrapper.wrap(x));
 		} catch (ContradictionException e) {
 			sat = Boolean.FALSE;
-		}		
+		}
 
 		if (!Boolean.FALSE.equals(sat)) {
 			boolean isSatisfiable = false;
@@ -207,14 +207,17 @@ final public class PMaxSAT4J implements WTargetSATSolver {
 	 * @see kodkod.engine.satlab.SATSolver#free()
 	 */
 	public synchronized final void free() {
-		solver.reset();
-		optproblem = null;
-		solver = null;
+		if (solver != null) {
+			solver.reset();
+			optproblem = null;
+			solver = null;
+		}
 	}
 
+	@SuppressWarnings("deprecation")
 	protected final void finalize() throws Throwable {
-		super.finalize();
 		free();
+        super.finalize();
 	}
 
 	/**
@@ -349,7 +352,7 @@ final public class PMaxSAT4J implements WTargetSATSolver {
 
 		public IVecInt push(int arg0) {
 			throw new UnsupportedOperationException();
-	 	}
+		}
 
 		public void unsafePush(int arg0) {
 			throw new UnsupportedOperationException();
@@ -407,11 +410,11 @@ final public class PMaxSAT4J implements WTargetSATSolver {
 			throw new UnsupportedOperationException();
 		}
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#clearTargets(int)
-	 */	
+	 */
 	public boolean clearTargets() {
 		clauses = clauses - numberOfTargets();
 		softclauses = new HashMap<Integer, Integer>();

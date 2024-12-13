@@ -39,9 +39,9 @@ import kodkod.solvers.api.NativeCode;
 public abstract class NativeSolver implements SATSolver {
 	static Logger logger = LoggerFactory.getLogger(NativeSolver.class);
 
-	final static AtomicLong ID = new AtomicLong(1000);
+	final static AtomicLong INSTANCE = new AtomicLong(1000);
 
-	private final long id = ID.incrementAndGet();
+	private final long instance = INSTANCE.incrementAndGet();
 	private final long peer;
 	private final AtomicBoolean freed = new AtomicBoolean(false);
 	private Boolean sat;
@@ -54,7 +54,7 @@ public abstract class NativeSolver implements SATSolver {
 		this.peer = peer;
 		this.clauses = this.vars = 0;
 		this.sat = null;
-		logger.debug("created native solver {} {}", getClass().getSimpleName(), peer);
+		logger.debug("[{}] created native solver {} {}", instance, getClass().getSimpleName(), peer);
 	}
 
 	/**
@@ -79,8 +79,6 @@ public abstract class NativeSolver implements SATSolver {
 					for (String suffix : versions.split(File.pathSeparator)) {
 						try {
 							System.loadLibrary(name + suffix);
-							logger.debug("library {} for class {} mapped to {} loads", name, library.getSimpleName(),
-									name + suffix);
 							return;
 						} catch (UnsatisfiedLinkError e1) {
 						}
@@ -198,20 +196,19 @@ public abstract class NativeSolver implements SATSolver {
 	public final boolean solve() {
 		valid();
 		if (sat == Boolean.FALSE) {
-			logger.debug("[{}] already false??", id);
 			return sat;
 		}
 
-		logger.debug("[{}] solving in JNI peer. vars={}, clauses, sat={}", id, vars, clauses, sat);
 		try {
 			sat = solve(peer);
-			logger.debug("[{}] solved sat={}", id, vars, clauses, sat);
+			logger.debug("[{}] solved sat={}", instance, sat);
 			return sat;
 		} catch (Exception e) {
-			logger.error("[{}] error failed to solve in native JNI solver {}", id, e, e);
+			logger.error("[{}] error failed to solve in native JNI solver {}", instance, e, e);
 			throw e;
 		}
 	}
+
 
 	/**
 	 * Throws an IllegalArgumentException if variable !in this.variables. Otherwise
@@ -243,18 +240,18 @@ public abstract class NativeSolver implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#free()
 	 */
-	public synchronized final void free() {
+	public final void free() {
 		if (freed.getAndSet(true) == false) {
-			logger.debug("[{}] free {} {}", id, getClass().getSimpleName(), peer);
+			logger.debug("[{}] free {} {}", instance, getClass().getSimpleName(), peer);
 			free(peer);
 		} else {
-			logger.warn("[{}] free called multiple times {}", id, getClass().getSimpleName());
+			logger.warn("[{}] free called multiple times {}", instance, getClass().getSimpleName());
 		}
 	}
 
 	void valid() {
 		if ( freed.get()) {
-			throw new IllegalStateException("this native solver is already freed: " + id + " " + getClass().getSimpleName());
+			throw new IllegalStateException("this native solver is already freed: " + instance + " " + getClass().getSimpleName());
 		}
 	}
 	/**
@@ -263,11 +260,11 @@ public abstract class NativeSolver implements SATSolver {
 	 */
 	@Deprecated
 	protected final void finalize() throws Throwable {
-		super.finalize();
 		if (freed.getAndSet(true) == false) {
-			logger.warn("[{}] finalize called {}", id, getClass().getSimpleName());
-			free();			
+			logger.warn("[{}] finalize called {}", instance, getClass().getSimpleName());
+			free(peer);			
 		}
+		super.finalize();
 	}
 
 	/**
@@ -319,12 +316,10 @@ public abstract class NativeSolver implements SATSolver {
 
 	public static long make(String type, Supplier<Long> make) {
 		try {
-			logger.debug("trying to 'make' JNI peer {}", type);
 			long peer = make.get();
-			logger.debug("made JNI peer {}", peer);
 			return peer;
 		} catch (Throwable t) {
-			logger.error("failed to make JNI peer {}", type, t, t);
+			logger.error("failed to make JNI peer {} : {}", type, t, t);
 			throw t;
 		}
 	}

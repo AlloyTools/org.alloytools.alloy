@@ -25,12 +25,12 @@ package kodkod.engine.satlab;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
@@ -143,11 +143,11 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 	 * @return a SATSolver instance
 	 */
 	public final SATSolver instance() {
-		if ( !init()) {
+		if (!init()) {
 			log.error("failed to initialize {}", name());
 			throw new IllegalStateException("could not initialize SATSolver " + name());
 		}
-		
+
 		try {
 			log.debug("creating solver for {}", name());
 			return createSolver();
@@ -284,8 +284,11 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 		log.debug("lib {} initialize", id());
 		try {
 			for (String library : getLibraries()) {
-				if (!NativeCode.platform.getLibrary(library).isPresent())
+				Optional<File> libFile = NativeCode.platform.getLibrary(library);
+				if (!libFile.isPresent()) {
 					return false;
+				}
+				loadLibrary(libFile.get());
 			}
 			for (String executable : getExecutables()) {
 				if (!NativeCode.platform.getExecutable(executable).isPresent())
@@ -298,6 +301,11 @@ public abstract class SATFactory implements Serializable, Comparable<SATFactory>
 			log.debug("not present {} : {}", id(), e.getMessage());
 		}
 		return false;
+	}
+
+	static void loadLibrary(File libFile) {
+		log.debug("loading library {}", libFile);
+		System.load(libFile.getAbsolutePath());
 	}
 
 	/**
