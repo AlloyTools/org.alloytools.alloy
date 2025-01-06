@@ -1,12 +1,14 @@
 name: trigger-native
 
 on:
-  push:
-    branches: master
-    paths:
-      - 'org.alloytools.pardinus.native/native-code/**'
-      - '.github/workflows/trigger-native.yaml'
-      - '.github/workflows/subflow-*.yaml'
+  workflow_dispatch:
+  
+#  push:
+#    branches: master
+#    paths:
+#      - 'org.alloytools.pardinus.native/native-code/**'
+#      - '.github/workflows/trigger-native.yaml'
+#      - '.github/workflows/subflow-*.yaml'
 
 jobs:
   electrod:
