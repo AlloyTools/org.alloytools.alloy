@@ -295,7 +295,7 @@ public class CLI extends Env {
 						error("failed to save receipt: %s", e.getMessage());
 					}
 			} catch (Exception e) {
-				error("command %s could not be solved: %s", cname, Exceptions.unrollCause(e));
+				exception(e,"command %s could not be solved: %s", cname, Exceptions.unrollCause(e));
 				trace.format("!%s", Exceptions.unrollCause(e));
 			}
 			trace.format("%n");
@@ -449,18 +449,18 @@ public class CLI extends Env {
 					pw.printf("%-40s %s%n", "Loop state", loopstate);
 				}
 
-				for (int i = 0; i < tracelength; i++) {
+				for (int trace = 0; trace < tracelength; trace++) {
 					pw.println();
-					Table t = solution.toTable(i);
-					if (i == loopstate) {
+					Table t = solution.toTable(trace);
+					if (trace == loopstate) {
 						Table withLoopstate = new Table(1, 2, 0);
 						withLoopstate.set(0, 0, t);
 						withLoopstate.set(0, 1, "<-");
 						t = withLoopstate;
 					}
 					if (solution.isTemporal()) {
-						pw.printf("%-40s %s%n", "State index", i);
-						if (i == loopstate) {
+						pw.printf("%-40s %s%n", "State index", trace);
+						if (trace == loopstate) {
 							pw.printf("%-40s %s%n", "Loop back", "true");
 						}
 					}
@@ -471,15 +471,15 @@ public class CLI extends Env {
 						Table skolemsTable = new Table(skolems.size() + 1, 2, 1);
 						skolemsTable.set(0, 0, "skolem");
 						skolemsTable.set(0, 1, "value");
-						for (int j = 0; i < skolems.size(); j++) {
-							ExprVar var = skolems.get(j);
-							Object eval = solution.eval(var, i);
+						for (int skolem = 0; skolem < skolems.size(); skolem++) {
+							ExprVar var = skolems.get(skolem);
+							Object eval = solution.eval(var, trace);
 							if (eval instanceof SimTupleset) {
 								Table tt = TableView.toTable((SimTupleset) eval);
-								skolemsTable.set(j + 1, 1, tt);
+								skolemsTable.set(skolem + 1, 1, tt);
 							} else
-								skolemsTable.set(j + 1, 1, eval);
-							skolemsTable.set(j + 1, 0, var.label);
+								skolemsTable.set(skolem + 1, 1, eval);
+							skolemsTable.set(skolem + 1, 0, var.label);
 						}
 						pw.println(skolemsTable);
 					}
