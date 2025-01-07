@@ -100,6 +100,7 @@ public class AlloyDispatcher extends Env {
 
         @Description("Set per logger log level. The syntax is <logger-prefix>=<level>, where level is off, trace, debug, info, warn, error" )
         String[] log();
+
     }
 
     public static void main(String[] args) {
@@ -147,6 +148,9 @@ public class AlloyDispatcher extends Env {
                 if (commands.containsKey(subcommand)) {
                     try {
                         log.debug("subcommand {} found in {}", subcommand, target);
+                        if (target instanceof Env env) {
+                            env.setExceptions(options.debug());
+                        }
                         String info = l.execute(target, subcommand, arguments);
                         if (info != null) {
                             System.out.println(info);
