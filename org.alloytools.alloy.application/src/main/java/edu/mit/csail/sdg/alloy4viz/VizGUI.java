@@ -58,7 +58,23 @@ import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.swing.*;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.JToolBar;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.WindowConstants;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
@@ -1129,7 +1145,7 @@ public final class VizGUI implements ComponentListener {
         diagramsScrollPanels.setLayout(new BoxLayout(diagramsScrollPanels, BoxLayout.LINE_AXIS));
         for (int i = 0; i < texts.size(); i++) {
 
-            final JTextArea ta = OurUtil.textarea(texts.get(i), 10, 10, false, false);
+            final JTextArea ta = OurUtil.textarea(texts.get(i), 10, 10, false, wrap);
 
             try {
                 List<Entry<Integer,Integer>> dfs = new ArrayList<>();
