@@ -43,6 +43,9 @@ public class Table implements Cell {
      */
     @Override
     public int width() {
+        if (isEmpty())
+            return 3;
+
         int w = 0;
         for (int c = 0; c < cols; c++) {
             w += width(c) - 1; // remove right border width because we overlap
@@ -50,14 +53,20 @@ public class Table implements Cell {
         return w + 1; // add right border
     }
 
+    private boolean isEmpty() {
+        return cells.length == 0;
+    }
+
     /**
      * Height including borders
      */
     @Override
     public int height() {
+        if (isEmpty())
+            return 3;
         int h = 0;
         for (int r = 0; r < rows; r++) {
-            h += height(r) - 1;// remove bottom border width because we overlap
+            h += height(r) - 1;// remove bottom border height because we overlap
         }
         return h + 1; // add bottom border
     }
@@ -79,6 +88,9 @@ public class Table implements Cell {
 
     @Override
     public String toString() {
+        if (isEmpty()) {
+            return "∅";
+        }
         if (cols == 1 && rows > 3)
             return transpose(0).toString("⁻¹");
         else
@@ -95,25 +107,27 @@ public class Table implements Cell {
         Canvas canvas = new Canvas(width + left + right, height + top + bottom);
         canvas.box(left, top, width, height, style);
 
-        int y = top;
+        if (!isEmpty()) {
+            int y = top;
 
-        for (int r = 0; r < rows; r++) {
-            int ch = height(r);
-            int x = left;
-            for (int c = 0; c < cols; c++) {
-                int cw;
-                if (c == cols - 1) {
-                    // adjust last column width
-                    cw = width - x - left;
-                } else {
-                    cw = width(c);
+            for (int r = 0; r < rows; r++) {
+                int ch = height(r);
+                int x = left;
+                for (int c = 0; c < cols; c++) {
+                    int cw;
+                    if (c == cols - 1) {
+                        // adjust last column width
+                        cw = width - x - left;
+                    } else {
+                        cw = width(c);
+                    }
+                    Cell cell = cells[r][c];
+                    Canvas foo = cell.render(cw, ch);
+                    canvas.merge(foo, x, y);
+                    x += cw - 1;
                 }
-                Cell cell = cells[r][c];
-                Canvas foo = cell.render(cw, ch);
-                canvas.merge(foo, x, y);
-                x += cw - 1;
+                y += ch - 1;
             }
-            y += ch - 1;
         }
         return canvas;
     }
