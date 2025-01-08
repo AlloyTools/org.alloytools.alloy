@@ -18,7 +18,6 @@ package edu.mit.csail.sdg.alloy4;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -49,7 +48,6 @@ import javax.swing.text.BoxView;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyledEditorKit;
-import javax.swing.text.Utilities;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 
@@ -155,52 +153,6 @@ public final class OurSyntaxWidget {
             @Override
             public void keyPressed(KeyEvent e) {
                 module = null;
-            }
-        });
-        int modifier = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, modifier), "line.begin");
-        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, modifier + InputEvent.SHIFT_DOWN_MASK), "line.begin");
-        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, modifier), "line.end");
-        this.pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, modifier + InputEvent.SHIFT_DOWN_MASK), "line.end");
-
-        this.pane.getActionMap().put("line.begin", new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    int caretPosition = pane.getSelectionEnd();
-                    int startOfLine = Utilities.getRowStart(pane, caretPosition);
-                    if (isShifted(e)) {
-
-                        pane.setSelectionEnd(caretPosition);
-                        pane.setSelectionStart(startOfLine);
-                    } else {
-                        pane.setCaretPosition(startOfLine);
-                    }
-                } catch (Exception ee) {
-                    // ignore
-                }
-            }
-
-        });
-
-        this.pane.getActionMap().put("line.end", new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    int caretPosition = pane.getSelectionStart();
-                    int endOfLine = Utilities.getRowEnd(pane, caretPosition);
-                    if (isShifted(e)) {
-
-                        pane.setSelectionEnd(endOfLine);
-                        pane.setSelectionStart(caretPosition);
-                    } else {
-                        pane.setCaretPosition(endOfLine);
-                    }
-                } catch (Exception ee) {
-                    // ignore
-                }
             }
         });
         this.parent = parent;
