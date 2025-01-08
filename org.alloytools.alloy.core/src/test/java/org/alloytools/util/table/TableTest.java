@@ -17,7 +17,7 @@ public class TableTest {
     @Test
     public void testEmptyTable() {
         Table t = new Table(0, 0, 0);
-        assertEquals("" + "☒" + "", t.toString());
+        assertEquals("" + "∅" + "", t.toString());
 
     }
 
