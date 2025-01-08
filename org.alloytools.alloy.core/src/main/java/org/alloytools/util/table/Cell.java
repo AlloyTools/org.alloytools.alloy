@@ -17,7 +17,6 @@ public interface Cell {
      *
      * @param w
      * @param h
-     * @return
      */
     default Canvas render(int w, int h) {
         Canvas canvas = new Canvas(w, h);

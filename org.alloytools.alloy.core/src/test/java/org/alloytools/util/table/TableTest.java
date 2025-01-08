@@ -1,5 +1,6 @@
 package org.alloytools.util.table;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -18,6 +19,20 @@ public class TableTest {
         Table t = new Table(0, 0, 0);
         assertEquals("" + "☒" + "", t.toString());
 
+    }
+
+    @Test
+    public void testEmptyTable2() {
+        Table empty = new Table(0, 0, 0);
+        Table t2 = new Table(1, 1, 0);
+        t2.set(0, 0, empty);
+        String render = t2.toString();
+        assertThat(render).isEqualTo("""
+                        ┌─┐
+                        │ │
+                        └─┘
+                        """);
+        System.out.println(render);
     }
 
 
