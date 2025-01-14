@@ -363,7 +363,7 @@ public class CLI extends Env {
 			stdout.flush();
 			Evaluator e = new Evaluator(world, sol, stdin, stdout);
 			String lastCommand = e.loop();
-			if (lastCommand.equals("/exit"))
+			if (lastCommand == null || lastCommand.equals("/exit"))
 				return;
 		}
 	}
