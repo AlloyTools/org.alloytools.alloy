@@ -280,6 +280,7 @@ public class CLI extends Env {
 						trace.format(" expects=%s", c.expects);
 						error("'%s' was satisfied against expectation",c);
 					}
+					trace.format("\n");
 					if (options.evaluator()) {
 						evaluator(world, solution);
 					}
