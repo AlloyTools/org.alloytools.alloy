@@ -23,10 +23,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import aQute.lib.justif.Justif;
 import edu.mit.csail.sdg.alloy4.ErrorFatal;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4graph.DotColor;
@@ -97,22 +99,38 @@ public final class StaticGraphMaker {
             proj = new AlloyProjection();
         Graph graph = new Graph(view.getFontSize() / 12.0D);
         new StaticGraphMaker(graph, instance, view, proj);
-        if (graph.nodes.size() == 0)
-            new GraphNode(graph, "", "Due to your theme settings, every atom is hidden.", "Please click Theme and adjust your settings.");
+        Set<AlloyType> distinctTypes = findNonIntAtoms(instance);
+        if (distinctTypes.isEmpty()) {
+            new GraphNode(graph, "", "No atoms found");
+        } else if (graph.nodes.size() == 0)
+            new GraphNode(graph, "", wrap("No visible atoms found, this can be caused by your theme settings.\nTheme settings might hide the following sigs that were found in the instance:\n" + distinctTypes));
         return new GraphViewer(parent, graph);
     }
 
-    /** The list of colors, in order, to assign each legend. */
-    private static final List<Color> colorsClassic  = Util.asList(new Color(228, 26, 28), new Color(166, 86, 40), new Color(255, 127, 0), new Color(77, 175, 74), new Color(55, 126, 184), new Color(152, 78, 163));
+    private static String[] wrap(String description) {
+        if (description == null)
+            return new String[0];
+        Justif justif = new Justif(40);
+        StringBuilder sb = new StringBuilder(description);
+        justif.wrap(sb);
+        return sb.toString().split("\n");
+    }
+
+    private static Set<AlloyType> findNonIntAtoms(AlloyInstance instance) {
+        return instance.getAllAtoms().stream().filter(x -> x.getType() != AlloyType.INT && x.getType() != AlloyType.SEQINT).map(x -> x.getType()).collect(Collectors.toSet());
+    }
 
     /** The list of colors, in order, to assign each legend. */
-    private static final List<Color> colorsStandard = Util.asList(new Color(227, 26, 28), new Color(255, 127, 0), new Color(251 * 8 / 10, 154 * 8 / 10, 153 * 8 / 10), new Color(51, 160, 44), new Color(31, 120, 180));
+    private static final List<Color> colorsClassic    = Util.asList(new Color(228, 26, 28), new Color(166, 86, 40), new Color(255, 127, 0), new Color(77, 175, 74), new Color(55, 126, 184), new Color(152, 78, 163));
 
     /** The list of colors, in order, to assign each legend. */
-    private static final List<Color> colorsMartha   = Util.asList(new Color(231, 138, 195), new Color(252, 141, 98), new Color(166, 216, 84), new Color(102, 194, 165), new Color(141, 160, 203));
+    private static final List<Color> colorsStandard   = Util.asList(new Color(227, 26, 28), new Color(255, 127, 0), new Color(251 * 8 / 10, 154 * 8 / 10, 153 * 8 / 10), new Color(51, 160, 44), new Color(31, 120, 180));
 
     /** The list of colors, in order, to assign each legend. */
-    private static final List<Color> colorsNeon     = Util.asList(new Color(231, 41, 138), new Color(217, 95, 2), new Color(166, 118, 29), new Color(102, 166, 30), new Color(27, 158, 119), new Color(117, 112, 179));
+    private static final List<Color> colorsMartha     = Util.asList(new Color(231, 138, 195), new Color(252, 141, 98), new Color(166, 216, 84), new Color(102, 194, 165), new Color(141, 160, 203));
+
+    /** The list of colors, in order, to assign each legend. */
+    private static final List<Color> colorsNeon       = Util.asList(new Color(231, 41, 138), new Color(217, 95, 2), new Color(166, 118, 29), new Color(102, 166, 30), new Color(27, 158, 119), new Color(117, 112, 179));
 
     /** The list of colors, in order, to assign each legend. */
     private static final List<Color> colorsColorBlind = Util.asList(new Color(119, 170, 221), new Color(153, 221, 255), new Color(187, 204, 51), new Color(170, 170, 0), new Color(238, 136, 102), new Color(255, 170, 187), new Color(221, 221, 221));
@@ -280,7 +298,7 @@ public final class StaticGraphMaker {
         if ((hidePrivate && tuple.getEnd().getType().isPrivate) || (hideMeta && tuple.getEnd().getType().isMeta) || !view.nodeVisible(tuple.getEnd(), instance))
             return false;
         GraphNode start = createNode(hidePrivate, hideMeta, hideSkolem, tuple.getStart(), null);
-        GraphNode end = createNode(hidePrivate, hideMeta, hideSkolem,  tuple.getEnd(), null);
+        GraphNode end = createNode(hidePrivate, hideMeta, hideSkolem, tuple.getEnd(), null);
         if (start == null || end == null)
             return false;
         boolean layoutBack = view.layoutBack.resolve(rel);
@@ -341,7 +359,7 @@ public final class StaticGraphMaker {
                     if (createEdge(hidePrivate, hideMeta, hideSkolem, rel, tuple, true, magicColor))
                         count = count + 2;
                 } else {
-                    if (createEdge(hidePrivate, hideMeta,hideSkolem, rel, tuple, false, magicColor))
+                    if (createEdge(hidePrivate, hideMeta, hideSkolem, rel, tuple, false, magicColor))
                         count = count + 1;
                 }
             }
