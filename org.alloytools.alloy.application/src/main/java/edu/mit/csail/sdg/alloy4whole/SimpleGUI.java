@@ -204,7 +204,7 @@ import kodkod.engine.satlab.SATFactory;
  */
 public final class SimpleGUI implements ComponentListener, Listener {
 
-    final static Pattern TYPED_P = Pattern.compile("([A-Z]{3,6}):");
+    final static Pattern TYPED_P = Pattern.compile("([A-Za-z]{3,6}):");
 
     /**
      * The latest welcome screen; each time we update the welcome screen, we
