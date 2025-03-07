@@ -14,7 +14,7 @@
  */
 package edu.mit.csail.sdg.alloy4;
 
-import java.awt.GraphicsEnvironment;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -28,6 +28,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.Icon;
+
+import org.alloytools.graphics.util.AlloyGraphics;
 
 import kodkod.engine.satlab.SATFactory;
 
@@ -569,7 +571,8 @@ public class A4Preferences {
     public static final IntChoicePref         FontSize               = new IntChoicePref("FontSize", "Font size", Arrays.asList(9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 32, 36, 40, 44, 48, 54, 60, 66, 72), 14);
 
     /** The latest font name of the Alloy Analyzer. */
-    public static final StringChoicePref      FontName               = new StringChoicePref("FontName", "Font family", Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()), "Lucida Grande");
+    public static final StringChoicePref      FontName               = new StringChoicePref("FontName", "Font family", AlloyGraphics.getFontFamilyNames(true), Font.MONOSPACED);
+
 
     /** The latest tab distance of the Alloy Analyzer. */
     public static final IntChoicePref         TabSize                = IntChoicePref.range("TabSize", "Tab size", 1, 1, 16, 4);
