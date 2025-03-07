@@ -35,7 +35,10 @@ import javax.swing.border.EmptyBorder;
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  */
 
-public class OurCombobox extends JComboBox {
+@SuppressWarnings({
+                   "rawtypes", "unchecked"
+} )
+public class OurCombobox<T> extends JComboBox<T> {
 
     /** This ensures the class can be serialized reliably. */
     private static final long serialVersionUID = 0;
@@ -65,14 +68,15 @@ public class OurCombobox extends JComboBox {
     /**
      * Subclass can override this method to react upon selection change.
      */
-    public void do_changed(Object newValue) {}
+    public void do_changed(Object newValue) {
+    }
 
     /**
      * This helper method makes a copy of the list, and then optionally prepend null
      * at the beginning of the list.
      */
-    private static Vector<Object> do_copy(Object[] list, boolean addNull) {
-        Vector<Object> answer = new Vector<Object>(list.length + (addNull ? 1 : 0));
+    private static <X> Vector<X> do_copy(X[] list, boolean addNull) {
+        Vector<X> answer = new Vector<>(list.length + (addNull ? 1 : 0));
         if (addNull)
             answer.add(null);
         for (int i = 0; i < list.length; i++)
@@ -85,7 +89,7 @@ public class OurCombobox extends JComboBox {
      *
      * @param list - the list of allowed values
      */
-    public OurCombobox(Object[] list) {
+    public OurCombobox(T[] list) {
         this(false, list, 0, 0, null);
     }
 
@@ -102,7 +106,7 @@ public class OurCombobox extends JComboBox {
      * @param initialValue - if nonnull it is the initial value to choose in this
      *            combo box
      */
-    public OurCombobox(boolean addNull, Object[] list, int width, int height, Object initialValue) {
+    public OurCombobox(boolean addNull, T[] list, int width, int height, Object initialValue) {
         super(do_copy(list, addNull));
         setFont(OurUtil.getVizFont());
         setRenderer(new ListCellRenderer() {
