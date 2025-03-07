@@ -21,8 +21,10 @@ import static javax.swing.JOptionPane.WARNING_MESSAGE;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
@@ -31,7 +33,9 @@ import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Locale;
+import java.util.Objects;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -39,12 +43,15 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
+
+import org.alloytools.graphics.util.AlloyGraphics;
 
 /**
  * Graphical dialog methods for asking the user some questions.
@@ -178,18 +185,63 @@ public final class OurDialog {
     /**
      * Asks the user to choose a font; returns "" if the user cancels the request.
      *
-     * @param parent
      */
-    public synchronized static String askFont(JFrame parent) {
-        if (allFonts == null)
-            allFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-        JComboBox jcombo = new OurCombobox(allFonts);
+    public static String askFont(JFrame parent) {
+        JComboBox<String> wCandidates = new OurCombobox<>(new String[0]);
+        JCheckBox wShowALlFonts = new JCheckBox("Show all fonts");
+        JLabel sampleText = new JLabel("fun calculate[ a: X ] : Y { }");
+
+        class Model {
+
+            String  selected = Font.MONOSPACED;
+            Boolean all      = null;
+
+            void selected(String selected) {
+                if (!Objects.equals(selected, this.selected)) {
+                    this.selected = selected;
+                    if (selected != null) {
+                        Font font = new Font(selected, Font.PLAIN, 12);
+                        sampleText.setFont(font);
+                        sampleText.setBackground(Color.black);
+                    } else {
+                        Font font = new Font(Font.MONOSPACED, Font.PLAIN, 12);
+                        sampleText.setFont(font);
+                        sampleText.setBackground(Color.red);
+                    }
+                }
+            }
+
+            void all(Boolean all) {
+                if (!Objects.equals(this.all, all)) {
+                    this.all = all;
+                    String[] items = AlloyGraphics.getFontFamilyNames(all).toArray(String[]::new);
+                    DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(items);
+                    wCandidates.setModel(model);
+                    wCandidates.setSelectedItem(selected);
+                }
+            }
+        }
+        Model model = new Model();
+
+        wCandidates.addActionListener(event -> {
+            model.selected((String) wCandidates.getSelectedItem());
+        });
+        wShowALlFonts.addChangeListener(event -> {
+            model.all(wShowALlFonts.isSelected());
+        });
+
+        String current = A4Preferences.FontName.get();
+        boolean foundInMonoFonts = AlloyGraphics.isMono(current);
+        wShowALlFonts.setSelected(!foundInMonoFonts);
+        model.all(!foundInMonoFonts);
+        wCandidates.setSelectedItem(current);
+
         Object ans = show(parent, "Font", JOptionPane.INFORMATION_MESSAGE, new Object[] {
-                                                                                         "Please choose the new font:", jcombo
+                                                                                         "Select the new font:", wCandidates, sampleText, wShowALlFonts
         }, new Object[] {
                          "Ok", "Cancel"
-        }, "Cancel");
-        Object value = jcombo.getSelectedItem();
+        }, "Ok");
+        Object value = wCandidates.getSelectedItem();
         if (ans == "Ok" && (value instanceof String))
             return (String) value;
         else

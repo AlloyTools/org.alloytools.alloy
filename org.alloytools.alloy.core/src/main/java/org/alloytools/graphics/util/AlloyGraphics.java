@@ -1,9 +1,15 @@
 package org.alloytools.graphics.util;
 
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.GraphicsEnvironment;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.swing.JLabel;
 
 /**
  * A central class for general graphic support functions in Alloy that have no
@@ -12,7 +18,35 @@ import java.util.Map;
 
 public class AlloyGraphics {
 
-    private static final Map<String,String> availableFontNames = new HashMap<String,String>();
+    final static String                      TEST_S             = "abcdefghijklmnoqpqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+=-{}[]|\"':;<>.,?/~`";
+
+    static final List<FontFamilyDescription> availableFontNames = new ArrayList<>();
+
+    record FontFamilyDescription(boolean monospace, String name, String soundex) {
+    }
+
+    /**
+     * Answer if a font family is mono space. This defined as having the same widths
+     * for the test alfabet and important punctuation and the capability to display
+     * these characters.
+     *
+     * @param fontFamilyName the font family
+     * @return true if mono space
+     */
+    public static boolean isMono(String fontFamilyName) {
+        Optional<FontFamilyDescription> any = getAvailableFontDescriptions().stream().filter(ffd -> ffd.monospace && ffd.name().equals(fontFamilyName)).findAny();
+        return any.isPresent();
+    }
+
+
+    /**
+     * Get a list of all available family names.
+     *
+     * @param all show all fonts, otherwise only fonts deemed monospaced
+     */
+    public static List<String> getFontFamilyNames(boolean all) {
+        return getAvailableFontDescriptions().stream().filter(ffd -> all || ffd.monospace).map(ffd -> ffd.name).toList();
+    }
 
     /**
      * The fontNames can contain a comma separated list of font names. This function
@@ -34,30 +68,60 @@ public class AlloyGraphics {
      **/
 
     public static synchronized String matchBestFontName(String fontNames) {
+        List<FontFamilyDescription> availableFontNames = getAvailableFontDescriptions();
         String[] names = fontNames.trim().split("\\s*,\\s*");
-        if (availableFontNames.isEmpty()) {
 
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            String[] availableFontFamilyNames = ge.getAvailableFontFamilyNames();
-            for (String availableName : availableFontFamilyNames) {
-                availableFontNames.put(toSoundex(availableName), availableName);
-            }
-        }
         for (String name : names) {
-            if (name.startsWith("$")) {
-                name = name.substring(1);
-                Font font = Font.getFont(name);
-                if (font != null)
-                    return font.getFontName();
-            } else {
-                String soundex = toSoundex(name);
-                String fontName = availableFontNames.get(soundex);
-                if (fontName != null)
-                    return name;
+            String target = name.startsWith("$") ? name.substring(1) : name;
+            Optional<FontFamilyDescription> fontName = availableFontNames.stream().filter(ffd -> ffd.name().equals(target)).findFirst();
+            if (fontName.isPresent())
+                return fontName.get().name;
+        }
+
+        for (String name : names) {
+            String soundex = toSoundex(name);
+            Optional<FontFamilyDescription> fontName = availableFontNames.stream().filter(ffd -> ffd.soundex().equals(soundex)).findFirst();
+            if (fontName != null)
+                return fontName.get().name;
+        }
+        return Font.MONOSPACED;
+    }
+
+    private static List<FontFamilyDescription> getAvailableFontDescriptions() {
+        if (availableFontNames.isEmpty()) {
+            JLabel label = new JLabel();
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            Font[] allFonts = ge.getAllFonts();
+            Set<String> set = new HashSet<>();
+            set.add(Font.MONOSPACED);
+            availableFontNames.add(new FontFamilyDescription(true, Font.MONOSPACED, toSoundex(Font.MONOSPACED)));
+
+            for (Font font : allFonts) {
+                String familyName = font.getFamily();
+                if (!set.add(familyName))
+                    continue;
+
+                boolean monospace = true;
+                if (font.isBold() || font.isItalic())
+                    monospace = false;
+
+                if (font.canDisplayUpTo(TEST_S) != -1)
+                    monospace = false;
+
+                String soundex = toSoundex(familyName);
+
+
+                FontMetrics metrics = label.getFontMetrics(font);
+                double w = metrics.stringWidth(TEST_S);
+                if (w == 0 || w / TEST_S.length() != 1)
+                    monospace = false;
+
+                availableFontNames.add(new FontFamilyDescription(monospace, familyName, soundex));
             }
         }
-        return names[names.length - 1];
+        return availableFontNames;
     }
+
 
     private static String toSoundex(String name) {
         StringBuilder sb = new StringBuilder(name);
