@@ -1,0 +1,22 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+env:
+  LC_ALL: en_US.UTF-8
+  REPOSITORY_USERNAME: ${{ secrets.REPOSITORY_USERNAME }}
+  REPOSITORY_PASSWORD: ${{ secrets.REPOSITORY_PASSWORD }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: 
+          ref: release
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 23
+          distribution: temurin
+      - run: ./gradlew --parallel release
