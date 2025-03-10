@@ -20,7 +20,7 @@ jobs:
           java-version: 17
           distribution: temurin
       - shell: bash
-        run: ./gradlew --parallel release
+        run: ./gradlew release
       - if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
