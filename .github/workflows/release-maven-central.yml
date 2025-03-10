@@ -1,4 +1,4 @@
-name: Release
+name: release-maven-central
 
 on:
   workflow_dispatch:
@@ -19,4 +19,4 @@ jobs:
         with:
           java-version: 23
           distribution: temurin
-      - run: ./gradlew --parallel release
+      - run: ./gradlew release
