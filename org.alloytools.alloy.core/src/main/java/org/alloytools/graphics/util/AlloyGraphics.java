@@ -81,7 +81,7 @@ public class AlloyGraphics {
         for (String name : names) {
             String soundex = toSoundex(name);
             Optional<FontFamilyDescription> fontName = availableFontNames.stream().filter(ffd -> ffd.soundex().equals(soundex)).findFirst();
-            if (fontName != null)
+            if (fontName.isPresent())
                 return fontName.get().name;
         }
         return Font.MONOSPACED;
