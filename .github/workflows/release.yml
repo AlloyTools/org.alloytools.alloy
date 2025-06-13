@@ -51,12 +51,12 @@ jobs:
 
       - name: Prepare macOS signing key and notary key
         run: |
-          cd org.alloytools.alloy.dist/conveyor/
           mkdir -p secret/mac
           echo "${{ secrets.MACOS_SIGNING_KEY }}" | base64 -d > secret/mac/alloy_key_cer.p12
           echo "${{ secrets.MACOS_NOTARY_KEY }}" > secret/mac/notary_key.p8
         shell: bash
-
+        working-directory: org.alloytools.alloy.dist/conveyor/
+        
       - name: Run prepare.sh for Conveyor
         working-directory: org.alloytools.alloy.dist/conveyor/
         run: ./prepare.sh
