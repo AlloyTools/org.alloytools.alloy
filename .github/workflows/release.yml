@@ -11,7 +11,7 @@ name: release
 #
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       macos_signing_password:
         description: "Password for p12 key file in 'release' environment secrets"
