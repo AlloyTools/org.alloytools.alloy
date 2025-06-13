@@ -36,4 +36,4 @@ zip -qr "$OUT" .
 cd -
 rm -rf "$TMP"
 find "$BLD"/native/ -type f -exec chmod a+x {} \; 
-echo "Prepared $OUT with native directory at $NAT"
+echo "Prepared $OUT with native directory at $BLD/native"
