@@ -1,8 +1,22 @@
 name: release
 
+#
+# This workflow will build Alloy and prepares a release.
+# The private keys for signing and notarizing are kept
+# secret for the project maintainers since it the certiicate
+# is on a personal name. The keys are stored in the
+# envionment secrets 'release'. As an extra safeguard, the
+# password for the p12 key file is passed as an input
+# to the workflow.
+#
+
 on:
-  push:
-    branches: ["release"]
+  workflow_call:
+    inputs:
+      macos_signing_password:
+        description: "Password for p12 key file in 'release' environment secrets"
+        required: true
+        type: string
 
 env:
   LC_ALL: en_US.UTF-8
@@ -13,32 +27,62 @@ jobs:
   build:
     name: build on OpenJDK Linux
     runs-on: ubuntu-latest
+    environment: release
     steps:
+      - name: Mask macos_signing_password
+        run: echo "::add-mask::${{ inputs.macos_signing_password }}"
+        shell: bash
+
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin
+
       - shell: bash
         run: ./gradlew --parallel release
+
       - if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: '*/target/*reports/tests/'
-      - uses: hydraulic-software/conveyor/actions/build@v14.2
+
+      - name: Prepare macOS signing key and notary key
+        run: |
+          mkdir -p secret/mac
+          echo "${{ secrets.MACOS_SIGNING_KEY }}" | base64 -d > secret/mac/alloy_key_cer.p12
+          echo "${{ secrets.MACOS_NOTARY_KEY }}" > secret/mac/notary_key.p8
+        shell: bash
+
+      - name: Run prepare.sh for Conveyor
+        working-directory: org.alloytools.alloy.dist/conveyor/
+        run: ./prepare.sh
+        shell: bash
+
+      - uses: hydraulic-software/conveyor/actions/build@v18.1
+        env:
+          MACOS_SIGNING_PASSWORD: ${{ inputs.macos_signing_password }}
         with:
-            signing_key: ${{ secrets.CONVEYOR_ROOT_KEY }}
-            command: make site
-            extra_flags: -f org.alloytools.alloy.dist/conveyor/conveyor.conf
-            agree_to_license: 1
+          signing_key: ${{ secrets.CONVEYOR_ROOT_KEY }}
+          command: make site
+          extra_flags: -f org.alloytools.alloy.dist/conveyor/conveyor.conf
+          agree_to_license: 1
+
+      - name: Upload Conveyor output directory
+        uses: actions/upload-artifact@v4
+        with:
+          name: conveyor-output
+          path: output/
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           name: Alloy
-          body: Alloy is an open source language and analyzer for software modeling. It has been used in a wide range of applications, from finding holes in security mechanisms to designing telephone switching networks.
+          body: Alloy is an open source language and analyzer for software modeling. It has been used in a wide range of applications, from finding holes in security mechanisms to designing telephone systems.
           prerelease: false
           draft: true
           files: |
-             output/**
+            output/**
