@@ -92,6 +92,19 @@ public class NativeCode {
 			}
 		}
 
+		String resourcePath = System.getProperty("app.dir");
+		if ( resourcePath != null) {
+			logger.debug("processing 'app.dir' {}", resourcePath);
+			File dir = new File(resourcePath);
+			if (dir.isDirectory()) {
+				LIBRARYPATH.add(dir);
+				PATH.add(dir);
+			} else {
+				logger.info("entry {} not a directory, not added to LIBRARYPATH and PATH", dir.getAbsolutePath());
+			}
+		} else
+			logger.info("no 'app.dir' set");
+		
 		try {
 			cache = Files.createTempDirectory("alloy-").toFile();
 			LIBRARYPATH.add(cache);
