@@ -95,6 +95,10 @@ org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4whole/Sim
 
 In the root of this workspace type `./gradlew`. This is a script that will download the correct version of gradle and run the build scripts. For settings look at [gradle.properties] and [settings.gradle].
 
+### Command Line Visualizations
+
+The `org.alloytools.alloy.cli` runner can now emit Graphviz DOT descriptions in addition to the existing text, table, JSON, and XML renderings. Use `--type dot` with the `exec` command to write one DOT document per solution (or stream them to stdout when `--output -` is used). A dedicated `metamodel` command has also been added; it generates a `metamodel.dot` file that matches the GUI’s metamodel view and can be fed directly to Graphviz.
+
 ### Continuous Integration
 
 The workspace is setup to build after every commit using Github Actions, see [workflows](.github/workflows). 

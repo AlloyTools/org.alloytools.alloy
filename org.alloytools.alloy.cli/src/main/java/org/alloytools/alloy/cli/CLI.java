@@ -7,9 +7,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -37,11 +40,16 @@ import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import edu.mit.csail.sdg.alloy4.TableView;
 import edu.mit.csail.sdg.alloy4.Util;
+import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
+import edu.mit.csail.sdg.alloy4viz.AlloyInstance;
+import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
+import edu.mit.csail.sdg.alloy4viz.VizState;
+import edu.mit.csail.sdg.alloy4graph.GraphViewer;
 import edu.mit.csail.sdg.sim.SimTupleset;
 import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Solution;
@@ -59,7 +67,7 @@ public class CLI extends Env {
 	final A4Options options = new A4Options();
 
 	public enum OutputType {
-		none, text, table, json, xml;
+		none, text, table, json, xml, dot;
 	}
 
 	InputStream stdin = new FilterInputStream(System.in) {
@@ -94,7 +102,7 @@ public class CLI extends Env {
 		@Description("The command to run. If no command is specified, the default command will run. The command may specify wildcards to run multiple commands. If the command is an integer, it will run the command with that index.")
 		String command();
 
-		@Description("Specify the output type: none, text, table, json, xml")
+		@Description("Specify the output type: none, text, table, json, xml, dot")
 		OutputType type(OutputType deflt);
 
 		@Description("Specify where the output should go. Default is the a directory with the stem of "
@@ -132,6 +140,9 @@ public class CLI extends Env {
 
 		@Description("Find multiple solutions, up to this number. Use 0 for as many as can be found. The default is 1, only the first solution.")
 		int repeat(int deflt);
+
+		@Description("Path to an Alloy theme file (.thm) for customizing visualization appearance. Only applies to DOT output type.")
+		String theme();
 
 	}
 
@@ -181,27 +192,8 @@ public class CLI extends Env {
 
 		File outdir = output(options.output(), getStem(file));
 
-		if (outdir != null) {
-			if (outdir.isFile()) {
-				error("There is a file with the name of the output directory %s", outdir);
-				return;
-			}
-			IO.mkdirs(outdir);
-			if (!outdir.isDirectory()) {
-				error("Cannot create output directory %s", outdir);
-				return;
-			}
-
-			boolean filesExist = outdir.listFiles().length > 0;
-			if (filesExist) {
-				if (options.force()) {
-					IO.delete(outdir);
-					IO.mkdirs(outdir);
-				} else {
-					error("The output directory %s contains files. Delete them or use the -f option", outdir);
-					return;
-				}
-			}
+		if (!prepareOutputDirectory(outdir, options.force())) {
+			return;
 		}
 		OutputTrace trace = new OutputTrace(quiet || outdir == null ? null : stderr);
 		int n = 0;
@@ -270,7 +262,7 @@ public class CLI extends Env {
 						trace.back(back).format("%5d", index);
 						SolutionDTO solutionDTO = solution.toDTO();
 						commandReceipt.solution.add(solutionDTO);
-						generate(world, solution, options.type(OutputType.table), outdir, cname, index, solutionDTO);
+						generate(world, solution, options.type(OutputType.table), outdir, cname, index, solutionDTO, options.theme());
 						index++;
 						back = 5;
 					} while (index < repeat && solution.isIncremental() && (solution = solution.next()).satisfiable());
@@ -374,6 +366,22 @@ public class CLI extends Env {
 
 	}
 
+	@Arguments(arg = "path")
+	@Description("Render the metamodel of an Alloy program as a Graphviz DOT graph")
+	interface MetamodelOptions extends Options {
+		@Description("Specify where the output should go. Default is the source stem suffixed with '-metamodel'. Use '-' to print to stdout.")
+		String output();
+
+		@Description("Specify that the output directory is removed and recreated if it contains any files")
+		boolean force();
+
+		@Description("Be quiet with progress information")
+		boolean quiet();
+
+		@Description("Path to an Alloy theme file (.thm) for customizing visualization appearance")
+		String theme();
+	}
+
 	/**
 	 * Execute a Alloy program
 	 * 
@@ -391,8 +399,105 @@ public class CLI extends Env {
 		}
 	}
 
+	@Description("Render the metamodel of an Alloy program as a Graphviz DOT graph")
+	public void _metamodel(MetamodelOptions options) throws Exception {
+		boolean quiet = options.quiet();
+		String filename = options._arguments().remove(0);
+		File file = IO.getFile(filename);
+		if (!file.canRead()) {
+			error("Cannot read file %s", file);
+			return;
+		}
+		if (file.isDirectory()) {
+			error("%s must be a file, not a directory", file);
+			return;
+		}
+
+		SimpleReporter rep = new SimpleReporter(this);
+		Map<String, String> cache = new HashMap<>();
+		CompModule world = CompUtil.parseEverything_fromFile(rep, cache, filename);
+
+		File outdir = output(options.output(), getStem(file) + "-metamodel");
+		if (!prepareOutputDirectory(outdir, options.force())) {
+			return;
+		}
+
+		StringWriter xml = new StringWriter();
+		try (PrintWriter xmlWriter = new PrintWriter(xml)) {
+			Util.encodeXMLs(xmlWriter, "\n<alloy builddate=\"", Version.buildDate(), "\">\n\n");
+			A4SolutionWriter.writeMetamodel(world.getAllReachableSigs(), filename, xmlWriter);
+			Util.encodeXMLs(xmlWriter, "\n</alloy>");
+		}
+		String xmlContent = xml.toString();
+
+		AlloyInstance instance = StaticInstanceReader.parseInstance(new StringReader(xmlContent), 0);
+		VizState vizState = new VizState(instance);
+		vizState.hideMeta(false);
+		vizState.hidePrivate(false);
+		
+		// Apply theme if provided
+		String themeFile = options.theme();
+		if (themeFile != null && !themeFile.trim().isEmpty()) {
+			try {
+				vizState.loadPaletteXML(themeFile);
+			} catch (IOException e) {
+				// If theme loading fails, continue with default theme
+				if (!quiet) {
+					stderr.printf("Warning: Could not load theme file '%s': %s%n", themeFile, e.getMessage());
+				}
+			}
+		}
+		
+		GraphViewer viewer = (GraphViewer) vizState.getGraph(null, null);
+		String dot = viewer.toString();
+
+		File destination = null;
+		if (outdir == null) {
+			try (PrintWriter pw = getPrintWriter(null)) {
+				pw.print(dot);
+			}
+		} else {
+			destination = new File(outdir, "metamodel.dot");
+			try (PrintWriter pw = getPrintWriter(destination)) {
+				pw.print(dot);
+			}
+		}
+
+		if (!quiet && destination != null) {
+			stderr.printf("metamodel: %s%n", destination.getAbsolutePath());
+		}
+	}
+
 	final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("'-'yyyyMMdd'T'HH-mm-ss")
 			.withZone(ZoneId.systemDefault());
+
+	private boolean prepareOutputDirectory(File outdir, boolean force) throws IOException {
+		if (outdir == null) {
+			return true;
+		}
+		if (outdir.isFile()) {
+			error("There is a file with the name of the output directory %s", outdir);
+			return false;
+		}
+		IO.mkdirs(outdir);
+		if (!outdir.isDirectory()) {
+			error("Cannot create output directory %s", outdir);
+			return false;
+		}
+
+		File[] files = outdir.listFiles();
+		boolean filesExist = files != null && files.length > 0;
+		if (filesExist) {
+			if (force) {
+				IO.delete(outdir);
+				IO.mkdirs(outdir);
+			} else {
+				error("The output directory %s contains files. Delete them or use the -f option", outdir);
+				return false;
+			}
+		}
+		return true;
+	}
 
 	private File output(String output, String stem) throws IOException {
 		if (output == null)
@@ -416,7 +521,7 @@ public class CLI extends Env {
 	}
 
 	private File generate(CompModule world, A4Solution solution, OutputType type, File outdir, String cname, int index,
-			SolutionDTO dto) throws Exception {
+			SolutionDTO dto, String themeFile) throws Exception {
 		switch (type) {
 		default:
 		case none:
@@ -489,6 +594,9 @@ public class CLI extends Env {
 			codec.enc().writeDefaults().indent("  ").to(getPrintWriter(path)).put(dto);
 			return path;
 		}
+		case dot: {
+			return generateDot(solution, outdir, cname, index, themeFile);
+		}
 		case xml:
 			File path = getPath(outdir, cname, ".xml", index);
 			try (PrintWriter pw = getPrintWriter(path)) {
@@ -496,6 +604,49 @@ public class CLI extends Env {
 			}
 			return path;
 		}
+	}
+
+	private File generateDot(A4Solution solution, File outdir, String cname, int index, String themeFile) throws Exception {
+		StringWriter xml = new StringWriter();
+		try (PrintWriter xmlWriter = new PrintWriter(xml)) {
+			A4SolutionWriter.writeInstance(null, solution, xmlWriter, Collections.emptyList(), Collections.emptyMap());
+		}
+		String xmlContent = xml.toString();
+
+		int stateCount = solution.isTemporal() ? Math.max(1, solution.getTraceLength()) : 1;
+		List<File> generated = new ArrayList<>();
+
+		for (int state = 0; state < stateCount; state++) {
+			AlloyInstance instance = StaticInstanceReader.parseInstance(new StringReader(xmlContent), state);
+			VizState vizState = new VizState(instance);
+			
+			// Apply theme if provided
+			if (themeFile != null && !themeFile.trim().isEmpty()) {
+				try {
+					vizState.loadPaletteXML(themeFile);
+				} catch (IOException e) {
+					// If theme loading fails, continue with default theme
+					stderr.printf("Warning: Could not load theme file '%s': %s%n", themeFile, e.getMessage());
+				}
+			}
+			
+			GraphViewer viewer = (GraphViewer) vizState.getGraph(null, null);
+			String dot = viewer.toString();
+
+			String base = cname + "-solution-" + index;
+			if (stateCount > 1) {
+				base = base + "-state-" + state;
+			}
+			File destination = outdir == null ? null : new File(outdir, base + ".dot");
+			try (PrintWriter out = getPrintWriter(destination)) {
+				out.print(dot);
+			}
+			if (destination != null) {
+				generated.add(destination);
+			}
+		}
+
+		return generated.isEmpty() ? null : generated.get(0);
 	}
 
 	private File getPath(File outdir, String cname, String extension, int index) {
