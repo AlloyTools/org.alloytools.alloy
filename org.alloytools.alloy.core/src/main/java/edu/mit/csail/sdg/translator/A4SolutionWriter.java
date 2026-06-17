@@ -330,11 +330,13 @@ public final class A4SolutionWriter {
             Util.encodeXMLs(out, "<alloy builddate=\"", Version.buildDate(), "\">\n\n");
 
             int unrolls = 0;
-            for (Func f : extraSkolems) {
-                if (f.count() == 0 && f.call().type().hasTuple()) {
-                    int dpt = f.getBody().pastDepth();
-                    if (dpt > 0)
-                        unrolls = Math.max(unrolls, dpt);
+            if (extraSkolems != null) {
+                for (Func f : extraSkolems) {
+                    if (f.count() == 0 && f.call().type().hasTuple()) {
+                        int dpt = f.getBody().pastDepth();
+                        if (dpt > 0)
+                            unrolls = Math.max(unrolls, dpt);
+                    }
                 }
             }
 
