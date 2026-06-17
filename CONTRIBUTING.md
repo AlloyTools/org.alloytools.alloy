@@ -23,7 +23,7 @@ We use [Travis CI](https://travis-ci.org/AlloyTools/org.alloytools.alloy) and th
 ## Workflow
 
 We use [git triangular workflow](https://www.sociomantic.com/blog/2014/05/git-triangular-workflow/).
-This means that no one, not even the Allow maintainers, push contributions directly into the [main AlloyTools
+This means that no one, not even the Alloy maintainers, push contributions directly into the [main AlloyTools
 repo](https://github.com/alloytools/org.alloytools.alloy). All contribution come in through pull requests.
 So each contributor will need to [fork the main Alloy repo](https://github.com/alloytools/org.alloytools.alloy/fork)
 on GitHub. All contributions are made as commits to your fork. Then you submit a
@@ -210,7 +210,7 @@ the main repo.
 
 * Step 1: learn the code inside out
 * Step 2: make yourself useful by contributing code, bugfixes, support etc.
-* Step 3: introduce your self to the other maintainers
+* Step 3: introduce yourself to the other maintainers
 
 Don't forget: being a maintainer is a time investment. Make sure you will have time
 to make yourself available. You don't have to be a maintainer to make a difference
