@@ -166,13 +166,10 @@ public class TableView {
             if (s.builtin)
                 continue;
 
-            TupleSet instanceTuples = solution.eval(s, state).debugGetKodkodTupleset();
+            A4TupleSet instanceTuples = solution.eval(s, state);
             if (instanceTuples != null) {
 
-                List<SimTuple> instancesArray = Util.toList(instanceTuples);
-                sortTuple(instancesArray);
-
-                SimTupleset sigInstances = SimTupleset.make(instancesArray);
+                SimTupleset sigInstances = Util.toSimTupleset(instanceTuples);
                 Table table = new Table(sigInstances.size() + 1, s.getFields().size() + 1, 1);
                 table.set(0, 0, s.label);
 
