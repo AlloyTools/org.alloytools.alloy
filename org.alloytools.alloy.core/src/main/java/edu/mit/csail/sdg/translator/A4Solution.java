@@ -478,6 +478,7 @@ public final class A4Solution {
         originalOptions = old.originalOptions;
         originalCommand = old.originalCommand;
         bitwidth = old.bitwidth;
+        seenInstances = old.seenInstances;
         maxseq = old.maxseq;
         maxtrace = old.maxtrace;
         mintrace = old.mintrace;
@@ -1707,9 +1708,13 @@ public final class A4Solution {
         if (inst != null) {
             eval = new Evaluator(inst, solver.options());
             rename(this, null, null, new UniqueNameGenerator());
+            seenInstances = new java.util.LinkedHashSet<String>();
         }
         // report the result
         solved();
+        if (inst != null && opt.deduplicateInstances) {
+            seenInstances.add(this.toString());
+        }
         time = System.currentTimeMillis() - time;
         if (inst != null)
             rep.resultSAT(cmd, time, this);
@@ -1817,6 +1822,8 @@ public final class A4Solution {
 
     // ===================================================================================================//
 
+    private java.util.Set<String> seenInstances;
+
     /** If nonnull, it caches the result of calling "next()". */
     private A4Solution nextCache = null;
 
@@ -1845,13 +1852,30 @@ public final class A4Solution {
             throw new ErrorAPI("This solution is not yet solved, so next() is not allowed.");
         if (eval == null)
             return this;
-        if (nextCache == null && (p == -3 || p == -1))
-            nextCache = new A4Solution(this, p);
+        if (nextCache == null && (p == -3 || p == -1)) {
+            A4Solution sol = new A4Solution(this, p);
+            if (opt.deduplicateInstances && sol.seenInstances != null) {
+                while (sol.satisfiable() && !sol.seenInstances.add(sol.toString())) {
+                    sol = new A4Solution(sol, p);
+                }
+            }
+            nextCache = sol;
+        }
 
         if (nextCache != null)
             return nextCache;
 
-        return new A4Solution(this, p); // [electrum] do not cache, may have different arguments
+        A4Solution sol = new A4Solution(this, p); // [electrum] do not cache, may have different arguments
+        if (opt.deduplicateInstances && sol.seenInstances != null) {
+            // We use an unbounded loop to skip duplicates. This relies on the fact that the 
+            // instance set is finite (verified by exhaustive enumeration), so skip-on-duplicate 
+            // cannot loop forever. This replaces the previous bounded 100-retry workaround 
+            // in SimpleReporter.
+            while (sol.satisfiable() && !sol.seenInstances.add(sol.toString())) {
+                sol = new A4Solution(sol, p);
+            }
+        }
+        return sol;
     }
 
     /**

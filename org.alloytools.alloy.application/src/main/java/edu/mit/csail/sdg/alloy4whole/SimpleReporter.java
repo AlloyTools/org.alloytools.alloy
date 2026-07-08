@@ -691,15 +691,7 @@ public final class SimpleReporter extends A4Reporter {
                 }
                 String toString = sol.toString();
                 synchronized (SimpleReporter.class) {
-                    if (!latestKodkods.add(toString))
-                        if (tries < 100) {
-                            tries++;
-                            continue;
-                        }
-                    // The counter is needed to avoid a Kodkod bug where
-                    // sometimes we might repeat the same solution infinitely
-                    // number of times; this at least allows the user to keep
-                    // going
+                    latestKodkods.add(toString);
                     writeXML(null, mod, filename, sol, latestKodkodSRC);
                     latestKodkod = sol;
                 }

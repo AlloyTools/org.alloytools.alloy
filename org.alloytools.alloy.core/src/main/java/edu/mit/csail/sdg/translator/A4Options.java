@@ -45,6 +45,13 @@ public final class A4Options implements Serializable {
     public boolean    inferPartialInstance = true;
 
     /**
+     * This option specifies whether to deduplicate instances with identical Alloy representations.
+     * <p>
+     * Default value is true.
+     */
+    public boolean    deduplicateInstances = true;
+
+    /**
      * This option specifies the amount of symmetry breaking to do (when symmetry
      * breaking isn't explicitly disabled).
      * <p>
@@ -163,6 +170,7 @@ public final class A4Options implements Serializable {
         x.coreGranularity = coreGranularity;
         x.decompose_mode = decompose_mode;
         x.decompose_threads = decompose_threads;
+        x.deduplicateInstances = deduplicateInstances;
         return x;
     }
 
