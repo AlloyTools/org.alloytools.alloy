@@ -12,7 +12,7 @@ import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.ast.Command;
 
 class SimpleReporter extends A4Reporter {
-    static Logger logger = LoggerFactory.getLogger("alloy");
+	static Logger logger = LoggerFactory.getLogger("alloy");
 	boolean db = true;
 
 	static void db(String msg) {
@@ -28,7 +28,7 @@ class SimpleReporter extends A4Reporter {
 
 	@Override
 	public void debug(String msg) {
-		cli.trace("%s",msg);
+		cli.trace("%s", msg);
 	}
 
 	@Override
@@ -74,15 +74,85 @@ class SimpleReporter extends A4Reporter {
 
 	@Override
 	public void resultSAT(Object command, long solvingTime, Object solution) {
-		if (db)
-			db("   SAT!\n");
+		if (db) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("{\"solved\": true");
+
+			if (command instanceof Command) {
+				sb.append(", \"valid\": ");
+
+				Command cmd = (Command) command;
+				boolean chk = cmd.check;
+				if (chk) {
+					sb.append("false");
+				} else {
+					sb.append("true");
+				}
+				sb.append(", \"message\": \"");
+
+				String linkType = chk ? "Counterexample" : "Instance";
+				String formulaType = chk ? "Assertion" : "Predicate";
+				String validity = chk ? " is invalid" : " is consistent";
+
+				sb.append(linkType);
+				sb.append(" found. ");
+				sb.append(formulaType);
+				sb.append(validity);
+
+				int expects = cmd.expects;
+				if (expects == 0)
+					sb.append(", contrary to expectation");
+				else if (expects == 1)
+					sb.append(", as expected");
+				sb.append(".\"");
+			}
+
+			sb.append("}");
+			db(sb.toString());
+		}
+
 		if (!(command instanceof Command))
 			return;
 	}
 
 	@Override
 	public void resultUNSAT(Object command, long solvingTime, Object solution) {
-		if (db)
-			db("   UNSAT!\n");
+		if (db) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("{\"solved\": false");
+
+			if (command instanceof Command) {
+				sb.append(", \"valid\": ");
+
+				Command cmd = (Command) command;
+				boolean chk = cmd.check;
+				if (chk) {
+					sb.append("true");
+				} else {
+					sb.append("false");
+				}
+				sb.append(", \"message\": \"");
+
+				String prefix = chk ? "No counterexample" : "No instance";
+				String formulaType = chk ? "Assertion" : "Predicate";
+				String validity = chk ? " may be valid" : " may be inconsistent";
+
+				sb.append(prefix);
+				sb.append(" found. ");
+				sb.append(formulaType);
+				sb.append(validity);
+
+				int expects = cmd.expects;
+				if (expects == 1)
+					sb.append(", contrary to expectation");
+				else if (expects == 0)
+					sb.append(", as expected");
+				sb.append(".\"");
+			}
+
+			sb.append("}");
+			db(sb.toString());
+		}
+
 	}
 }
