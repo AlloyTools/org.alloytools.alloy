@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.20)
 
 project(glucose)
 
+# Without a build type, CMake adds no optimization flags.
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 set(CMAKE_OSX_ARCHITECTURES ${OSX_ARCH})
 
 set(CMAKE_CXX_FLAGS "-std=c++11")

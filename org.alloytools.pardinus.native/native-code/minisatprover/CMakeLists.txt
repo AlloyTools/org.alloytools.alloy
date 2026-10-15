@@ -2,6 +2,14 @@ cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 project(minisatprover)
 
+# Without a build type, CMake adds no optimization flags.
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# The solver uses dynamic exception specifications, which C++17 removed.
+set(CMAKE_CXX_STANDARD 14)
+
 set(MINISATP_VERSION "1.1.0")
 
 

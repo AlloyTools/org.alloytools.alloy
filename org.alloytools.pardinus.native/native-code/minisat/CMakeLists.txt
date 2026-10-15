@@ -1,6 +1,11 @@
-cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 project(minisat)
+
+# Without a build type, CMake adds no optimization flags.
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 
 set(MINISAT_VERSION "2.1.0")
 
